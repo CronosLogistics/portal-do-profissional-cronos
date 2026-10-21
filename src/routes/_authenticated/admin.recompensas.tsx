@@ -22,7 +22,7 @@ type AdminProgram = {
 export const Route = createFileRoute("/_authenticated/admin/recompensas")({
   head: () => ({
     meta: [
-      { title: "Gestão de programas de recompensas | Espaço do Profissional Cronos" },
+      { title: "Gestão de programas de recompensas | Portal do Profissional Cronos" },
       {
         name: "description",
         content: "Painel interno para cadastrar e editar os programas de recompensas.",

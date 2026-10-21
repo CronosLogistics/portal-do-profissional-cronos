@@ -17,7 +17,7 @@ export const Route = createFileRoute("/_authenticated/parceiros")({
   },
   head: () => ({
     meta: [
-      { title: "Parceiros e descontos | Espaço do Profissional Cronos" },
+      { title: "Parceiros e descontos | Portal do Profissional Cronos" },
       {
         name: "description",
         content:

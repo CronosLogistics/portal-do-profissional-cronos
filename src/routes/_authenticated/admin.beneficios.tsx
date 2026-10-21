@@ -22,7 +22,7 @@ type AdminBenefit = {
 export const Route = createFileRoute("/_authenticated/admin/beneficios")({
   head: () => ({
     meta: [
-      { title: "Gestão de benefícios | Espaço do Profissional Cronos" },
+      { title: "Gestão de benefícios | Portal do Profissional Cronos" },
       {
         name: "description",
         content: "Painel interno para cadastrar e editar os benefícios dos profissionais.",

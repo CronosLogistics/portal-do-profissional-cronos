@@ -22,9 +22,9 @@ type Row = {
 export const Route = createFileRoute("/_authenticated/admin/cadastros/")({
   head: () => ({
     meta: [
-      { title: "Cadastros | Espaço do Profissional Cronos" },
+      { title: "Cadastros | Portal do Profissional Cronos" },
       { name: "description", content: "Painel interno para gerenciar as categorias de parceiros." },
-      { property: "og:title", content: "Cadastros | Espaço do Profissional Cronos" },
+      { property: "og:title", content: "Cadastros | Portal do Profissional Cronos" },
       { property: "og:description", content: "Gestão das categorias de parceiros." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

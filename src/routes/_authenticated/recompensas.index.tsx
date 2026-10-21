@@ -15,7 +15,7 @@ export const Route = createFileRoute("/_authenticated/recompensas/")({
   },
   head: () => ({
     meta: [
-      { title: "Programas de Recompensas | Espaço do Profissional Cronos" },
+      { title: "Programas de Recompensas | Portal do Profissional Cronos" },
       {
         name: "description",
         content:

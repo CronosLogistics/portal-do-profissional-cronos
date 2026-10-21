@@ -13,8 +13,8 @@ import { ALL_FIELDS, PAGE_GROUPS, resolveAll } from "@/lib/site-content";
 export const Route = createFileRoute("/_authenticated/admin/pagina-inicial")({
   head: () => ({
     meta: [
-      { title: "Página inicial | Área restrita Clube Cronos" },
-      { name: "description", content: "Edite os textos da página inicial do Espaço do Profissional Cronos." },
+      { title: "Página inicial | Portal do Profissional Cronos" },
+      { name: "description", content: "Edite os textos da página inicial do Portal do Profissional Cronos." },
       { property: "og:title", content: "Editar página inicial" },
       { property: "og:description", content: "Painel interno de textos da página inicial." },
       { property: "og:type", content: "website" },

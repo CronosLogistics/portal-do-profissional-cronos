@@ -25,9 +25,9 @@ const empty: Form = { name: "", slug: "", description: "", icon: "Tag", sort_ord
 export const Route = createFileRoute("/_authenticated/admin/cadastros/categoria/$id")({
   head: () => ({
     meta: [
-      { title: "Categoria de parceiros | Espaço do Profissional Cronos" },
+      { title: "Categoria de parceiros | Portal do Profissional Cronos" },
       { name: "description", content: "Formulário interno para criar e editar categorias de parceiros." },
-      { property: "og:title", content: "Categoria de parceiros | Espaço do Profissional Cronos" },
+      { property: "og:title", content: "Categoria de parceiros | Portal do Profissional Cronos" },
       { property: "og:description", content: "Cadastro de categorias de parceiros." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

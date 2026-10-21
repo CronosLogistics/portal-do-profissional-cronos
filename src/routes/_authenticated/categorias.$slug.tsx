@@ -23,10 +23,10 @@ export const Route = createFileRoute("/_authenticated/categorias/$slug")({
   head: ({ loaderData }) => {
     if (!loaderData) {
       return {
-        meta: [{ title: "Categoria não encontrada | Espaço do Profissional Cronos" }],
+        meta: [{ title: "Categoria não encontrada | Portal do Profissional Cronos" }],
       };
     }
-    const title = `${loaderData.category.name} | Espaço do Profissional Cronos`;
+    const title = `${loaderData.category.name} | Portal do Profissional Cronos`;
     const description = `Parceiros de ${loaderData.category.name.toLowerCase()} com desconto para profissionais da Cronos: ${loaderData.category.description}.`;
     return {
       meta: [

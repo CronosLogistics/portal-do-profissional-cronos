@@ -67,7 +67,7 @@ const empty: FormState = {
 export const Route = createFileRoute("/_authenticated/admin/beneficio/$id")({
   head: () => ({
     meta: [
-      { title: "Cadastro de benefício | Espaço do Profissional Cronos" },
+      { title: "Cadastro de benefício | Portal do Profissional Cronos" },
       {
         name: "description",
         content: "Formulário interno para cadastrar e editar benefícios dos profissionais.",

@@ -56,12 +56,12 @@ const empty: FormState = {
 export const Route = createFileRoute("/_authenticated/admin/parceiro/$id")({
   head: () => ({
     meta: [
-      { title: "Cadastro de parceiro | Espaço do Profissional Cronos" },
+      { title: "Cadastro de parceiro | Portal do Profissional Cronos" },
       {
         name: "description",
         content: "Formulário interno para cadastrar e editar parcerias do clube de vantagens.",
       },
-      { property: "og:title", content: "Cadastro de parceiro | Espaço do Profissional Cronos" },
+      { property: "og:title", content: "Cadastro de parceiro | Portal do Profissional Cronos" },
       { property: "og:description", content: "Formulário interno de cadastro de parcerias." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

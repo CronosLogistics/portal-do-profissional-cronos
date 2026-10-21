@@ -25,12 +25,12 @@ type AdminPartner = {
 export const Route = createFileRoute("/_authenticated/admin/")({
   head: () => ({
     meta: [
-      { title: "Gestão de parcerias | Espaço do Profissional Cronos" },
+      { title: "Gestão de parcerias | Portal do Profissional Cronos" },
       {
         name: "description",
         content: "Painel interno para cadastrar, editar e publicar as parcerias do clube.",
       },
-      { property: "og:title", content: "Gestão de parcerias | Espaço do Profissional Cronos" },
+      { property: "og:title", content: "Gestão de parcerias | Portal do Profissional Cronos" },
       { property: "og:description", content: "Painel interno de gestão das parcerias." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

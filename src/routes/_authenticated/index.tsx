@@ -21,13 +21,13 @@ export const Route = createFileRoute("/_authenticated/")({
   },
   head: () => ({
     meta: [
-      { title: "Espaço do Profissional Cronos | Parcerias e benefícios" },
+      { title: "Portal do Profissional Cronos | Parcerias e benefícios" },
       {
         name: "description",
         content:
           "Consulte as parcerias e benefícios exclusivos disponíveis aos profissionais da Cronos: saúde, academias, gastronomia, estética, educação, compras e lazer.",
       },
-      { property: "og:title", content: "Espaço do Profissional Cronos" },
+      { property: "og:title", content: "Portal do Profissional Cronos" },
       {
         property: "og:description",
         content: "Todas as parcerias e descontos disponíveis aos profissionais da Cronos.",

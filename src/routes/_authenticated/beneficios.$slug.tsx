@@ -16,7 +16,7 @@ export const Route = createFileRoute("/_authenticated/beneficios/$slug")({
     if (!loaderData) {
       return {
         meta: [
-          { title: "Benefício não encontrado | Espaço do Profissional Cronos" },
+          { title: "Benefício não encontrado | Portal do Profissional Cronos" },
           { name: "robots", content: "noindex" },
         ],
       };

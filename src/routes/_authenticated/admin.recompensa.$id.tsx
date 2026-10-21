@@ -51,7 +51,7 @@ const empty: FormState = {
 export const Route = createFileRoute("/_authenticated/admin/recompensa/$id")({
   head: () => ({
     meta: [
-      { title: "Cadastro de programa | Espaço do Profissional Cronos" },
+      { title: "Cadastro de programa | Portal do Profissional Cronos" },
       {
         name: "description",
         content: "Formulário interno para cadastrar e editar programas de recompensas.",
