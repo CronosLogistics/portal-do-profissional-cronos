@@ -19,6 +19,7 @@ import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminBeneficiosRouteImport } from './routes/_authenticated/admin.beneficios'
 import { Route as AuthenticatedAdminPaginaInicialRouteImport } from './routes/_authenticated/admin.pagina-inicial'
 import { Route as AuthenticatedAdminRecompensasRouteImport } from './routes/_authenticated/admin.recompensas'
+import { Route as AuthenticatedAdminUsuariosRouteImport } from './routes/_authenticated/admin.usuarios'
 import { Route as AuthenticatedBeneficiosIndexRouteImport } from './routes/_authenticated/beneficios.index'
 import { Route as AuthenticatedBeneficiosSlugRouteImport } from './routes/_authenticated/beneficios.$slug'
 import { Route as AuthenticatedCategoriasSlugRouteImport } from './routes/_authenticated/categorias.$slug'
@@ -82,6 +83,12 @@ const AuthenticatedAdminRecompensasRoute =
   AuthenticatedAdminRecompensasRouteImport.update({
     id: '/recompensas',
     path: '/recompensas',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminUsuariosRoute =
+  AuthenticatedAdminUsuariosRouteImport.update({
+    id: '/usuarios',
+    path: '/usuarios',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 const AuthenticatedBeneficiosIndexRoute =
@@ -165,6 +172,7 @@ export interface FileRoutesByFullPath {
   '/admin/beneficios': typeof AuthenticatedAdminBeneficiosRoute
   '/admin/pagina-inicial': typeof AuthenticatedAdminPaginaInicialRoute
   '/admin/recompensas': typeof AuthenticatedAdminRecompensasRoute
+  '/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
   '/beneficios/$slug': typeof AuthenticatedBeneficiosSlugRoute
   '/categorias/$slug': typeof AuthenticatedCategoriasSlugRoute
   '/parceiro/$slug': typeof AuthenticatedParceiroSlugRoute
@@ -187,6 +195,7 @@ export interface FileRoutesByTo {
   '/admin/beneficios': typeof AuthenticatedAdminBeneficiosRoute
   '/admin/pagina-inicial': typeof AuthenticatedAdminPaginaInicialRoute
   '/admin/recompensas': typeof AuthenticatedAdminRecompensasRoute
+  '/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
   '/beneficios/$slug': typeof AuthenticatedBeneficiosSlugRoute
   '/categorias/$slug': typeof AuthenticatedCategoriasSlugRoute
   '/parceiro/$slug': typeof AuthenticatedParceiroSlugRoute
@@ -212,6 +221,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/beneficios': typeof AuthenticatedAdminBeneficiosRoute
   '/_authenticated/admin/pagina-inicial': typeof AuthenticatedAdminPaginaInicialRoute
   '/_authenticated/admin/recompensas': typeof AuthenticatedAdminRecompensasRoute
+  '/_authenticated/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
   '/_authenticated/beneficios/$slug': typeof AuthenticatedBeneficiosSlugRoute
   '/_authenticated/categorias/$slug': typeof AuthenticatedCategoriasSlugRoute
   '/_authenticated/parceiro/$slug': typeof AuthenticatedParceiroSlugRoute
@@ -237,6 +247,7 @@ export interface FileRouteTypes {
     | '/admin/beneficios'
     | '/admin/pagina-inicial'
     | '/admin/recompensas'
+    | '/admin/usuarios'
     | '/beneficios/$slug'
     | '/categorias/$slug'
     | '/parceiro/$slug'
@@ -259,6 +270,7 @@ export interface FileRouteTypes {
     | '/admin/beneficios'
     | '/admin/pagina-inicial'
     | '/admin/recompensas'
+    | '/admin/usuarios'
     | '/beneficios/$slug'
     | '/categorias/$slug'
     | '/parceiro/$slug'
@@ -283,6 +295,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/beneficios'
     | '/_authenticated/admin/pagina-inicial'
     | '/_authenticated/admin/recompensas'
+    | '/_authenticated/admin/usuarios'
     | '/_authenticated/beneficios/$slug'
     | '/_authenticated/categorias/$slug'
     | '/_authenticated/parceiro/$slug'
@@ -377,6 +390,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRecompensasRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/usuarios': {
+      id: '/_authenticated/admin/usuarios'
+      path: '/usuarios'
+      fullPath: '/admin/usuarios'
+      preLoaderRoute: typeof AuthenticatedAdminUsuariosRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/beneficios/': {
       id: '/_authenticated/beneficios/'
       path: '/beneficios'
@@ -468,6 +488,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminBeneficiosRoute: typeof AuthenticatedAdminBeneficiosRoute
   AuthenticatedAdminPaginaInicialRoute: typeof AuthenticatedAdminPaginaInicialRoute
   AuthenticatedAdminRecompensasRoute: typeof AuthenticatedAdminRecompensasRoute
+  AuthenticatedAdminUsuariosRoute: typeof AuthenticatedAdminUsuariosRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
   AuthenticatedAdminBeneficioIdRoute: typeof AuthenticatedAdminBeneficioIdRoute
   AuthenticatedAdminParceiroIdRoute: typeof AuthenticatedAdminParceiroIdRoute
@@ -480,6 +501,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminBeneficiosRoute: AuthenticatedAdminBeneficiosRoute,
   AuthenticatedAdminPaginaInicialRoute: AuthenticatedAdminPaginaInicialRoute,
   AuthenticatedAdminRecompensasRoute: AuthenticatedAdminRecompensasRoute,
+  AuthenticatedAdminUsuariosRoute: AuthenticatedAdminUsuariosRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
   AuthenticatedAdminBeneficioIdRoute: AuthenticatedAdminBeneficioIdRoute,
   AuthenticatedAdminParceiroIdRoute: AuthenticatedAdminParceiroIdRoute,
