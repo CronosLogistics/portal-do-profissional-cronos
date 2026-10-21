@@ -6,7 +6,7 @@ import { Footer } from "@/components/clube/Footer";
 import { ContentIcon } from "@/components/clube/ContentIcon";
 import { getBenefit } from "@/lib/content.functions";
 
-export const Route = createFileRoute("/beneficios/$slug")({
+export const Route = createFileRoute("/_authenticated/beneficios/$slug")({
   loader: async ({ params }) => {
     const result = await getBenefit({ data: { slug: params.slug } });
     if (!result) throw notFound();

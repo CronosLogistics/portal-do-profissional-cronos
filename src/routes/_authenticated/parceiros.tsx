@@ -10,7 +10,7 @@ import { listPublicCategories, listPublicPartners } from "@/lib/partners.functio
 import { getSiteContent } from "@/lib/content.functions";
 import { resolveText } from "@/lib/site-content";
 
-export const Route = createFileRoute("/parceiros")({
+export const Route = createFileRoute("/_authenticated/parceiros")({
   loader: async () => {
     const [partners, categoryRows, siteRows] = await Promise.all([listPublicPartners(), listPublicCategories(), getSiteContent()]);
     return { partners, categoryRows, siteRows };

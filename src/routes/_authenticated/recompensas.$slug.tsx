@@ -6,7 +6,7 @@ import { Footer } from "@/components/clube/Footer";
 import { ContentIcon } from "@/components/clube/ContentIcon";
 import { getRewardProgram } from "@/lib/content.functions";
 
-export const Route = createFileRoute("/recompensas/$slug")({
+export const Route = createFileRoute("/_authenticated/recompensas/$slug")({
   loader: async ({ params }) => {
     const program = await getRewardProgram({ data: { slug: params.slug } });
     if (!program) throw notFound();

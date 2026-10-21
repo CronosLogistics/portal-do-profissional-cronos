@@ -8,7 +8,7 @@ import { formatBytes, getIcon } from "@/lib/categories";
 import { isNew } from "@/lib/categories";
 import { getPublicPartner } from "@/lib/partners.functions";
 
-export const Route = createFileRoute("/parceiro/$slug")({
+export const Route = createFileRoute("/_authenticated/parceiro/$slug")({
   loader: async ({ params }) => {
     const partner = await getPublicPartner({ data: { slug: params.slug } });
     if (!partner) throw notFound();

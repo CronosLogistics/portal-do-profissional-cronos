@@ -8,7 +8,7 @@ import { useOfficePartners } from "@/components/clube/OfficeContext";
 import { toCategory } from "@/lib/categories";
 import { listPublicCategories, listPublicPartners } from "@/lib/partners.functions";
 
-export const Route = createFileRoute("/categorias/$slug")({
+export const Route = createFileRoute("/_authenticated/categorias/$slug")({
   loader: async ({ params }) => {
     const categoryRows = await listPublicCategories();
     const category = categoryRows.find((row) => row.slug === params.slug);
