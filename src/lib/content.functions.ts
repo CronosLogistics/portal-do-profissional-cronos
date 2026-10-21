@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { createClient } from "@supabase/supabase-js";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Database } from "@/integrations/supabase/types";
 
 export type Benefit = {
@@ -55,25 +55,10 @@ const BENEFIT_COLUMNS =
 const PROGRAM_COLUMNS =
   "id, slug, title, summary, description, how_to_join, rules, contacts, icon, needs_content, sort_order, description_title, how_to_join_title, rules_title, contacts_title";
 
-function createPublicClient() {
-  const key = process.env["SUPABASE_PUBLISHABLE_KEY"]!;
-  return createClient<Database>(process.env["SUPABASE_URL"]!, key, {
-    auth: { persistSession: false, autoRefreshToken: false },
-    global: {
-      fetch: (input, init) => {
-        const headers = new Headers(init?.headers);
-        if (key.startsWith("sb_") && headers.get("Authorization") === `Bearer ${key}`) {
-          headers.delete("Authorization");
-        }
-        headers.set("apikey", key);
-        return fetch(input, { ...init, headers });
-      },
-    },
-  });
-}
 
-export const listBenefits = createServerFn({ method: "GET" }).handler(async () => {
-  const supabase = createPublicClient();
+export const listBenefits = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth]).handler(async ({ context }) => {
+  const supabase = context.supabase;
   const { data, error } = await supabase
     .from("benefits")
     .select(BENEFIT_COLUMNS)
@@ -88,9 +73,10 @@ export const listBenefits = createServerFn({ method: "GET" }).handler(async () =
 });
 
 export const getBenefit = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((data: { slug: string }) => data)
-  .handler(async ({ data }) => {
-    const supabase = createPublicClient();
+  .handler(async ({ data, context }) => {
+    const supabase = context.supabase;
     const { data: benefit, error } = await supabase
       .from("benefits")
       .select(BENEFIT_COLUMNS)
@@ -115,8 +101,9 @@ export const getBenefit = createServerFn({ method: "GET" })
     };
   });
 
-export const listRewardPrograms = createServerFn({ method: "GET" }).handler(async () => {
-  const supabase = createPublicClient();
+export const listRewardPrograms = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth]).handler(async ({ context }) => {
+  const supabase = context.supabase;
   const { data, error } = await supabase
     .from("reward_programs")
     .select(PROGRAM_COLUMNS)
@@ -131,9 +118,10 @@ export const listRewardPrograms = createServerFn({ method: "GET" }).handler(asyn
 });
 
 export const getRewardProgram = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((data: { slug: string }) => data)
-  .handler(async ({ data }) => {
-    const supabase = createPublicClient();
+  .handler(async ({ data, context }) => {
+    const supabase = context.supabase;
     const { data: program, error } = await supabase
       .from("reward_programs")
       .select(PROGRAM_COLUMNS)
@@ -145,8 +133,9 @@ export const getRewardProgram = createServerFn({ method: "GET" })
     return (program ?? null) as RewardProgram | null;
   });
 
-export const getSiteContent = createServerFn({ method: "GET" }).handler(async () => {
-  const supabase = createPublicClient();
+export const getSiteContent = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth]).handler(async ({ context }) => {
+  const supabase = context.supabase;
   const { data, error } = await supabase.from("site_content").select("key, value");
   if (error) console.error("Erro ao buscar textos:", error.message);
   const map: Record<string, string> = {};

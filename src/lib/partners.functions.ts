@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { createClient } from "@supabase/supabase-js";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Database } from "@/integrations/supabase/types";
 import type { CategoryRow } from "@/lib/categories";
 
@@ -37,22 +37,6 @@ export type PublicAttachment = {
 const PUBLIC_COLUMNS =
   "id, slug, name, category_slug, summary, benefit_description, discount, how_to_use, rules, address, website, instagram, whatsapp, logo_url, is_featured, created_at, all_offices, partner_offices(office_id), partner_categories!inner(name, icon, is_active)";
 
-function createPublicClient() {
-  const key = process.env["SUPABASE_PUBLISHABLE_KEY"]!;
-  return createClient<Database>(process.env["SUPABASE_URL"]!, key, {
-    auth: { persistSession: false, autoRefreshToken: false },
-    global: {
-      fetch: (input, init) => {
-        const headers = new Headers(init?.headers);
-        if (key.startsWith("sb_") && headers.get("Authorization") === `Bearer ${key}`) {
-          headers.delete("Authorization");
-        }
-        headers.set("apikey", key);
-        return fetch(input, { ...init, headers });
-      },
-    },
-  });
-}
 
 type Row = Record<string, unknown> & {
   category_slug: string | null;
@@ -71,8 +55,9 @@ function mapPartner(row: Row): PublicPartner {
   };
 }
 
-export const listPublicCategories = createServerFn({ method: "GET" }).handler(async () => {
-  const supabase = createPublicClient();
+export const listPublicCategories = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth]).handler(async ({ context }) => {
+  const supabase = context.supabase;
   const { data, error } = await supabase
     .from("partner_categories")
     .select("id, slug, name, description, icon, sort_order")
@@ -86,8 +71,9 @@ export const listPublicCategories = createServerFn({ method: "GET" }).handler(as
   return (data ?? []) as CategoryRow[];
 });
 
-export const listPublicPartners = createServerFn({ method: "GET" }).handler(async () => {
-  const supabase = createPublicClient();
+export const listPublicPartners = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth]).handler(async ({ context }) => {
+  const supabase = context.supabase;
   const { data, error } = await supabase
     .from("partners")
     .select(PUBLIC_COLUMNS)
@@ -104,9 +90,10 @@ export const listPublicPartners = createServerFn({ method: "GET" }).handler(asyn
 });
 
 export const getPublicPartner = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((data: { slug: string }) => data)
-  .handler(async ({ data }) => {
-    const supabase = createPublicClient();
+  .handler(async ({ data, context }) => {
+    const supabase = context.supabase;
     const { data: partner, error } = await supabase
       .from("partners")
       .select(PUBLIC_COLUMNS.replace("!inner", ""))
