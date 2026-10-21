@@ -10,33 +10,278 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as ParceirosRouteImport } from './routes/parceiros'
+import { Route as BeneficiosIndexRouteImport } from './routes/beneficios.index'
+import { Route as BeneficiosSlugRouteImport } from './routes/beneficios.$slug'
+import { Route as CategoriasSlugRouteImport } from './routes/categorias.$slug'
+import { Route as ParceiroSlugRouteImport } from './routes/parceiro.$slug'
+import { Route as RecompensasIndexRouteImport } from './routes/recompensas.index'
+import { Route as RecompensasSlugRouteImport } from './routes/recompensas.$slug'
+import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
+import { Route as AuthenticatedAdminBeneficiosRouteImport } from './routes/_authenticated/admin.beneficios'
+import { Route as AuthenticatedAdminPaginaInicialRouteImport } from './routes/_authenticated/admin.pagina-inicial'
+import { Route as AuthenticatedAdminRecompensasRouteImport } from './routes/_authenticated/admin.recompensas'
+import { Route as ApiPublicPartnerLogoRouteImport } from './routes/api/public/partner-logo'
+import { Route as AuthenticatedAdminBeneficioIdRouteImport } from './routes/_authenticated/admin.beneficio.$id'
+import { Route as AuthenticatedAdminCadastrosIndexRouteImport } from './routes/_authenticated/admin.cadastros.index'
+import { Route as AuthenticatedAdminParceiroIdRouteImport } from './routes/_authenticated/admin.parceiro.$id'
+import { Route as AuthenticatedAdminRecompensaIdRouteImport } from './routes/_authenticated/admin.recompensa.$id'
+import { Route as AuthenticatedAdminCadastrosCategoriaIdRouteImport } from './routes/_authenticated/admin.cadastros.categoria.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ParceirosRoute = ParceirosRouteImport.update({
+  id: '/parceiros',
+  path: '/parceiros',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BeneficiosIndexRoute = BeneficiosIndexRouteImport.update({
+  id: '/beneficios/',
+  path: '/beneficios/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BeneficiosSlugRoute = BeneficiosSlugRouteImport.update({
+  id: '/beneficios/$slug',
+  path: '/beneficios/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CategoriasSlugRoute = CategoriasSlugRouteImport.update({
+  id: '/categorias/$slug',
+  path: '/categorias/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ParceiroSlugRoute = ParceiroSlugRouteImport.update({
+  id: '/parceiro/$slug',
+  path: '/parceiro/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RecompensasIndexRoute = RecompensasIndexRouteImport.update({
+  id: '/recompensas/',
+  path: '/recompensas/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RecompensasSlugRoute = RecompensasSlugRouteImport.update({
+  id: '/recompensas/$slug',
+  path: '/recompensas/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAdminBeneficiosRoute =
+  AuthenticatedAdminBeneficiosRouteImport.update({
+    id: '/admin/beneficios',
+    path: '/admin/beneficios',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminPaginaInicialRoute =
+  AuthenticatedAdminPaginaInicialRouteImport.update({
+    id: '/admin/pagina-inicial',
+    path: '/admin/pagina-inicial',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminRecompensasRoute =
+  AuthenticatedAdminRecompensasRouteImport.update({
+    id: '/admin/recompensas',
+    path: '/admin/recompensas',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const ApiPublicPartnerLogoRoute = ApiPublicPartnerLogoRouteImport.update({
+  id: '/api/public/partner-logo',
+  path: '/api/public/partner-logo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAdminBeneficioIdRoute =
+  AuthenticatedAdminBeneficioIdRouteImport.update({
+    id: '/admin/beneficio/$id',
+    path: '/admin/beneficio/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminCadastrosIndexRoute =
+  AuthenticatedAdminCadastrosIndexRouteImport.update({
+    id: '/admin/cadastros/',
+    path: '/admin/cadastros/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminParceiroIdRoute =
+  AuthenticatedAdminParceiroIdRouteImport.update({
+    id: '/admin/parceiro/$id',
+    path: '/admin/parceiro/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminRecompensaIdRoute =
+  AuthenticatedAdminRecompensaIdRouteImport.update({
+    id: '/admin/recompensa/$id',
+    path: '/admin/recompensa/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminCadastrosCategoriaIdRoute =
+  AuthenticatedAdminCadastrosCategoriaIdRouteImport.update({
+    id: '/admin/cadastros/categoria/$id',
+    path: '/admin/cadastros/categoria/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/parceiros': typeof ParceirosRoute
+  '/beneficios/$slug': typeof BeneficiosSlugRoute
+  '/categorias/$slug': typeof CategoriasSlugRoute
+  '/parceiro/$slug': typeof ParceiroSlugRoute
+  '/recompensas/$slug': typeof RecompensasSlugRoute
+  '/beneficios/': typeof BeneficiosIndexRoute
+  '/recompensas/': typeof RecompensasIndexRoute
+  '/admin/beneficios': typeof AuthenticatedAdminBeneficiosRoute
+  '/admin/pagina-inicial': typeof AuthenticatedAdminPaginaInicialRoute
+  '/admin/recompensas': typeof AuthenticatedAdminRecompensasRoute
+  '/api/public/partner-logo': typeof ApiPublicPartnerLogoRoute
+  '/admin/': typeof AuthenticatedAdminIndexRoute
+  '/admin/beneficio/$id': typeof AuthenticatedAdminBeneficioIdRoute
+  '/admin/parceiro/$id': typeof AuthenticatedAdminParceiroIdRoute
+  '/admin/recompensa/$id': typeof AuthenticatedAdminRecompensaIdRoute
+  '/admin/cadastros/': typeof AuthenticatedAdminCadastrosIndexRoute
+  '/admin/cadastros/categoria/$id': typeof AuthenticatedAdminCadastrosCategoriaIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/parceiros': typeof ParceirosRoute
+  '/beneficios/$slug': typeof BeneficiosSlugRoute
+  '/categorias/$slug': typeof CategoriasSlugRoute
+  '/parceiro/$slug': typeof ParceiroSlugRoute
+  '/recompensas/$slug': typeof RecompensasSlugRoute
+  '/beneficios': typeof BeneficiosIndexRoute
+  '/recompensas': typeof RecompensasIndexRoute
+  '/admin/beneficios': typeof AuthenticatedAdminBeneficiosRoute
+  '/admin/pagina-inicial': typeof AuthenticatedAdminPaginaInicialRoute
+  '/admin/recompensas': typeof AuthenticatedAdminRecompensasRoute
+  '/api/public/partner-logo': typeof ApiPublicPartnerLogoRoute
+  '/admin': typeof AuthenticatedAdminIndexRoute
+  '/admin/beneficio/$id': typeof AuthenticatedAdminBeneficioIdRoute
+  '/admin/parceiro/$id': typeof AuthenticatedAdminParceiroIdRoute
+  '/admin/recompensa/$id': typeof AuthenticatedAdminRecompensaIdRoute
+  '/admin/cadastros': typeof AuthenticatedAdminCadastrosIndexRoute
+  '/admin/cadastros/categoria/$id': typeof AuthenticatedAdminCadastrosCategoriaIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/parceiros': typeof ParceirosRoute
+  '/beneficios/$slug': typeof BeneficiosSlugRoute
+  '/categorias/$slug': typeof CategoriasSlugRoute
+  '/parceiro/$slug': typeof ParceiroSlugRoute
+  '/recompensas/$slug': typeof RecompensasSlugRoute
+  '/beneficios/': typeof BeneficiosIndexRoute
+  '/recompensas/': typeof RecompensasIndexRoute
+  '/_authenticated/admin/beneficios': typeof AuthenticatedAdminBeneficiosRoute
+  '/_authenticated/admin/pagina-inicial': typeof AuthenticatedAdminPaginaInicialRoute
+  '/_authenticated/admin/recompensas': typeof AuthenticatedAdminRecompensasRoute
+  '/api/public/partner-logo': typeof ApiPublicPartnerLogoRoute
+  '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
+  '/_authenticated/admin/beneficio/$id': typeof AuthenticatedAdminBeneficioIdRoute
+  '/_authenticated/admin/parceiro/$id': typeof AuthenticatedAdminParceiroIdRoute
+  '/_authenticated/admin/recompensa/$id': typeof AuthenticatedAdminRecompensaIdRoute
+  '/_authenticated/admin/cadastros/': typeof AuthenticatedAdminCadastrosIndexRoute
+  '/_authenticated/admin/cadastros/categoria/$id': typeof AuthenticatedAdminCadastrosCategoriaIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/parceiros'
+    | '/beneficios/$slug'
+    | '/categorias/$slug'
+    | '/parceiro/$slug'
+    | '/recompensas/$slug'
+    | '/beneficios/'
+    | '/recompensas/'
+    | '/admin/beneficios'
+    | '/admin/pagina-inicial'
+    | '/admin/recompensas'
+    | '/api/public/partner-logo'
+    | '/admin/'
+    | '/admin/beneficio/$id'
+    | '/admin/parceiro/$id'
+    | '/admin/recompensa/$id'
+    | '/admin/cadastros/'
+    | '/admin/cadastros/categoria/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auth'
+    | '/parceiros'
+    | '/beneficios/$slug'
+    | '/categorias/$slug'
+    | '/parceiro/$slug'
+    | '/recompensas/$slug'
+    | '/beneficios'
+    | '/recompensas'
+    | '/admin/beneficios'
+    | '/admin/pagina-inicial'
+    | '/admin/recompensas'
+    | '/api/public/partner-logo'
+    | '/admin'
+    | '/admin/beneficio/$id'
+    | '/admin/parceiro/$id'
+    | '/admin/recompensa/$id'
+    | '/admin/cadastros'
+    | '/admin/cadastros/categoria/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/parceiros'
+    | '/beneficios/$slug'
+    | '/categorias/$slug'
+    | '/parceiro/$slug'
+    | '/recompensas/$slug'
+    | '/beneficios/'
+    | '/recompensas/'
+    | '/_authenticated/admin/beneficios'
+    | '/_authenticated/admin/pagina-inicial'
+    | '/_authenticated/admin/recompensas'
+    | '/api/public/partner-logo'
+    | '/_authenticated/admin/'
+    | '/_authenticated/admin/beneficio/$id'
+    | '/_authenticated/admin/parceiro/$id'
+    | '/_authenticated/admin/recompensa/$id'
+    | '/_authenticated/admin/cadastros/'
+    | '/_authenticated/admin/cadastros/categoria/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
+  ParceirosRoute: typeof ParceirosRoute
+  BeneficiosSlugRoute: typeof BeneficiosSlugRoute
+  CategoriasSlugRoute: typeof CategoriasSlugRoute
+  ParceiroSlugRoute: typeof ParceiroSlugRoute
+  RecompensasSlugRoute: typeof RecompensasSlugRoute
+  BeneficiosIndexRoute: typeof BeneficiosIndexRoute
+  RecompensasIndexRoute: typeof RecompensasIndexRoute
+  ApiPublicPartnerLogoRoute: typeof ApiPublicPartnerLogoRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +293,182 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/parceiros': {
+      id: '/parceiros'
+      path: '/parceiros'
+      fullPath: '/parceiros'
+      preLoaderRoute: typeof ParceirosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/beneficios/': {
+      id: '/beneficios/'
+      path: '/beneficios'
+      fullPath: '/beneficios/'
+      preLoaderRoute: typeof BeneficiosIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/beneficios/$slug': {
+      id: '/beneficios/$slug'
+      path: '/beneficios/$slug'
+      fullPath: '/beneficios/$slug'
+      preLoaderRoute: typeof BeneficiosSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/categorias/$slug': {
+      id: '/categorias/$slug'
+      path: '/categorias/$slug'
+      fullPath: '/categorias/$slug'
+      preLoaderRoute: typeof CategoriasSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/parceiro/$slug': {
+      id: '/parceiro/$slug'
+      path: '/parceiro/$slug'
+      fullPath: '/parceiro/$slug'
+      preLoaderRoute: typeof ParceiroSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/recompensas/': {
+      id: '/recompensas/'
+      path: '/recompensas'
+      fullPath: '/recompensas/'
+      preLoaderRoute: typeof RecompensasIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/recompensas/$slug': {
+      id: '/recompensas/$slug'
+      path: '/recompensas/$slug'
+      fullPath: '/recompensas/$slug'
+      preLoaderRoute: typeof RecompensasSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/admin/': {
+      id: '/_authenticated/admin/'
+      path: '/admin'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/beneficios': {
+      id: '/_authenticated/admin/beneficios'
+      path: '/admin/beneficios'
+      fullPath: '/admin/beneficios'
+      preLoaderRoute: typeof AuthenticatedAdminBeneficiosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/pagina-inicial': {
+      id: '/_authenticated/admin/pagina-inicial'
+      path: '/admin/pagina-inicial'
+      fullPath: '/admin/pagina-inicial'
+      preLoaderRoute: typeof AuthenticatedAdminPaginaInicialRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/recompensas': {
+      id: '/_authenticated/admin/recompensas'
+      path: '/admin/recompensas'
+      fullPath: '/admin/recompensas'
+      preLoaderRoute: typeof AuthenticatedAdminRecompensasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/api/public/partner-logo': {
+      id: '/api/public/partner-logo'
+      path: '/api/public/partner-logo'
+      fullPath: '/api/public/partner-logo'
+      preLoaderRoute: typeof ApiPublicPartnerLogoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/admin/beneficio/$id': {
+      id: '/_authenticated/admin/beneficio/$id'
+      path: '/admin/beneficio/$id'
+      fullPath: '/admin/beneficio/$id'
+      preLoaderRoute: typeof AuthenticatedAdminBeneficioIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/cadastros/': {
+      id: '/_authenticated/admin/cadastros/'
+      path: '/admin/cadastros'
+      fullPath: '/admin/cadastros/'
+      preLoaderRoute: typeof AuthenticatedAdminCadastrosIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/parceiro/$id': {
+      id: '/_authenticated/admin/parceiro/$id'
+      path: '/admin/parceiro/$id'
+      fullPath: '/admin/parceiro/$id'
+      preLoaderRoute: typeof AuthenticatedAdminParceiroIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/recompensa/$id': {
+      id: '/_authenticated/admin/recompensa/$id'
+      path: '/admin/recompensa/$id'
+      fullPath: '/admin/recompensa/$id'
+      preLoaderRoute: typeof AuthenticatedAdminRecompensaIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/cadastros/categoria/$id': {
+      id: '/_authenticated/admin/cadastros/categoria/$id'
+      path: '/admin/cadastros/categoria/$id'
+      fullPath: '/admin/cadastros/categoria/$id'
+      preLoaderRoute: typeof AuthenticatedAdminCadastrosCategoriaIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminBeneficiosRoute: typeof AuthenticatedAdminBeneficiosRoute
+  AuthenticatedAdminPaginaInicialRoute: typeof AuthenticatedAdminPaginaInicialRoute
+  AuthenticatedAdminRecompensasRoute: typeof AuthenticatedAdminRecompensasRoute
+  AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+  AuthenticatedAdminBeneficioIdRoute: typeof AuthenticatedAdminBeneficioIdRoute
+  AuthenticatedAdminParceiroIdRoute: typeof AuthenticatedAdminParceiroIdRoute
+  AuthenticatedAdminRecompensaIdRoute: typeof AuthenticatedAdminRecompensaIdRoute
+  AuthenticatedAdminCadastrosIndexRoute: typeof AuthenticatedAdminCadastrosIndexRoute
+  AuthenticatedAdminCadastrosCategoriaIdRoute: typeof AuthenticatedAdminCadastrosCategoriaIdRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminBeneficiosRoute: AuthenticatedAdminBeneficiosRoute,
+  AuthenticatedAdminPaginaInicialRoute: AuthenticatedAdminPaginaInicialRoute,
+  AuthenticatedAdminRecompensasRoute: AuthenticatedAdminRecompensasRoute,
+  AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+  AuthenticatedAdminBeneficioIdRoute: AuthenticatedAdminBeneficioIdRoute,
+  AuthenticatedAdminParceiroIdRoute: AuthenticatedAdminParceiroIdRoute,
+  AuthenticatedAdminRecompensaIdRoute: AuthenticatedAdminRecompensaIdRoute,
+  AuthenticatedAdminCadastrosIndexRoute: AuthenticatedAdminCadastrosIndexRoute,
+  AuthenticatedAdminCadastrosCategoriaIdRoute:
+    AuthenticatedAdminCadastrosCategoriaIdRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
+  ParceirosRoute: ParceirosRoute,
+  BeneficiosSlugRoute: BeneficiosSlugRoute,
+  CategoriasSlugRoute: CategoriasSlugRoute,
+  ParceiroSlugRoute: ParceiroSlugRoute,
+  RecompensasSlugRoute: RecompensasSlugRoute,
+  BeneficiosIndexRoute: BeneficiosIndexRoute,
+  RecompensasIndexRoute: RecompensasIndexRoute,
+  ApiPublicPartnerLogoRoute: ApiPublicPartnerLogoRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
