@@ -5,17 +5,9 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Design system definition.
- *
- * The @theme inline block maps CSS custom properties to Tailwind utility
- * classes (e.g. --color-primary -> bg-primary, text-primary).
- *
- * The :root and .dark blocks define the actual color values using oklch.
- * All colors MUST use oklch format.
- *
- * To add a new semantic color:
- * 1. Add the variable to :root (light value) and .dark (dark value)
- * 2. Register it in @theme inline as --color-<name>: var(--<name>)
+ * Clube de Vantagens Cronos — design system
+ * Vinho #470C1F + magenta #AC145A + rosa #E31C79 + off-white #F2F2F2
+ * Tipografia: Lato (Heavy nos títulos, Regular no texto, Light no apoio)
  */
 
 @theme inline {
@@ -26,6 +18,8 @@
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
+  --font-display: "Lato", system-ui, sans-serif;
+  --font-sans: "Lato", system-ui, sans-serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -34,14 +28,18 @@
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-primary-glow: var(--primary-glow);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-accent-glow: var(--accent-glow);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -62,74 +60,74 @@
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.129 0.042 264.695);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.129 0.042 264.695);
-  --primary: oklch(0.208 0.042 265.755);
-  --primary-foreground: oklch(0.984 0.003 247.858);
-  --secondary: oklch(0.968 0.007 247.896);
-  --secondary-foreground: oklch(0.208 0.042 265.755);
-  --muted: oklch(0.968 0.007 247.896);
-  --muted-foreground: oklch(0.554 0.046 257.417);
-  --accent: oklch(0.968 0.007 247.896);
-  --accent-foreground: oklch(0.208 0.042 265.755);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(0.929 0.013 255.508);
-  --input: oklch(0.929 0.013 255.508);
-  --ring: oklch(0.704 0.04 256.788);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.984 0.003 247.858);
-  --sidebar-foreground: oklch(0.129 0.042 264.695);
-  --sidebar-primary: oklch(0.208 0.042 265.755);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.968 0.007 247.896);
-  --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
-  --sidebar-border: oklch(0.929 0.013 255.508);
-  --sidebar-ring: oklch(0.704 0.04 256.788);
-}
+  --radius: 0.75rem;
 
-.dark {
-  --background: oklch(0.129 0.042 264.695);
-  --foreground: oklch(0.984 0.003 247.858);
-  --card: oklch(0.208 0.042 265.755);
-  --card-foreground: oklch(0.984 0.003 247.858);
-  --popover: oklch(0.208 0.042 265.755);
-  --popover-foreground: oklch(0.984 0.003 247.858);
-  --primary: oklch(0.929 0.013 255.508);
-  --primary-foreground: oklch(0.208 0.042 265.755);
-  --secondary: oklch(0.279 0.041 260.031);
-  --secondary-foreground: oklch(0.984 0.003 247.858);
-  --muted: oklch(0.279 0.041 260.031);
-  --muted-foreground: oklch(0.704 0.04 256.788);
-  --accent: oklch(0.279 0.041 260.031);
-  --accent-foreground: oklch(0.984 0.003 247.858);
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.551 0.027 264.364);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.208 0.042 265.755);
-  --sidebar-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.279 0.041 260.031);
-  --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.551 0.027 264.364);
+  /* Vinho profundo #470C1F como base */
+  --background: oklch(0.14 0.038 5);
+  --foreground: oklch(0.961 0 0);
+
+  --card: oklch(0.198 0.06 3);
+  --card-foreground: oklch(0.961 0 0);
+
+  --popover: oklch(0.198 0.06 3);
+  --popover-foreground: oklch(0.961 0 0);
+
+  /* Rosa Cronos #E31C79 */
+  --primary: oklch(0.601 0.231 0.7);
+  --primary-foreground: oklch(0.99 0 0);
+  --primary-glow: oklch(0.7 0.2 355);
+
+  /* Magenta #AC145A */
+  --secondary: oklch(0.489 0.187 0.9);
+  --secondary-foreground: oklch(0.961 0 0);
+
+  --muted: oklch(0.245 0.055 4);
+  --muted-foreground: oklch(0.78 0.03 355);
+
+  --accent: oklch(0.489 0.187 0.9);
+  --accent-foreground: oklch(0.961 0 0);
+  --accent-glow: oklch(0.601 0.231 0.7);
+
+  --success: oklch(0.7 0.16 155);
+  --success-foreground: oklch(0.15 0 0);
+
+  --destructive: oklch(0.62 0.21 22);
+  --destructive-foreground: oklch(0.985 0 0);
+
+  --border: oklch(0.961 0 0 / 14%);
+  --input: oklch(0.961 0 0 / 18%);
+  --ring: oklch(0.601 0.231 0.7);
+
+  --chart-1: oklch(0.601 0.231 0.7);
+  --chart-2: oklch(0.489 0.187 0.9);
+  --chart-3: oklch(0.269 0.089 6.5);
+  --chart-4: oklch(0.7 0.2 355);
+  --chart-5: oklch(0.896 0.051 346);
+
+  --sidebar: oklch(0.175 0.05 4);
+  --sidebar-foreground: oklch(0.961 0 0);
+  --sidebar-primary: oklch(0.601 0.231 0.7);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: oklch(0.269 0.089 6.5);
+  --sidebar-accent-foreground: oklch(0.961 0 0);
+  --sidebar-border: oklch(0.961 0 0 / 14%);
+  --sidebar-ring: oklch(0.601 0.231 0.7);
+
+  --gradient-primary: linear-gradient(135deg, var(--primary), var(--primary-glow));
+  --gradient-gold: linear-gradient(135deg, var(--accent), var(--accent-glow));
+  --gradient-text: linear-gradient(90deg, var(--primary) 0%, oklch(0.896 0.051 346) 100%);
+  --gradient-card: linear-gradient(
+    160deg,
+    color-mix(in oklab, var(--card) 92%, transparent),
+    color-mix(in oklab, var(--background) 88%, transparent)
+  );
+
+  --shadow-glow: 0 20px 70px -15px color-mix(in oklab, var(--primary) 45%, transparent);
+  --shadow-soft:
+    0 1px 0 color-mix(in oklab, white 5%, transparent) inset,
+    0 12px 32px -14px color-mix(in oklab, black 80%, transparent);
+
+  --transition-smooth: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @layer base {
@@ -137,8 +135,62 @@
     border-color: var(--color-border);
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    background-image:
+      radial-gradient(
+        ellipse 70% 40% at 15% 0%,
+        color-mix(in oklab, var(--primary) 18%, transparent),
+        transparent 62%
+      ),
+      radial-gradient(
+        ellipse 60% 35% at 90% 100%,
+        color-mix(in oklab, var(--accent) 10%, transparent),
+        transparent 62%
+      );
+    background-attachment: fixed;
   }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 900;
+    letter-spacing: -0.01em;
+  }
+}
+
+@utility glass-card {
+  background-image: var(--gradient-card);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-soft);
+}
+
+@utility text-gradient {
+  background-image: var(--gradient-text);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@utility gradient-primary {
+  background-image: var(--gradient-primary);
+}
+
+@utility gradient-gold {
+  background-image: var(--gradient-gold);
+}
+
+@utility glow-primary {
+  box-shadow: var(--shadow-glow);
 }
