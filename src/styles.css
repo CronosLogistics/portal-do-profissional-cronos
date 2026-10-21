@@ -194,3 +194,16 @@
 @utility glow-primary {
   box-shadow: var(--shadow-glow);
 }
+
+@utility uppercase-tracked {
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+@utility dotted-line {
+  background-image: radial-gradient(circle, var(--color-primary) 1.2px, transparent 1.6px);
+  background-size: 2px 10px;
+  background-repeat: repeat-y;
+}

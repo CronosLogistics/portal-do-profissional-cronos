@@ -15,6 +15,7 @@ import { Route as DefinirSenhaRouteImport } from './routes/definir-senha'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedParceirosRouteImport } from './routes/_authenticated/parceiros'
+import { Route as AuthenticatedTreinamentosRouteImport } from './routes/_authenticated/treinamentos'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedAdminBeneficiosRouteImport } from './routes/_authenticated/admin.beneficios'
 import { Route as AuthenticatedAdminPaginaInicialRouteImport } from './routes/_authenticated/admin.pagina-inicial'
@@ -62,6 +63,12 @@ const AuthenticatedParceirosRoute = AuthenticatedParceirosRouteImport.update({
   path: '/parceiros',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedTreinamentosRoute =
+  AuthenticatedTreinamentosRouteImport.update({
+    id: '/treinamentos',
+    path: '/treinamentos',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -169,6 +176,7 @@ export interface FileRoutesByFullPath {
   '/definir-senha': typeof DefinirSenhaRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/parceiros': typeof AuthenticatedParceirosRoute
+  '/treinamentos': typeof AuthenticatedTreinamentosRoute
   '/admin/beneficios': typeof AuthenticatedAdminBeneficiosRoute
   '/admin/pagina-inicial': typeof AuthenticatedAdminPaginaInicialRoute
   '/admin/recompensas': typeof AuthenticatedAdminRecompensasRoute
@@ -191,6 +199,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/definir-senha': typeof DefinirSenhaRoute
   '/parceiros': typeof AuthenticatedParceirosRoute
+  '/treinamentos': typeof AuthenticatedTreinamentosRoute
   '/': typeof AuthenticatedIndexRoute
   '/admin/beneficios': typeof AuthenticatedAdminBeneficiosRoute
   '/admin/pagina-inicial': typeof AuthenticatedAdminPaginaInicialRoute
@@ -217,6 +226,7 @@ export interface FileRoutesById {
   '/definir-senha': typeof DefinirSenhaRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/parceiros': typeof AuthenticatedParceirosRoute
+  '/_authenticated/treinamentos': typeof AuthenticatedTreinamentosRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/admin/beneficios': typeof AuthenticatedAdminBeneficiosRoute
   '/_authenticated/admin/pagina-inicial': typeof AuthenticatedAdminPaginaInicialRoute
@@ -244,6 +254,7 @@ export interface FileRouteTypes {
     | '/definir-senha'
     | '/admin'
     | '/parceiros'
+    | '/treinamentos'
     | '/admin/beneficios'
     | '/admin/pagina-inicial'
     | '/admin/recompensas'
@@ -266,6 +277,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/definir-senha'
     | '/parceiros'
+    | '/treinamentos'
     | '/'
     | '/admin/beneficios'
     | '/admin/pagina-inicial'
@@ -291,6 +303,7 @@ export interface FileRouteTypes {
     | '/definir-senha'
     | '/_authenticated/admin'
     | '/_authenticated/parceiros'
+    | '/_authenticated/treinamentos'
     | '/_authenticated/'
     | '/_authenticated/admin/beneficios'
     | '/_authenticated/admin/pagina-inicial'
@@ -360,6 +373,13 @@ declare module '@tanstack/react-router' {
       path: '/parceiros'
       fullPath: '/parceiros'
       preLoaderRoute: typeof AuthenticatedParceirosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/treinamentos': {
+      id: '/_authenticated/treinamentos'
+      path: '/treinamentos'
+      fullPath: '/treinamentos'
+      preLoaderRoute: typeof AuthenticatedTreinamentosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin/': {
@@ -517,6 +537,7 @@ const AuthenticatedAdminRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedParceirosRoute: typeof AuthenticatedParceirosRoute
+  AuthenticatedTreinamentosRoute: typeof AuthenticatedTreinamentosRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedBeneficiosSlugRoute: typeof AuthenticatedBeneficiosSlugRoute
   AuthenticatedCategoriasSlugRoute: typeof AuthenticatedCategoriasSlugRoute
@@ -529,6 +550,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedParceirosRoute: AuthenticatedParceirosRoute,
+  AuthenticatedTreinamentosRoute: AuthenticatedTreinamentosRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedBeneficiosSlugRoute: AuthenticatedBeneficiosSlugRoute,
   AuthenticatedCategoriasSlugRoute: AuthenticatedCategoriasSlugRoute,
