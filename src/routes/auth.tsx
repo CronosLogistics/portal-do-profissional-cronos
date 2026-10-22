@@ -5,6 +5,7 @@ import { toast } from "sonner";
 
 import cronosLogo from "@/assets/cronos-full-logo.png.asset.json";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -62,6 +63,18 @@ function AuthPage() {
     navigate({ to: "/", replace: true });
   }
 
+  async function handleMicrosoft() {
+    setError(null);
+    setLoading(true);
+    const result = await lovable.auth.signInWithOAuth("microsoft", { redirect_uri: window.location.origin });
+    if (result.error) {
+      setLoading(false);
+      return setError("Não foi possível entrar com a Microsoft. Tente novamente.");
+    }
+    if (result.redirected) return;
+    navigate({ to: "/", replace: true });
+  }
+
   async function handleForgot(event: React.FormEvent) {
     event.preventDefault();
     setError(null);
@@ -94,6 +107,19 @@ function AuthPage() {
           </div>
 
           {mode === "login" ? (
+            <>
+            <Button type="button" variant="outline" className="mb-4 w-full" disabled={loading} onClick={handleMicrosoft}>
+              <svg viewBox="0 0 21 21" className="mr-2 h-4 w-4" aria-hidden="true">
+                <rect x="1" y="1" width="9" height="9" fill="#f25022" />
+                <rect x="11" y="1" width="9" height="9" fill="#7fba00" />
+                <rect x="1" y="11" width="9" height="9" fill="#00a4ef" />
+                <rect x="11" y="11" width="9" height="9" fill="#ffb900" />
+              </svg>
+              Entrar com Microsoft
+            </Button>
+            <div className="mb-4 flex items-center gap-3 text-xs text-muted-foreground">
+              <span className="h-px flex-1 bg-border" />ou<span className="h-px flex-1 bg-border" />
+            </div>
             <form onSubmit={handleLogin} className="space-y-4" noValidate>
               <div className="space-y-2">
                 <Label htmlFor="email">E-mail corporativo</Label>
@@ -116,6 +142,7 @@ function AuthPage() {
                 Esqueci minha senha
               </button>
             </form>
+            </>
           ) : (
             <form onSubmit={handleForgot} className="space-y-4" noValidate>
               <p className="text-sm text-muted-foreground">
