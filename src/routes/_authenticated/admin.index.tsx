@@ -103,7 +103,7 @@ function AdminHome() {
           </div>
           <div className="flex items-center gap-2">
             <Link to="/" className="text-sm text-muted-foreground hover:text-foreground">
-              Ver o site
+              Início
             </Link>
             <Button variant="ghost" size="sm" onClick={signOut}>
               <LogOut className="mr-1.5 h-4 w-4" />

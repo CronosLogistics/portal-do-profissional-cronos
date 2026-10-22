@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ArrowRight, CalendarCheck, CheckCircle2, ExternalLink, GanttChartSquare, GraduationCap, Trophy } from "lucide-react";
+import { CalendarCheck, CheckCircle2, ExternalLink, GanttChartSquare, GraduationCap, Trophy } from "lucide-react";
 
 import { Navbar } from "@/components/clube/Navbar";
 import { Footer } from "@/components/clube/Footer";
@@ -37,44 +37,24 @@ function TreinamentosPage() {
     <div className="min-h-screen">
       <Navbar />
 
-      {/* Abertura */}
-      <section className="mx-auto max-w-6xl px-4 pb-16 pt-14 md:pt-20">
-        <div className="relative pl-6 md:pl-10">
-          <div aria-hidden className="dotted-line absolute bottom-2 left-0 top-2 w-px opacity-80" />
-          <p className="uppercase-tracked mb-4 text-primary">Gestão de Pessoas</p>
-          <h1 className="mb-5 font-display text-4xl font-black leading-[1.05] md:text-6xl">
-            Cadastro & Gestão de <span className="text-gradient">Treinamentos</span>
-          </h1>
-          <p className="mb-8 max-w-xl text-lg text-muted-foreground">
-            O guia oficial da Cronos Logistics para capacitar nosso time.
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <Button asChild size="lg">
-              <a href="#cadastros-cursos"><GraduationCap className="mr-1" /> Diplomas / Certificados</a>
-            </Button>
-            <Button asChild size="lg" variant="outline">
-              <a href="#processo"><GanttChartSquare className="mr-1" /> Cadastro de Treinamentos</a>
-            </Button>
-            <Button asChild size="lg" variant="outline">
-              <a href="#gamificacao"><Trophy className="mr-1" /> Gamificação</a>
-            </Button>
-          </div>
-          <div className="mt-12 grid max-w-md grid-cols-3 gap-6 border-t border-border pt-8">
-            <div><p className="font-display text-3xl font-black">06</p><p className="uppercase-tracked mt-1 text-muted-foreground">Etapas</p></div>
-            <div><p className="font-display text-3xl font-black">100%</p><p className="uppercase-tracked mt-1 text-muted-foreground">Automatizado</p></div>
-            <div><p className="font-display text-3xl font-black text-primary">+pts</p><p className="uppercase-tracked mt-1 text-muted-foreground">Gamificação</p></div>
-          </div>
+      <section className="mx-auto max-w-6xl px-4 py-10">
+        <h1 className="font-display font-bold">Treinamentos</h1>
+        <p className="mt-2 text-sm text-muted-foreground">Diplomas, certificados e solicitações de treinamento.</p>
+        <div className="mt-6 flex flex-wrap gap-3">
+          <Button asChild><External href={LINKS.diplomasCertificados}><GraduationCap /> Cadastrar diploma ou certificado</External></Button>
+          <Button asChild variant="outline"><External href={LINKS.cadastroTreinamento}><GanttChartSquare /> Cadastrar treinamento</External></Button>
+          <Button asChild variant="outline"><External href={LINKS.agendamentoDireto}><CalendarCheck /> Agendar existente</External></Button>
         </div>
       </section>
 
       {/* Diplomas e certificados */}
-      <section id="cadastros-cursos" className="scroll-mt-20 border-t border-border/60 py-16 md:py-24">
+      <section id="cadastros-cursos" className="scroll-mt-20 border-t border-border/60 py-10">
         <div className="mx-auto max-w-6xl px-4">
           <p className="uppercase-tracked mb-3 text-primary">Diplomas e Certificados</p>
-          <h2 className="mb-3 font-display text-3xl font-black md:text-4xl">
+          <h2 className="mb-3 font-display text-2xl font-bold">
             Diplomas & <span className="text-gradient">Certificados</span>
           </h2>
-          <p className="mb-10 text-lg text-muted-foreground">Registre pós-graduação, certificações e/ou cursos concluídos.</p>
+          <p className="mb-6 text-sm text-muted-foreground">Registre pós-graduação, certificações e/ou cursos concluídos.</p>
           <div className="mb-10 grid gap-5 md:grid-cols-2">
             {CERTIFICADOS.map(({ icon: Icon, title, description }) => (
               <div key={title} className="glass-card rounded-2xl p-6 md:p-8">
@@ -95,10 +75,10 @@ function TreinamentosPage() {
       </section>
 
       {/* Gamificação */}
-      <section id="gamificacao" className="scroll-mt-20 border-t border-border/60 py-16 md:py-24">
+      <section id="gamificacao" className="scroll-mt-20 border-t border-border/60 py-10">
         <div className="mx-auto max-w-4xl px-4">
           <p className="uppercase-tracked mb-3 text-primary">Gamificação</p>
-          <h2 className="mb-3 font-display text-3xl font-black md:text-4xl">
+          <h2 className="mb-3 font-display text-2xl font-bold">
             Entenda como a sua participação em treinamentos e cursos <span className="text-gradient">geram pontos</span> para você
           </h2>
           <p className="mb-8 text-lg text-muted-foreground">
@@ -133,13 +113,13 @@ function TreinamentosPage() {
       </section>
 
       {/* Passo a passo */}
-      <section id="processo" className="scroll-mt-20 border-t border-border/60 py-16 md:py-24">
+      <section id="processo" className="scroll-mt-20 border-t border-border/60 py-10">
         <div className="mx-auto max-w-6xl px-4">
           <div className="mb-14 max-w-3xl">
             <p className="uppercase-tracked mb-3 text-primary">
               O passo a passo para <span className="font-black">líderes</span> cadastrarem treinamentos
             </p>
-            <h2 className="mb-3 font-display text-3xl font-black md:text-4xl">
+            <h2 className="mb-3 font-display text-2xl font-bold">
               Cadastro de <span className="text-gradient">treinamentos</span>
             </h2>
             <p className="mb-4 text-lg text-muted-foreground">
@@ -210,27 +190,6 @@ function TreinamentosPage() {
               );
             })}
           </ol>
-        </div>
-      </section>
-
-      {/* Próximo passo */}
-      <section className="mx-auto max-w-6xl px-4 py-16">
-        <div className="glass-card rounded-3xl p-10 text-center md:p-16">
-          <p className="uppercase-tracked mb-3 text-primary">Próximo passo</p>
-          <h2 className="mb-4 font-display text-3xl font-black md:text-4xl">
-            Cadastre seu próximo <span className="text-gradient">treinamento</span>
-          </h2>
-          <p className="mx-auto mb-8 max-w-2xl text-lg text-muted-foreground">
-            Em caso de dúvidas, a equipe de Gestão de Pessoas da Cronos Logistics está à disposição para te apoiar.
-          </p>
-          <div className="flex flex-wrap justify-center gap-3">
-            <Button asChild size="lg">
-              <External href={LINKS.cadastroTreinamento}>Cadastrar treinamento <ArrowRight className="ml-1" /></External>
-            </Button>
-            <Button asChild size="lg" variant="outline">
-              <External href={LINKS.agendamentoDireto}><CalendarCheck className="mr-1" /> Agendar existente</External>
-            </Button>
-          </div>
         </div>
       </section>
 

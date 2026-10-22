@@ -3,7 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { useCurrentUser } from "@/hooks/useAuth";
 
 const tabs = [
-  { to: "/admin/pagina-inicial", label: "Textos do site" },
+  { to: "/admin/pagina-inicial", label: "Textos do portal" },
   { to: "/admin", label: "Parceiros" },
   { to: "/admin/beneficios", label: "Benefícios" },
   { to: "/admin/recompensas", label: "Programas de Recompensas" },
@@ -20,8 +20,8 @@ export function AdminTabs() {
           key={tab.to}
           to={tab.to}
           activeOptions={{ exact: true }}
-          activeProps={{ className: "border-secondary bg-secondary/25 text-foreground" }}
-          className="rounded-full border border-border px-4 py-2 text-sm text-muted-foreground transition-colors hover:border-primary/60 hover:text-foreground"
+          activeProps={{ className: "border-primary bg-primary/10 text-secondary" }}
+          className="rounded-md border border-border px-4 py-2 text-sm text-muted-foreground transition-colors hover:border-primary/60 hover:text-foreground"
         >
           {tab.label}
         </Link>
