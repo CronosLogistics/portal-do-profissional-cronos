@@ -192,7 +192,7 @@ function PartnerPage() {
                 {partner.attachments.map((file) => (
                   <li key={file.id}>
                     <a
-                      href={`/api/public/partner-logo?path=${encodeURIComponent(file.file_path)}&name=${encodeURIComponent(file.name)}`}
+                      href={file.url}
                       target="_blank"
                       rel="noreferrer noopener"
                       className="flex items-center gap-3 rounded-xl border border-border px-4 py-3 text-sm transition-colors hover:border-primary/60"
