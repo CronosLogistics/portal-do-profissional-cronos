@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 import { useLocation } from "@tanstack/react-router";
 import { Building2 } from "lucide-react";
 
-import { supabase } from "@/integrations/supabase/client";
+import { listPublicOffices } from "@/lib/partners.functions";
 
 export type Office = { id: string; slug: string; name: string };
 
@@ -33,15 +33,10 @@ export function OfficeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     setSlug(window.localStorage.getItem(STORAGE_KEY));
-    void supabase
-      .from("offices")
-      .select("id, slug, name")
-      .eq("is_active", true)
-      .order("sort_order")
-      .then(({ data }) => {
-        setOffices((data as Office[]) ?? []);
-        setReady(true);
-      });
+    void listPublicOffices()
+      .then((data) => setOffices(data ?? []))
+      .catch(() => setOffices([]))
+      .finally(() => setReady(true));
   }, []);
 
   const office = offices.find((item) => item.slug === slug) ?? null;
