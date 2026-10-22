@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Loader2, Lock } from "lucide-react";
+import { ArrowRight, Loader2, ShieldCheck } from "lucide-react";
+import loginImage from "@/assets/portal-login.jpg";
 
 import cronosLogo from "@/assets/cronos-full-logo.png.asset.json";
 import { supabase } from "@/integrations/supabase/client";
@@ -47,38 +48,28 @@ function AuthPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 py-16">
-      <div className="w-full max-w-md">
-        <img src={cronosLogo.url} alt="Cronos Logistics" className="mx-auto mb-8 h-10 w-auto" />
-        <div className="glass-card rounded-2xl p-8">
-          <div className="mb-6 flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl gradient-primary">
-              <Lock className="h-5 w-5 text-primary-foreground" />
-            </span>
-            <div>
-              <p className="text-xs uppercase tracking-widest text-primary">Portal do Profissional</p>
-              <h1 className="font-display text-xl font-bold">Entrar</h1>
-            </div>
-          </div>
-
-          <p className="mb-4 text-sm text-muted-foreground">Use sua conta corporativa da Cronos.</p>
-          <Button type="button" className="w-full" disabled={loading} onClick={handleMicrosoft}>
-            {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (
-              <svg viewBox="0 0 21 21" className="mr-2 h-4 w-4" aria-hidden="true">
-                <rect x="1" y="1" width="9" height="9" fill="#f25022" />
-                <rect x="11" y="1" width="9" height="9" fill="#7fba00" />
-                <rect x="1" y="11" width="9" height="9" fill="#00a4ef" />
-                <rect x="11" y="11" width="9" height="9" fill="#ffb900" />
-              </svg>
-            )}
-            Entrar com Microsoft
+    <main className="login-page">
+      <section className="login-image-panel" aria-label="Profissionais da Cronos">
+        <img src={loginImage} alt="Profissionais trabalhando juntos em uma operação logística" width={1024} height={1536} className="login-photo" />
+        <div className="login-image-shade" />
+        <img src={cronosLogo.url} alt="Cronos Logistics" className="login-image-logo" />
+        <div className="login-image-caption"><p>CRONOS LOGISTICS</p><h2>Portal do<br />Profissional</h2></div>
+      </section>
+      <section className="login-form-panel">
+        <div className="login-form-content">
+          <span className="login-eyebrow">PORTAL DO PROFISSIONAL</span>
+          <h1>Bem-vindo(a).</h1>
+          <p className="login-description">Entre com sua conta corporativa para acessar o portal.</p>
+          <Button type="button" className="login-microsoft" disabled={loading} onClick={handleMicrosoft}>
+            {loading ? <Loader2 className="animate-spin" /> : <svg viewBox="0 0 21 21" aria-hidden="true" className="microsoft-icon"><rect x="1" y="1" width="9" height="9" className="ms-red" /><rect x="11" y="1" width="9" height="9" className="ms-green" /><rect x="1" y="11" width="9" height="9" className="ms-blue" /><rect x="11" y="11" width="9" height="9" className="ms-yellow" /></svg>}
+            {loading ? "Conectando..." : "Entrar com Microsoft"}<ArrowRight className="ml-auto" />
           </Button>
           {error ? <p role="alert" className="mt-4 text-sm text-destructive">{error}</p> : null}
+          <div className="login-security"><ShieldCheck /><span>Acesso corporativo seguro</span></div>
+          <div className="login-help"><p>Precisa de ajuda para acessar?</p><span>Fale com a equipe de Gestão de Pessoas.</span></div>
         </div>
-        <p className="mt-6 text-center text-xs text-muted-foreground">
-          Ainda não tem acesso? Solicite à equipe de Gestão de Pessoas.
-        </p>
-      </div>
-    </div>
+        <footer className="login-footer"><span>Cronos Logistics</span><span>Uso interno</span></footer>
+      </section>
+    </main>
   );
 }
