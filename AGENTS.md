@@ -18,3 +18,4 @@
 - Public sign-up is disabled; accounts are created only by admin invite, and users set their password at `/definir-senha` (also used for password reset). Why: admin-invite-only access model.
 
 - Render portal navigation once through PortalShell in the authenticated parent layout; child pages contain only their content. Why: every existing and future module shares scalable navigation without duplicating the shell.
+- Login registration runs once per session via `registrarAcesso` (src/lib/access.functions.ts) in the _authenticated gate; profile identity fields come from Microsoft (Graph /me or the verified auth identity), never from browser input. Why: the professionals table must mirror Entra, not user-editable data.
