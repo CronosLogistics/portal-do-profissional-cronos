@@ -24,9 +24,9 @@ export const Route = createFileRoute("/_authenticated/treinamentos")({
   component: TreinamentosPage,
 });
 
-function External({ href, children }: { href: string; children: React.ReactNode }) {
+function External({ href, children, ...props }: React.ComponentPropsWithoutRef<"a">) {
   return (
-    <a href={href} target="_blank" rel="noreferrer">
+    <a {...props} href={href} target="_blank" rel="noreferrer">
       {children}
     </a>
   );
