@@ -11,6 +11,9 @@ export type PortalUser = {
   isActive: boolean;
   role: UserRole;
   lastSignInAt: string | null;
+  firstAccessAt: string | null;
+  syncedAt: string | null;
+  linkedMicrosoft: boolean;
   invitedPending: boolean;
 };
 
@@ -55,33 +58,56 @@ export const listUsers = createServerFn({ method: "POST" })
   .handler(async ({ context }): Promise<PortalUser[]> => {
     await requireAdmin(context as unknown as RpcCtx);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const [profiles, roles, authUsers] = await Promise.all([
-      supabaseAdmin.from("profiles").select("id, email, full_name, employee_id, is_active").order("full_name"),
+    const [profiles, roles] = await Promise.all([
+      supabaseAdmin
+        .from("profiles")
+        .select("id, email, full_name, employee_id, is_active, entra_oid, primeiro_acesso, ultimo_acesso, sincronizado_em")
+        .order("full_name"),
       supabaseAdmin.from("user_roles").select("user_id, role"),
-      supabaseAdmin.auth.admin.listUsers({ perPage: 1000 }),
     ]);
     if (profiles.error || roles.error) throw new Error("Não foi possível carregar os usuários.");
     const roleOf = new Map<string, UserRole>();
     for (const r of roles.data ?? []) {
       const current = roleOf.get(r.user_id);
-      // Mostra o perfil de maior privilégio.
       const rank = { admin: 3, rh: 2, funcionario: 1 } as const;
       if (!current || rank[r.role as UserRole] > rank[current]) roleOf.set(r.user_id, r.role as UserRole);
     }
-    const authById = new Map((authUsers.data?.users ?? []).map((u) => [u.id, u]));
-    return (profiles.data ?? []).map((p) => {
-      const au = authById.get(p.id);
-      return {
-        id: p.id,
-        email: p.email,
-        fullName: p.full_name,
-        employeeId: p.employee_id ?? "",
-        isActive: p.is_active,
-        role: roleOf.get(p.id) ?? "funcionario",
-        lastSignInAt: au?.last_sign_in_at ?? null,
-        invitedPending: !!au && !au.last_sign_in_at,
-      };
-    });
+    return (profiles.data ?? []).map((p) => ({
+      id: p.id,
+      email: p.email,
+      fullName: p.full_name,
+      employeeId: p.employee_id ?? "",
+      isActive: p.is_active,
+      role: roleOf.get(p.id) ?? "funcionario",
+      lastSignInAt: p.ultimo_acesso ?? null,
+      firstAccessAt: p.primeiro_acesso ?? null,
+      syncedAt: p.sincronizado_em ?? null,
+      linkedMicrosoft: !!p.entra_oid,
+      invitedPending: !p.ultimo_acesso,
+    }));
+  });
+
+export type SyncStatus = { executadoEm: string | null; sucesso: boolean | null; erro: string | null; alterados: number };
+
+export const getSyncStatus = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<SyncStatus> => {
+    await requireAdmin(context as unknown as RpcCtx);
+    const { data } = await context.supabase.from("status_sincronizacao").select("*").maybeSingle();
+    return {
+      executadoEm: data?.executado_em ?? null,
+      sucesso: data?.sucesso ?? null,
+      erro: data?.erro ?? null,
+      alterados: data?.alterados ?? 0,
+    };
+  });
+
+export const syncNow = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await requireAdmin(context as unknown as RpcCtx);
+    const { runEntraSync } = await import("@/lib/entra-sync.server");
+    return runEntraSync();
   });
 
 export const inviteUser = createServerFn({ method: "POST" })
