@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 
 import { useCurrentUser } from "@/hooks/useAuth";
+import { contentAdminUrl } from "@/lib/content-admin";
 
 const tabs = [
   { to: "/admin/pagina-inicial", label: "Textos do portal" },
@@ -12,7 +13,6 @@ const tabs = [
 
 export function AdminTabs() {
   const me = useCurrentUser();
-  const all = me.data?.isAdmin ? [...tabs, { to: "/admin/usuarios", label: "Usuários" } as const] : tabs;
   return (
     <div className="grid gap-3">
     <p className="rounded-md border border-primary/40 bg-primary/5 px-4 py-3 text-sm text-foreground">
@@ -24,17 +24,18 @@ export function AdminTabs() {
       .
     </p>
     <div className="flex flex-wrap gap-2">
-      {all.map((tab) => (
-        <Link
+      {tabs.map((tab) => (
+        <a
           key={tab.to}
-          to={tab.to}
-          activeOptions={{ exact: true }}
-          activeProps={{ className: "border-primary bg-primary/10 text-secondary" }}
+          href={contentAdminUrl(tab.to)}
+          target="_blank"
+          rel="noreferrer"
           className="rounded-md border border-border px-4 py-2 text-sm text-muted-foreground transition-colors hover:border-primary/60 hover:text-foreground"
         >
           {tab.label}
-        </Link>
+        </a>
       ))}
+      {me.data?.isAdmin && <Link to="/admin/usuarios" activeOptions={{ exact: true }} activeProps={{ className: "border-primary bg-primary/10 text-secondary" }} className="rounded-md border border-border px-4 py-2 text-sm text-muted-foreground transition-colors hover:border-primary/60 hover:text-foreground">Usuários</Link>}
     </div>
     </div>
   );
