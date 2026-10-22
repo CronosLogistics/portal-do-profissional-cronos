@@ -33,11 +33,11 @@ export const registrarAcesso = createServerFn({ method: "POST" })
     if (!ms) {
       const identity = au.user.identities?.find((i) => i.provider === "azure");
       const d = (identity?.identity_data ?? {}) as Record<string, unknown>;
-      const claims = (d.custom_claims ?? {}) as Record<string, unknown>;
+      const claims = (d['custom_claims'] ?? {}) as Record<string, unknown>;
       ms = {
-        oid: (claims.oid as string) ?? (d.oid as string) ?? (identity?.id as string) ?? null,
-        name: (d.full_name as string) ?? (d.name as string) ?? null,
-        email: (d.email as string) ?? au.user.email ?? null,
+        oid: (claims['oid'] as string) ?? (d['oid'] as string) ?? (identity?.id as string) ?? null,
+        name: (d['full_name'] as string) ?? (d['name'] as string) ?? null,
+        email: (d['email'] as string) ?? au.user.email ?? null,
       };
     }
 
