@@ -352,27 +352,39 @@ export type Database = {
           created_at: string
           email: string
           employee_id: string | null
+          entra_oid: string | null
           full_name: string
           id: string
           is_active: boolean
+          primeiro_acesso: string | null
+          sincronizado_em: string | null
+          ultimo_acesso: string | null
           updated_at: string
         }
         Insert: {
           created_at?: string
           email: string
           employee_id?: string | null
+          entra_oid?: string | null
           full_name?: string
           id: string
           is_active?: boolean
+          primeiro_acesso?: string | null
+          sincronizado_em?: string | null
+          ultimo_acesso?: string | null
           updated_at?: string
         }
         Update: {
           created_at?: string
           email?: string
           employee_id?: string | null
+          entra_oid?: string | null
           full_name?: string
           id?: string
           is_active?: boolean
+          primeiro_acesso?: string | null
+          sincronizado_em?: string | null
+          ultimo_acesso?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -455,6 +467,30 @@ export type Database = {
           key?: string
           updated_at?: string
           value?: string
+        }
+        Relationships: []
+      }
+      status_sincronizacao: {
+        Row: {
+          alterados: number
+          erro: string | null
+          executado_em: string | null
+          id: boolean
+          sucesso: boolean | null
+        }
+        Insert: {
+          alterados?: number
+          erro?: string | null
+          executado_em?: string | null
+          id?: boolean
+          sucesso?: boolean | null
+        }
+        Update: {
+          alterados?: number
+          erro?: string | null
+          executado_em?: string | null
+          id?: boolean
+          sucesso?: boolean | null
         }
         Relationships: []
       }
