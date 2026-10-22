@@ -106,67 +106,19 @@ function AuthPage() {
             </div>
           </div>
 
-          {mode === "login" ? (
-            <>
-            <Button type="button" variant="outline" className="mb-4 w-full" disabled={loading} onClick={handleMicrosoft}>
+          <p className="mb-4 text-sm text-muted-foreground">Use sua conta corporativa da Cronos.</p>
+          <Button type="button" className="w-full" disabled={loading} onClick={handleMicrosoft}>
+            {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (
               <svg viewBox="0 0 21 21" className="mr-2 h-4 w-4" aria-hidden="true">
                 <rect x="1" y="1" width="9" height="9" fill="#f25022" />
                 <rect x="11" y="1" width="9" height="9" fill="#7fba00" />
                 <rect x="1" y="11" width="9" height="9" fill="#00a4ef" />
                 <rect x="11" y="11" width="9" height="9" fill="#ffb900" />
               </svg>
-              Entrar com Microsoft
-            </Button>
-            <div className="mb-4 flex items-center gap-3 text-xs text-muted-foreground">
-              <span className="h-px flex-1 bg-border" />ou<span className="h-px flex-1 bg-border" />
-            </div>
-            <form onSubmit={handleLogin} className="space-y-4" noValidate>
-              <div className="space-y-2">
-                <Label htmlFor="email">E-mail corporativo</Label>
-                <Input id="email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Senha</Label>
-                <PasswordInput id="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
-              </div>
-              {error ? <p role="alert" className="text-sm text-destructive">{error}</p> : null}
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                Entrar
-              </Button>
-              <button
-                type="button"
-                onClick={() => { setMode("forgot"); setError(null); setSent(false); }}
-                className="w-full text-center text-sm text-muted-foreground hover:text-primary"
-              >
-                Esqueci minha senha
-              </button>
-            </form>
-            </>
-          ) : (
-            <form onSubmit={handleForgot} className="space-y-4" noValidate>
-              <p className="text-sm text-muted-foreground">
-                Informe seu e-mail. Enviaremos um link para você definir uma nova senha.
-              </p>
-              <div className="space-y-2">
-                <Label htmlFor="email-forgot">E-mail corporativo</Label>
-                <Input id="email-forgot" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-              </div>
-              {error ? <p role="alert" className="text-sm text-destructive">{error}</p> : null}
-              {sent ? <p className="text-sm text-success">Verifique sua caixa de entrada (e o spam).</p> : null}
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                Enviar link
-              </Button>
-              <button
-                type="button"
-                onClick={() => { setMode("login"); setError(null); }}
-                className="w-full text-center text-sm text-muted-foreground hover:text-primary"
-              >
-                Voltar para o login
-              </button>
-            </form>
-          )}
+            )}
+            Entrar com Microsoft
+          </Button>
+          {error ? <p role="alert" className="mt-4 text-sm text-destructive">{error}</p> : null}
         </div>
         <p className="mt-6 text-center text-xs text-muted-foreground">
           Ainda não tem acesso? Solicite à equipe de Gestão de Pessoas.
