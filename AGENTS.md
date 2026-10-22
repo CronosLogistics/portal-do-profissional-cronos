@@ -16,3 +16,5 @@
 - User administration (invite, edit, activate/deactivate) runs only in `src/lib/users.functions.ts` server functions that call `requireAdmin` before using the admin client; deactivation also bans the auth user. Why: no client can grant itself access.
 - Content reads go through `requireSupabaseAuth` server functions (`content.functions.ts`, `partners.functions.ts`). Why: anonymous visitors must not read portal data.
 - Public sign-up is disabled; accounts are created only by admin invite, and users set their password at `/definir-senha` (also used for password reset). Why: admin-invite-only access model.
+
+- Render portal navigation once through PortalShell in the authenticated parent layout; child pages contain only their content. Why: every existing and future module shares scalable navigation without duplicating the shell.
