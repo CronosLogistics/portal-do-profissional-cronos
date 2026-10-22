@@ -1,15 +1,11 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Loader2, Lock } from "lucide-react";
-import { toast } from "sonner";
 
 import cronosLogo from "@/assets/cronos-full-logo.png.asset.json";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { PasswordInput } from "@/components/portal/PasswordInput";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -27,41 +23,16 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
 function AuthPage() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"login" | "forgot">("login");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [sent, setSent] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) navigate({ to: "/", replace: true });
     });
   }, [navigate]);
-
-  async function handleLogin(event: React.FormEvent) {
-    event.preventDefault();
-    setError(null);
-    if (!EMAIL_RE.test(email.trim())) return setError("Informe um e-mail válido.");
-    if (!password) return setError("Informe sua senha.");
-    setLoading(true);
-    const { error: err } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
-    setLoading(false);
-    if (err) {
-      const banned = err.message.toLowerCase().includes("banned");
-      return setError(
-        banned
-          ? "Seu acesso está desativado. Procure a equipe de Gestão de Pessoas."
-          : "E-mail ou senha incorretos.",
-      );
-    }
-    navigate({ to: "/", replace: true });
-  }
 
   async function handleMicrosoft() {
     setError(null);
@@ -75,20 +46,6 @@ function AuthPage() {
     navigate({ to: "/", replace: true });
   }
 
-  async function handleForgot(event: React.FormEvent) {
-    event.preventDefault();
-    setError(null);
-    if (!EMAIL_RE.test(email.trim())) return setError("Informe um e-mail válido.");
-    setLoading(true);
-    const { error: err } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
-      redirectTo: `${window.location.origin}/definir-senha`,
-    });
-    setLoading(false);
-    if (err) return setError("Não foi possível enviar o e-mail agora. Tente novamente em instantes.");
-    setSent(true);
-    toast.success("Se o e-mail estiver cadastrado, você receberá um link para redefinir a senha.");
-  }
-
   return (
     <div className="flex min-h-screen items-center justify-center px-4 py-16">
       <div className="w-full max-w-md">
@@ -100,9 +57,7 @@ function AuthPage() {
             </span>
             <div>
               <p className="text-xs uppercase tracking-widest text-primary">Portal do Profissional</p>
-              <h1 className="font-display text-xl font-bold">
-                {mode === "login" ? "Entrar" : "Recuperar senha"}
-              </h1>
+              <h1 className="font-display text-xl font-bold">Entrar</h1>
             </div>
           </div>
 
