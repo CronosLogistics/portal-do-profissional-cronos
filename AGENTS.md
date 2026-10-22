@@ -14,7 +14,7 @@
 - Main menu modules are declared once in `src/lib/portal-modules.ts`; add a route + one entry there to add a module. Why: new modules without rebuilding navigation or auth.
 - Roles live in `public.user_roles` (`admin`, `rh` = content editor, `funcionario`); account status in `public.profiles.is_active`. RLS uses `has_role` / `is_editor` / `is_active_user`. Why: permissions enforced in the database, not just the UI.
 - User administration (invite, edit, activate/deactivate) runs only in `src/lib/users.functions.ts` server functions that call `requireAdmin` before using the admin client; deactivation also bans the auth user. Why: no client can grant itself access.
-- Content reads go through `requireSupabaseAuth` server functions (`content.functions.ts`, `partners.functions.ts`). Why: anonymous visitors must not read portal data.
+- Benefits/partners/rewards/offices/site texts are read live, read-only, from the legacy Espaço do Profissional database via `src/lib/legacy-content.server.ts`, inside `requireSupabaseAuth` server functions; relative file URLs are rewritten to the legacy site origin. Why: GP keeps editing in the legacy /admin, single source of content, and anonymous visitors cannot read through the portal.
 - Public sign-up is disabled; accounts are created only by admin invite, and users set their password at `/definir-senha` (also used for password reset). Why: admin-invite-only access model.
 
 - Render portal navigation once through PortalShell in the authenticated parent layout; child pages contain only their content. Why: every existing and future module shares scalable navigation without duplicating the shell.
