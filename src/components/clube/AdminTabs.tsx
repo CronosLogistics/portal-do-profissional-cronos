@@ -14,6 +14,15 @@ export function AdminTabs() {
   const me = useCurrentUser();
   const all = me.data?.isAdmin ? [...tabs, { to: "/admin/usuarios", label: "Usuários" } as const] : tabs;
   return (
+    <div className="grid gap-3">
+    <p className="rounded-md border border-primary/40 bg-primary/5 px-4 py-3 text-sm text-foreground">
+      Benefícios, parceiros, recompensas e textos exibidos no portal vêm do painel atual do Espaço do Profissional.
+      Para alterá-los, use{" "}
+      <a href="https://espacodoprofissionalcronos.lovable.app/admin" target="_blank" rel="noreferrer" className="font-semibold text-accent underline">
+        o painel atual
+      </a>
+      .
+    </p>
     <div className="flex flex-wrap gap-2">
       {all.map((tab) => (
         <Link
@@ -26,6 +35,7 @@ export function AdminTabs() {
           {tab.label}
         </Link>
       ))}
+    </div>
     </div>
   );
 }
