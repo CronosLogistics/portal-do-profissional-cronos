@@ -57,9 +57,8 @@ function mapPartner(row: Row, fix: (u: string | null) => string | null): PublicP
 }
 
 export const listPublicCategories = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth]).handler(async () => {
-  const { legacyClient } = await import("@/lib/legacy-content.server");
-  const supabase = legacyClient();
+  .middleware([requireSupabaseAuth]).handler(async ({ context }) => {
+  const supabase = context.supabase;
   const { data, error } = await supabase
     .from("partner_categories")
     .select("id, slug, name, description, icon, sort_order")
@@ -74,9 +73,8 @@ export const listPublicCategories = createServerFn({ method: "GET" })
 });
 
 export const listPublicPartners = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth]).handler(async () => {
-  const { legacyClient } = await import("@/lib/legacy-content.server");
-  const supabase = legacyClient();
+  .middleware([requireSupabaseAuth]).handler(async ({ context }) => {
+  const supabase = context.supabase;
   const { data, error } = await supabase
     .from("partners")
     .select(PUBLIC_COLUMNS)
@@ -89,16 +87,14 @@ export const listPublicPartners = createServerFn({ method: "GET" })
     return [] as PublicPartner[];
   }
 
-  const { legacyUrl } = await import("@/lib/legacy-content.server");
-  return ((data ?? []) as unknown as Row[]).map((r) => mapPartner(r, legacyUrl));
+  return ((data ?? []) as unknown as Row[]).map((r) => mapPartner(r, (u) => u));
 });
 
 export const getPublicPartner = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: { slug: string }) => data)
-  .handler(async ({ data }) => {
-    const { legacyClient } = await import("@/lib/legacy-content.server");
-    const supabase = legacyClient();
+  .handler(async ({ data, context }) => {
+    const supabase = context.supabase;
     const { data: partner, error } = await supabase
       .from("partners")
       .select(PUBLIC_COLUMNS.replace("!inner", ""))
@@ -117,13 +113,11 @@ export const getPublicPartner = createServerFn({ method: "GET" })
       .eq("partner_id", (partner as unknown as { id: string }).id)
       .order("sort_order")
       .order("created_at");
-
-    const { legacyUrl, legacyFileUrl } = await import("@/lib/legacy-content.server");
     return {
-      ...mapPartner(partner as unknown as Row, legacyUrl),
+      ...mapPartner(partner as unknown as Row, (u) => u),
       attachments: ((files ?? []) as Omit<PublicAttachment, "url">[]).map((f) => ({
         ...f,
-        url: legacyFileUrl(f.file_path, f.name),
+        url: attachmentUrl(f.file_path, f.name),
       })),
     };
   });
@@ -132,9 +126,8 @@ export type PublicOffice = { id: string; slug: string; name: string };
 
 export const listPublicOffices = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async () => {
-    const { legacyClient } = await import("@/lib/legacy-content.server");
-    const { data, error } = await legacyClient()
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase
       .from("offices")
       .select("id, slug, name")
       .eq("is_active", true)
@@ -142,3 +135,9 @@ export const listPublicOffices = createServerFn({ method: "GET" })
     if (error) console.error("Erro ao listar escritórios:", error.message);
     return (data ?? []) as PublicOffice[];
   });
+
+/** Anexos migrados guardam endereço completo; novos ficam no armazenamento do portal. */
+export function attachmentUrl(path: string, name: string) {
+  if (/^https?:\/\//.test(path)) return path;
+  return `/api/public/partner-logo?path=${encodeURIComponent(path)}&name=${encodeURIComponent(name)}`;
+}

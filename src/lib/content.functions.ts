@@ -56,9 +56,8 @@ const PROGRAM_COLUMNS =
 
 
 export const listBenefits = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth]).handler(async () => {
-  const { legacyClient } = await import("@/lib/legacy-content.server");
-  const supabase = legacyClient();
+  .middleware([requireSupabaseAuth]).handler(async ({ context }) => {
+  const supabase = context.supabase;
   const { data, error } = await supabase
     .from("benefits")
     .select(BENEFIT_COLUMNS)
@@ -75,9 +74,8 @@ export const listBenefits = createServerFn({ method: "GET" })
 export const getBenefit = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: { slug: string }) => data)
-  .handler(async ({ data }) => {
-    const { legacyClient } = await import("@/lib/legacy-content.server");
-    const supabase = legacyClient();
+  .handler(async ({ data, context }) => {
+    const supabase = context.supabase;
     const { data: benefit, error } = await supabase
       .from("benefits")
       .select(BENEFIT_COLUMNS)
@@ -98,17 +96,13 @@ export const getBenefit = createServerFn({ method: "GET" })
 
     return {
       benefit: benefit as Benefit,
-      images: await (async () => {
-        const { legacyUrl } = await import("@/lib/legacy-content.server");
-        return ((images ?? []) as BenefitImage[]).map((i) => ({ ...i, image_url: legacyUrl(i.image_url) }));
-      })(),
+      images: (images ?? []) as BenefitImage[],
     };
   });
 
 export const listRewardPrograms = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth]).handler(async () => {
-  const { legacyClient } = await import("@/lib/legacy-content.server");
-  const supabase = legacyClient();
+  .middleware([requireSupabaseAuth]).handler(async ({ context }) => {
+  const supabase = context.supabase;
   const { data, error } = await supabase
     .from("reward_programs")
     .select(PROGRAM_COLUMNS)
@@ -125,9 +119,8 @@ export const listRewardPrograms = createServerFn({ method: "GET" })
 export const getRewardProgram = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: { slug: string }) => data)
-  .handler(async ({ data }) => {
-    const { legacyClient } = await import("@/lib/legacy-content.server");
-    const supabase = legacyClient();
+  .handler(async ({ data, context }) => {
+    const supabase = context.supabase;
     const { data: program, error } = await supabase
       .from("reward_programs")
       .select(PROGRAM_COLUMNS)
@@ -140,9 +133,8 @@ export const getRewardProgram = createServerFn({ method: "GET" })
   });
 
 export const getSiteContent = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth]).handler(async () => {
-  const { legacyClient } = await import("@/lib/legacy-content.server");
-  const supabase = legacyClient();
+  .middleware([requireSupabaseAuth]).handler(async ({ context }) => {
+  const supabase = context.supabase;
   const { data, error } = await supabase.from("site_content").select("key, value");
   if (error) console.error("Erro ao buscar textos:", error.message);
   const map: Record<string, string> = {};
