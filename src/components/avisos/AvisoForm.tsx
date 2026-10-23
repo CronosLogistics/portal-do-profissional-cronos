@@ -67,7 +67,7 @@ export function AvisoForm({ open, onClose, aviso }: { open: boolean; onClose: ()
   const [perfilId, setPerfilId] = useState("");
   const [titulo, setTitulo] = useState("");
   const [mensagem, setMensagem] = useState("");
-  const [inicial, setInicial] = useState("");
+  const [, setInicial] = useState("");
   const [quando, setQuando] = useState<"agora" | "agendar">("agora");
   const [agendarEm, setAgendarEm] = useState("");
   const [expiraEm, setExpiraEm] = useState("");
