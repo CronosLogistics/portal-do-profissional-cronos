@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { AlertTriangle, CheckCircle2, Loader2, Pencil, RefreshCw, Search, Users } from "lucide-react";
 import { toast } from "sonner";
@@ -10,19 +10,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
-  AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useCurrentUser } from "@/hooks/useAuth";
-import { getSyncStatus, listUsers, setUserActive, syncNow, updateUser, type PortalUser } from "@/lib/users.functions";
+import { USERS_PAGE_SIZE, getSyncStatus, listUsers, syncNow, updateUser, type PortalUser, type UserFilter } from "@/lib/users.functions";
 import { USER_ROLES, roleLabel, type UserRole } from "@/lib/users.rules";
 
 export const Route = createFileRoute("/_authenticated/admin/usuarios")({
@@ -50,7 +45,6 @@ function UsersPage() {
   const fetchStatus = useServerFn(getSyncStatus);
   const runSync = useServerFn(syncNow);
   const update = useServerFn(updateUser);
-  const toggle = useServerFn(setUserActive);
   const isAdmin = me.data?.isAdmin === true;
 
   const [query, setQuery] = useState("");
@@ -248,24 +242,6 @@ function UsersPage() {
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={!!confirm} onOpenChange={(o) => !o && setConfirm(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{confirm?.isActive ? "Desativar acesso?" : "Reativar acesso?"}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {confirm?.isActive
-                ? `${confirm?.fullName || confirm?.email} não conseguirá mais entrar no portal.`
-                : `${confirm?.fullName || confirm?.email} voltará a acessar o portal.`}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={() => confirm && activate.mutate(confirm)}>
-              {confirm?.isActive ? "Desativar" : "Reativar"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }
