@@ -473,23 +473,32 @@ export type Database = {
       status_sincronizacao: {
         Row: {
           alterados: number
+          disparado_por: string | null
+          em_execucao_desde: string | null
           erro: string | null
           executado_em: string | null
           id: boolean
+          origem: string | null
           sucesso: boolean | null
         }
         Insert: {
           alterados?: number
+          disparado_por?: string | null
+          em_execucao_desde?: string | null
           erro?: string | null
           executado_em?: string | null
           id?: boolean
+          origem?: string | null
           sucesso?: boolean | null
         }
         Update: {
           alterados?: number
+          disparado_por?: string | null
+          em_execucao_desde?: string | null
           erro?: string | null
           executado_em?: string | null
           id?: boolean
+          origem?: string | null
           sucesso?: boolean | null
         }
         Relationships: []
@@ -520,6 +529,35 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_contagem_profissionais: {
+        Args: never
+        Returns: {
+          ativos: number
+          inativos: number
+          total: number
+        }[]
+      }
+      admin_listar_profissionais: {
+        Args: {
+          _busca: string
+          _deslocamento: number
+          _filtro: string
+          _limite: number
+        }
+        Returns: {
+          email: string
+          employee_id: string
+          entra_oid: string
+          full_name: string
+          id: string
+          is_active: boolean
+          perfil: Database["public"]["Enums"]["app_role"]
+          primeiro_acesso: string
+          sincronizado_em: string
+          total: number
+          ultimo_acesso: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -529,6 +567,7 @@ export type Database = {
       }
       is_active_user: { Args: { _user_id: string }; Returns: boolean }
       is_editor: { Args: { _user_id: string }; Returns: boolean }
+      reservar_sincronizacao: { Args: never; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "rh" | "funcionario"
