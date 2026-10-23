@@ -16,7 +16,7 @@ import { formatarDataBrasilia } from "@/lib/avisos-rules";
 function EditorSimples({ initial, onChange }: { initial: string; onChange: (html: string) => void }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (ref.current) ref.current.innerHTML = initial;
+    if (ref.current && ref.current.innerHTML !== initial) ref.current.innerHTML = initial;
   }, [initial]);
   const cmd = (c: string, v?: string) => {
     ref.current?.focus();
@@ -67,7 +67,7 @@ export function AvisoForm({ open, onClose, aviso }: { open: boolean; onClose: ()
   const [perfilId, setPerfilId] = useState("");
   const [titulo, setTitulo] = useState("");
   const [mensagem, setMensagem] = useState("");
-  const [inicial, setInicial] = useState("");
+  const [, setInicial] = useState("");
   const [quando, setQuando] = useState<"agora" | "agendar">("agora");
   const [agendarEm, setAgendarEm] = useState("");
   const [expiraEm, setExpiraEm] = useState("");
@@ -143,7 +143,7 @@ export function AvisoForm({ open, onClose, aviso }: { open: boolean; onClose: ()
             </div>
             <div className="grid gap-2">
               <Label>Mensagem</Label>
-              <EditorSimples initial={inicial} onChange={setMensagem} />
+              <EditorSimples initial={mensagem} onChange={setMensagem} />
             </div>
             {!publicado && (
               <div className="grid gap-2">
