@@ -8,7 +8,7 @@ export const Route = createFileRoute("/api/public/jobs/entra-sync")({
         const authFailure = await authenticateCronRequest(request);
         if (authFailure) return authFailure;
         const { runEntraSync } = await import("@/lib/entra-sync.server");
-        const r = await runEntraSync();
+        const r = await runEntraSync({ origem: "automatica" });
         return Response.json({ sucesso: r.sucesso, alterados: r.alterados });
       },
     },

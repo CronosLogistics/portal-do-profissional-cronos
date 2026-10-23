@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { AlertTriangle, CheckCircle2, Loader2, Pencil, RefreshCw, Search, Users } from "lucide-react";
 import { toast } from "sonner";
@@ -10,19 +10,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
-  AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useCurrentUser } from "@/hooks/useAuth";
-import { getSyncStatus, listUsers, setUserActive, syncNow, updateUser, type PortalUser } from "@/lib/users.functions";
+import { USERS_PAGE_SIZE, getSyncStatus, listUsers, syncNow, updateUser, type PortalUser, type UserFilter } from "@/lib/users.functions";
 import { USER_ROLES, roleLabel, type UserRole } from "@/lib/users.rules";
 
 export const Route = createFileRoute("/_authenticated/admin/usuarios")({
@@ -50,29 +45,26 @@ function UsersPage() {
   const fetchStatus = useServerFn(getSyncStatus);
   const runSync = useServerFn(syncNow);
   const update = useServerFn(updateUser);
-  const toggle = useServerFn(setUserActive);
   const isAdmin = me.data?.isAdmin === true;
 
-  const users = useQuery({ queryKey: ["admin-users"], queryFn: () => fetchUsers(), enabled: isAdmin });
-  const status = useQuery({ queryKey: ["sync-status"], queryFn: () => fetchStatus(), enabled: isAdmin });
-
   const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("todos");
-  const [roleFilter, setRoleFilter] = useState("todos");
+  const [busca, setBusca] = useState("");
+  const [filtro, setFiltro] = useState<UserFilter>("todos");
+  const [pagina, setPagina] = useState(0);
   const [editing, setEditing] = useState<{ user: PortalUser; role: UserRole } | null>(null);
-  const [confirm, setConfirm] = useState<PortalUser | null>(null);
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return (users.data ?? []).filter((u) => {
-      if (q && !(u.fullName.toLowerCase().includes(q) || u.email.includes(q) || u.employeeId.toLowerCase().includes(q))) return false;
-      if (statusFilter === "ativos" && !u.isActive) return false;
-      if (statusFilter === "inativos" && u.isActive) return false;
-      if (statusFilter === "sem-acesso" && u.lastSignInAt) return false;
-      if (roleFilter !== "todos" && u.role !== roleFilter) return false;
-      return true;
-    });
-  }, [users.data, query, statusFilter, roleFilter]);
+  useEffect(() => {
+    const t = setTimeout(() => { setBusca(query.trim()); setPagina(0); }, 300);
+    return () => clearTimeout(t);
+  }, [query]);
+
+  const users = useQuery({
+    queryKey: ["admin-users", busca, filtro, pagina],
+    queryFn: () => fetchUsers({ data: { busca, filtro, pagina } }),
+    enabled: isAdmin,
+    placeholderData: keepPreviousData,
+  });
+  const status = useQuery({ queryKey: ["sync-status"], queryFn: () => fetchStatus(), enabled: isAdmin });
 
   const refresh = () => {
     void qc.invalidateQueries({ queryKey: ["admin-users"] });
@@ -82,7 +74,8 @@ function UsersPage() {
   const sync = useMutation({
     mutationFn: () => runSync(),
     onSuccess: (r) => {
-      if (r.sucesso) toast.success(`Sincronização concluída: ${r.alterados} cadastro(s) atualizado(s).`);
+      if (r.emAndamento) toast.info(r.erro ?? "Sincronização em andamento.");
+      else if (r.sucesso) toast.success(`${r.alterados} profissional(is) atualizado(s).`);
       else toast.error(r.erro ?? "A sincronização falhou.");
       refresh();
     },
@@ -96,12 +89,6 @@ function UsersPage() {
     onError: (e) => toast.error(e instanceof Error ? e.message : "Não foi possível salvar."),
   });
 
-  const activate = useMutation({
-    mutationFn: (u: PortalUser) => toggle({ data: { id: u.id, active: !u.isActive } }),
-    onSuccess: (_r, u) => { toast.success(u.isActive ? "Acesso desativado." : "Acesso reativado."); setConfirm(null); refresh(); },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Não foi possível alterar o acesso."),
-  });
-
   if (me.isPending) return <Skeleton className="h-40 w-full" />;
   if (!isAdmin) {
     return (
@@ -113,8 +100,12 @@ function UsersPage() {
     );
   }
 
-  const all = users.data ?? [];
+  const list = users.data?.users ?? [];
+  const total = users.data?.total ?? 0;
+  const counts = users.data?.counts;
+  const pages = Math.max(1, Math.ceil(total / USERS_PAGE_SIZE));
   const s = status.data;
+  const syncing = sync.isPending || s?.emExecucao === true;
 
   return (
     <div>
@@ -123,19 +114,24 @@ function UsersPage() {
       <AdminTabs />
 
       <div className="mt-6 grid gap-4 md:grid-cols-4">
-        <Stat label="Profissionais" value={all.length} />
-        <Stat label="Ativos" value={all.filter((u) => u.isActive).length} />
-        <Stat label="Inativos" value={all.filter((u) => !u.isActive).length} />
+        <Stat label="Profissionais" value={counts?.total ?? 0} />
+        <Stat label="Ativos" value={counts?.ativos ?? 0} />
+        <Stat label="Inativos" value={counts?.inativos ?? 0} />
         <div className="rounded-lg border bg-card p-4">
-          <p className="text-xs text-muted-foreground">Sincronização com o Microsoft</p>
+          <p className="text-xs text-muted-foreground">Última sincronização</p>
           <div className="mt-1 flex items-center gap-1.5 text-sm font-medium">
             {s?.sucesso === false ? <AlertTriangle className="h-4 w-4 text-destructive" /> :
               s?.sucesso ? <CheckCircle2 className="h-4 w-4 text-primary" /> : null}
             {s?.executadoEm ? fmt(s.executadoEm) : "Ainda não executada"}
           </div>
-          <Button variant="outline" size="sm" className="mt-2" disabled={sync.isPending} onClick={() => sync.mutate()}>
-            {sync.isPending ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="mr-1.5 h-3.5 w-3.5" />}
-            Sincronizar agora
+          {s?.executadoEm ? (
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              {s.origem === "manual" ? `Manual${s.disparadoPor ? ` · ${s.disparadoPor}` : ""}` : "Automática"} · {s.alterados} alterado(s)
+            </p>
+          ) : null}
+          <Button variant="outline" size="sm" className="mt-2" disabled={syncing} onClick={() => sync.mutate()}>
+            {syncing ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="mr-1.5 h-3.5 w-3.5" />}
+            Sincronizar com o Microsoft 365
           </Button>
         </div>
       </div>
@@ -148,22 +144,15 @@ function UsersPage() {
       <div className="mt-6 flex flex-wrap items-center gap-3">
         <div className="relative w-full max-w-sm">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Buscar por nome, e-mail ou matrícula" className="pl-9" />
+          <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Buscar por nome ou e-mail" className="pl-9" />
         </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-44" aria-label="Filtrar por status"><SelectValue /></SelectTrigger>
+        <Select value={filtro} onValueChange={(v) => { setFiltro(v as UserFilter); setPagina(0); }}>
+          <SelectTrigger className="w-44" aria-label="Filtrar profissionais"><SelectValue /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="todos">Todos os status</SelectItem>
+            <SelectItem value="todos">Todos</SelectItem>
             <SelectItem value="ativos">Ativos</SelectItem>
             <SelectItem value="inativos">Inativos</SelectItem>
-            <SelectItem value="sem-acesso">Nunca acessaram</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={roleFilter} onValueChange={setRoleFilter}>
-          <SelectTrigger className="w-56" aria-label="Filtrar por perfil"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="todos">Todos os perfis</SelectItem>
-            {USER_ROLES.map((r) => <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>)}
+            <SelectItem value="com-perfil">Com perfil</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -176,7 +165,7 @@ function UsersPage() {
             Não foi possível carregar os usuários.{" "}
             <button className="underline" onClick={() => users.refetch()}>Tentar novamente</button>
           </div>
-        ) : filtered.length === 0 ? (
+        ) : list.length === 0 ? (
           <div className="flex flex-col items-center gap-2 p-12 text-center text-muted-foreground">
             <Users className="h-8 w-8" /> Nenhum profissional encontrado.
           </div>
@@ -185,36 +174,26 @@ function UsersPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Nome</TableHead>
-                <TableHead className="hidden md:table-cell">Matrícula</TableHead>
-                <TableHead>Perfil</TableHead>
-                <TableHead className="hidden lg:table-cell">Último acesso</TableHead>
-                <TableHead className="hidden lg:table-cell">Sincronizado</TableHead>
+                <TableHead className="hidden md:table-cell">E-mail</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Perfis</TableHead>
+                <TableHead className="hidden lg:table-cell">Último acesso</TableHead>
                 <TableHead className="text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.map((u) => (
+              {list.map((u) => (
                 <TableRow key={u.id}>
+                  <TableCell className="font-medium">{u.fullName || "—"}</TableCell>
+                  <TableCell className="hidden text-sm md:table-cell">{u.email}</TableCell>
                   <TableCell>
-                    <p className="font-medium">{u.fullName || "—"}</p>
-                    <p className="text-xs text-muted-foreground">{u.email}</p>
+                    <Badge variant={u.isActive ? "secondary" : "outline"}>{u.isActive ? "Ativo" : "Inativo"}</Badge>
                   </TableCell>
-                  <TableCell className="hidden md:table-cell">{u.employeeId || "—"}</TableCell>
-                  <TableCell><Badge variant={u.role === "admin" ? "default" : "secondary"}>{roleLabel(u.role)}</Badge></TableCell>
+                  <TableCell>
+                    {u.role === "funcionario" ? <span className="text-xs text-muted-foreground">—</span> :
+                      <Badge variant={u.role === "admin" ? "default" : "secondary"}>{roleLabel(u.role)}</Badge>}
+                  </TableCell>
                   <TableCell className="hidden text-sm lg:table-cell">{fmt(u.lastSignInAt)}</TableCell>
-                  <TableCell className="hidden text-sm lg:table-cell">{fmt(u.syncedAt)}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Switch
-                        checked={u.isActive}
-                        disabled={u.id === me.data?.id}
-                        onCheckedChange={() => setConfirm(u)}
-                        aria-label={u.isActive ? "Desativar acesso" : "Reativar acesso"}
-                      />
-                      <span className="text-xs text-muted-foreground">{u.isActive ? "Ativo" : "Inativo"}</span>
-                    </div>
-                  </TableCell>
                   <TableCell className="text-right">
                     <Button variant="ghost" size="sm" onClick={() => setEditing({ user: u, role: u.role })} aria-label="Alterar perfil">
                       <Pencil className="h-4 w-4" />
@@ -226,9 +205,16 @@ function UsersPage() {
           </Table>
         )}
       </div>
-      <p className="mt-3 text-xs text-muted-foreground">
-        Os profissionais entram com a conta Microsoft da Cronos. Nome, e-mail, matrícula e status são atualizados diariamente a partir do Microsoft.
-      </p>
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
+        <p>Nome, e-mail e status vêm do Microsoft e são atualizados diariamente ou pelo botão de sincronização.</p>
+        {total > 0 ? (
+          <div className="flex items-center gap-2">
+            <span>Página {pagina + 1} de {pages} · {total} profissional(is)</span>
+            <Button variant="outline" size="sm" disabled={pagina === 0} onClick={() => setPagina((p) => p - 1)}>Anterior</Button>
+            <Button variant="outline" size="sm" disabled={pagina + 1 >= pages} onClick={() => setPagina((p) => p + 1)}>Próxima</Button>
+          </div>
+        ) : null}
+      </div>
 
       <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
         <DialogContent>
@@ -256,24 +242,6 @@ function UsersPage() {
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={!!confirm} onOpenChange={(o) => !o && setConfirm(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{confirm?.isActive ? "Desativar acesso?" : "Reativar acesso?"}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {confirm?.isActive
-                ? `${confirm?.fullName || confirm?.email} não conseguirá mais entrar no portal.`
-                : `${confirm?.fullName || confirm?.email} voltará a acessar o portal.`}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={() => confirm && activate.mutate(confirm)}>
-              {confirm?.isActive ? "Desativar" : "Reativar"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }

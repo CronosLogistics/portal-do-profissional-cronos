@@ -28,9 +28,25 @@ async function fetchAllEntraUsers(): Promise<EntraUser[]> {
   return all;
 }
 
+export type SyncOrigin = "automatica" | "manual";
+
 /** Sincroniza os cadastros do portal com o diretório Microsoft e registra o resultado. */
-export async function runEntraSync() {
+export async function runEntraSync(opts: { origem: SyncOrigin; disparadoPor?: string | null } = { origem: "automatica" }) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const lock = await supabaseAdmin.rpc("reservar_sincronizacao");
+  if (lock.error) throw new Error("Não foi possível iniciar a sincronização.");
+  if (lock.data !== true) {
+    return { sucesso: false, alterados: 0, erro: "Sincronização em andamento. Aguarde alguns minutos.", emAndamento: true };
+  }
+  const meta = { origem: opts.origem, disparado_por: opts.disparadoPor ?? null, em_execucao_desde: null };
+  const r = await doSync(supabaseAdmin, meta);
+  return { ...r, emAndamento: false };
+}
+
+async function doSync(
+  supabaseAdmin: Awaited<typeof import("@/integrations/supabase/client.server")>["supabaseAdmin"],
+  meta: { origem: SyncOrigin; disparado_por: string | null; em_execucao_desde: null },
+) {
   const now = new Date().toISOString();
   let alterados = 0;
   try {
@@ -55,11 +71,11 @@ export async function runEntraSync() {
         }
       }
     }
-    await supabaseAdmin.from("status_sincronizacao").upsert({ id: true, executado_em: now, sucesso: true, erro: null, alterados });
+    await supabaseAdmin.from("status_sincronizacao").upsert({ id: true, executado_em: now, sucesso: true, erro: null, alterados, ...meta });
     return { sucesso: true, alterados, erro: null as string | null };
   } catch (e) {
     const erro = e instanceof Error ? e.message : "Erro desconhecido.";
-    await supabaseAdmin.from("status_sincronizacao").upsert({ id: true, executado_em: now, sucesso: false, erro, alterados });
+    await supabaseAdmin.from("status_sincronizacao").upsert({ id: true, executado_em: now, sucesso: false, erro, alterados, ...meta });
     return { sucesso: false, alterados, erro };
   }
 }

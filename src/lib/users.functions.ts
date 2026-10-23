@@ -53,61 +53,89 @@ async function setRole(
   if (ins.error) throw friendly(ins.error.message);
 }
 
+export type UserFilter = "todos" | "ativos" | "inativos" | "com-perfil";
+export type UsersPage = { users: PortalUser[]; total: number; counts: { total: number; ativos: number; inativos: number } };
+export const USERS_PAGE_SIZE = 50;
+
 export const listUsers = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }): Promise<PortalUser[]> => {
+  .inputValidator((input: { busca?: string; filtro?: UserFilter; pagina?: number }) => ({
+    busca: String(input?.busca ?? "").trim().slice(0, 100),
+    filtro: (["todos", "ativos", "inativos", "com-perfil"].includes(input?.filtro ?? "") ? input.filtro : "todos") as UserFilter,
+    pagina: Math.max(0, Math.floor(Number(input?.pagina) || 0)),
+  }))
+  .handler(async ({ data, context }): Promise<UsersPage> => {
     await requireAdmin(context as unknown as RpcCtx);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const [profiles, roles] = await Promise.all([
-      supabaseAdmin
-        .from("profiles")
-        .select("id, email, full_name, employee_id, is_active, entra_oid, primeiro_acesso, ultimo_acesso, sincronizado_em")
-        .order("full_name"),
-      supabaseAdmin.from("user_roles").select("user_id, role"),
+    const [rows, counts] = await Promise.all([
+      context.supabase.rpc("admin_listar_profissionais", {
+        _busca: data.busca,
+        _filtro: data.filtro,
+        _limite: USERS_PAGE_SIZE,
+        _deslocamento: data.pagina * USERS_PAGE_SIZE,
+      }),
+      context.supabase.rpc("admin_contagem_profissionais"),
     ]);
-    if (profiles.error || roles.error) throw new Error("Não foi possível carregar os usuários.");
-    const roleOf = new Map<string, UserRole>();
-    for (const r of roles.data ?? []) {
-      const current = roleOf.get(r.user_id);
-      const rank = { admin: 3, rh: 2, funcionario: 1 } as const;
-      if (!current || rank[r.role as UserRole] > rank[current]) roleOf.set(r.user_id, r.role as UserRole);
-    }
-    return (profiles.data ?? []).map((p) => ({
-      id: p.id,
-      email: p.email,
-      fullName: p.full_name,
-      employeeId: p.employee_id ?? "",
-      isActive: p.is_active,
-      role: roleOf.get(p.id) ?? "funcionario",
-      lastSignInAt: p.ultimo_acesso ?? null,
-      firstAccessAt: p.primeiro_acesso ?? null,
-      syncedAt: p.sincronizado_em ?? null,
-      linkedMicrosoft: !!p.entra_oid,
-      invitedPending: !p.ultimo_acesso,
-    }));
+    if (rows.error || counts.error) throw new Error("Não foi possível carregar os usuários.");
+    const list = rows.data ?? [];
+    const c = counts.data?.[0];
+    return {
+      total: Number(list[0]?.total ?? 0),
+      counts: { total: Number(c?.total ?? 0), ativos: Number(c?.ativos ?? 0), inativos: Number(c?.inativos ?? 0) },
+      users: list.map((p) => ({
+        id: p.id,
+        email: p.email,
+        fullName: p.full_name,
+        employeeId: p.employee_id ?? "",
+        isActive: p.is_active,
+        role: p.perfil as UserRole,
+        lastSignInAt: p.ultimo_acesso ?? null,
+        firstAccessAt: p.primeiro_acesso ?? null,
+        syncedAt: p.sincronizado_em ?? null,
+        linkedMicrosoft: !!p.entra_oid,
+        invitedPending: !p.ultimo_acesso,
+      })),
+    };
   });
 
-export type SyncStatus = { executadoEm: string | null; sucesso: boolean | null; erro: string | null; alterados: number };
+export type SyncStatus = {
+  executadoEm: string | null;
+  sucesso: boolean | null;
+  erro: string | null;
+  alterados: number;
+  origem: "automatica" | "manual" | null;
+  disparadoPor: string | null;
+  emExecucao: boolean;
+};
 
 export const getSyncStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<SyncStatus> => {
     await requireAdmin(context as unknown as RpcCtx);
     const { data } = await context.supabase.from("status_sincronizacao").select("*").maybeSingle();
+    let disparadoPor: string | null = null;
+    if (data?.disparado_por) {
+      const p = await context.supabase.from("profiles").select("full_name, email").eq("id", data.disparado_por).maybeSingle();
+      disparadoPor = p.data?.full_name || p.data?.email || null;
+    }
+    const running = data?.em_execucao_desde ? Date.now() - new Date(data.em_execucao_desde).getTime() < 10 * 60_000 : false;
     return {
       executadoEm: data?.executado_em ?? null,
       sucesso: data?.sucesso ?? null,
       erro: data?.erro ?? null,
       alterados: data?.alterados ?? 0,
+      origem: (data?.origem as SyncStatus["origem"]) ?? null,
+      disparadoPor,
+      emExecucao: running,
     };
   });
 
 export const syncNow = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await requireAdmin(context as unknown as RpcCtx);
+    const ctx = context as unknown as RpcCtx;
+    await requireAdmin(ctx);
     const { runEntraSync } = await import("@/lib/entra-sync.server");
-    return runEntraSync();
+    return runEntraSync({ origem: "manual", disparadoPor: ctx.userId });
   });
 
 export const inviteUser = createServerFn({ method: "POST" })
