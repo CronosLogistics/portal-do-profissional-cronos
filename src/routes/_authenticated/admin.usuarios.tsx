@@ -2,23 +2,24 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { AlertTriangle, CheckCircle2, Loader2, Pencil, RefreshCw, Search, Users } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Loader2, Plus, RefreshCw, Search, Users, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { AdminTabs } from "@/components/clube/AdminTabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
-} from "@/components/ui/dialog";
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
+  AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useCurrentUser } from "@/hooks/useAuth";
-import { USERS_PAGE_SIZE, getSyncStatus, listUsers, syncNow, updateUser, type PortalUser, type UserFilter } from "@/lib/users.functions";
-import { USER_ROLES, roleLabel, type UserRole } from "@/lib/users.rules";
+import { currentUserQueryKey, useCurrentUser } from "@/hooks/useAuth";
+import { USERS_PAGE_SIZE, getSyncStatus, listUsers, syncNow, type PortalUser, type UserFilter } from "@/lib/users.functions";
+import { adicionarMembro, listarPerfis, removerMembro } from "@/lib/perfis-client";
 
 export const Route = createFileRoute("/_authenticated/admin/usuarios")({
   head: () => ({
@@ -44,14 +45,13 @@ function UsersPage() {
   const fetchUsers = useServerFn(listUsers);
   const fetchStatus = useServerFn(getSyncStatus);
   const runSync = useServerFn(syncNow);
-  const update = useServerFn(updateUser);
-  const isAdmin = me.data?.isAdmin === true;
+  const isAdmin = me.data?.can("admin.usuarios") === true;
 
   const [query, setQuery] = useState("");
   const [busca, setBusca] = useState("");
   const [filtro, setFiltro] = useState<UserFilter>("todos");
   const [pagina, setPagina] = useState(0);
-  const [editing, setEditing] = useState<{ user: PortalUser; role: UserRole } | null>(null);
+  const [removing, setRemoving] = useState<{ user: PortalUser; perfil: PortalUser["perfis"][number] } | null>(null);
 
   useEffect(() => {
     const t = setTimeout(() => { setBusca(query.trim()); setPagina(0); }, 300);
@@ -82,11 +82,21 @@ function UsersPage() {
     onError: (e) => toast.error(e instanceof Error ? e.message : "A sincronização falhou."),
   });
 
-  const saveRole = useMutation({
-    mutationFn: (e: { user: PortalUser; role: UserRole }) =>
-      update({ data: { id: e.user.id, email: e.user.email, fullName: e.user.fullName, employeeId: e.user.employeeId, role: e.role } }),
-    onSuccess: () => { toast.success("Perfil atualizado."); setEditing(null); refresh(); },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Não foi possível salvar."),
+  const perfis = useQuery({ queryKey: ["perfis"], queryFn: listarPerfis, enabled: isAdmin });
+  const afterChange = () => {
+    refresh();
+    void qc.invalidateQueries({ queryKey: ["perfis"] });
+    void qc.invalidateQueries({ queryKey: currentUserQueryKey });
+  };
+  const add = useMutation({
+    mutationFn: (v: { perfilId: string; userId: string }) => adicionarMembro(v.perfilId, v.userId),
+    onSuccess: () => { toast.success("Perfil adicionado."); afterChange(); },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Não foi possível adicionar."),
+  });
+  const remove = useMutation({
+    mutationFn: (v: { perfilId: string; userId: string }) => removerMembro(v.perfilId, v.userId),
+    onSuccess: () => { toast.success("Perfil removido."); setRemoving(null); afterChange(); },
+    onError: (e) => { toast.error(e instanceof Error ? e.message : "Não foi possível remover."); setRemoving(null); },
   });
 
   if (me.isPending) return <Skeleton className="h-40 w-full" />;
@@ -178,7 +188,6 @@ function UsersPage() {
                 <TableHead>Status</TableHead>
                 <TableHead>Perfis</TableHead>
                 <TableHead className="hidden lg:table-cell">Último acesso</TableHead>
-                <TableHead className="text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -190,15 +199,36 @@ function UsersPage() {
                     <Badge variant={u.isActive ? "secondary" : "outline"}>{u.isActive ? "Ativo" : "Inativo"}</Badge>
                   </TableCell>
                   <TableCell>
-                    {u.role === "funcionario" ? <span className="text-xs text-muted-foreground">—</span> :
-                      <Badge variant={u.role === "admin" ? "default" : "secondary"}>{roleLabel(u.role)}</Badge>}
+                    <div className="flex flex-wrap items-center gap-1">
+                      {u.perfis.map((p) => (
+                        <Badge key={p.id} variant={p.sistema ? "default" : "secondary"} className="gap-1 pr-1">
+                          {p.nome}
+                          <button
+                            type="button"
+                            aria-label={`Remover perfil ${p.nome}`}
+                            className="rounded-sm opacity-70 hover:opacity-100"
+                            onClick={() => p.sistema ? setRemoving({ user: u, perfil: p }) : remove.mutate({ perfilId: p.id, userId: u.id })}
+                          ><X className="h-3 w-3" /></button>
+                        </Badge>
+                      ))}
+                      {u.isActive ? (
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button variant="outline" size="icon" className="h-6 w-6" aria-label="Adicionar perfil"><Plus className="h-3 w-3" /></Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-56 p-1">
+                            {(perfis.data ?? []).filter((p) => p.ativo && !u.perfis.some((x) => x.id === p.id)).map((p) => (
+                              <button key={p.id} type="button" className="block w-full rounded px-2 py-1.5 text-left text-sm hover:bg-muted"
+                                onClick={() => add.mutate({ perfilId: p.id, userId: u.id })}>{p.nome}</button>
+                            ))}
+                            {(perfis.data ?? []).filter((p) => p.ativo && !u.perfis.some((x) => x.id === p.id)).length === 0 &&
+                              <p className="px-2 py-1.5 text-xs text-muted-foreground">Nenhum perfil disponível.</p>}
+                          </PopoverContent>
+                        </Popover>
+                      ) : null}
+                    </div>
                   </TableCell>
                   <TableCell className="hidden text-sm lg:table-cell">{fmt(u.lastSignInAt)}</TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="ghost" size="sm" onClick={() => setEditing({ user: u, role: u.role })} aria-label="Alterar perfil">
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -216,32 +246,20 @@ function UsersPage() {
         ) : null}
       </div>
 
-      <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Alterar perfil de acesso</DialogTitle>
-            <DialogDescription>{editing?.user.fullName} · {editing?.user.email}</DialogDescription>
-          </DialogHeader>
-          {editing ? (
-            <div className="space-y-2">
-              <Label>Perfil de acesso</Label>
-              <Select value={editing.role} onValueChange={(v) => setEditing({ ...editing, role: v as UserRole })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {USER_ROLES.map((r) => <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-          ) : null}
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setEditing(null)}>Cancelar</Button>
-            <Button disabled={saveRole.isPending} onClick={() => editing && saveRole.mutate(editing)}>
-              {saveRole.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null} Salvar
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
+      <AlertDialog open={!!removing} onOpenChange={(o) => !o && setRemoving(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remover do perfil Administrador?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {removing?.user.fullName || removing?.user.email} perderá todos os acessos de administração.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={() => removing && remove.mutate({ perfilId: removing.perfil.id, userId: removing.user.id })}>Remover</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
@@ -250,7 +268,7 @@ function Stat({ label, value }: { label: string; value: number }) {
   return (
     <div className="rounded-lg border bg-card p-4">
       <p className="text-xs text-muted-foreground">{label}</p>
-      <p className="mt-1 text-2xl font-bold text-secondary-foreground">{value}</p>
+      <p className="mt-1 text-2xl font-bold text-foreground">{value}</p>
     </div>
   );
 }

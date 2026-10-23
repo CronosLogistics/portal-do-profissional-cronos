@@ -22,6 +22,13 @@
       "when": 1792767419706,
       "tag": "0002_usuarios_paginacao_trava_sync",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1792769080058,
+      "tag": "0003_perfis_de_acesso",
+      "breakpoints": true
     }
   ]
 }

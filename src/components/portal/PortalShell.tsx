@@ -165,7 +165,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
               icon={Settings}
               parentTo="/admin"
               sectionActive={matchesPath(pathname, "/admin")}
-              parentActive={matchesPath(pathname, "/admin") && !matchesPath(pathname, "/admin/usuarios")}
+              parentActive={matchesPath(pathname, "/admin") && !matchesPath(pathname, "/admin/usuarios") && !matchesPath(pathname, "/admin/perfis")}
               open={openMenus.admin}
               onOpenChange={(next) => {
                 setOpenMenus((state) => ({ ...state, admin: next }));
@@ -177,14 +177,22 @@ export function PortalShell({ children }: { children: ReactNode }) {
               iconOnly={iconOnly}
               onNavigate={closeMobile}
             >
-              <Link
+              {me.data.can("admin.usuarios") && <Link
                 to="/admin/usuarios"
                 className={`portal-subnav ${matchesPath(pathname, "/admin/usuarios") ? "is-active" : ""}`}
                 aria-current={matchesPath(pathname, "/admin/usuarios") ? "page" : undefined}
                 onClick={closeMobile}
               >
                 Usuários e acessos
-              </Link>
+              </Link>}
+              {me.data.can("admin.perfis") && <Link
+                to="/admin/perfis"
+                className={`portal-subnav ${matchesPath(pathname, "/admin/perfis") ? "is-active" : ""}`}
+                aria-current={matchesPath(pathname, "/admin/perfis") ? "page" : undefined}
+                onClick={closeMobile}
+              >
+                Perfis
+              </Link>}
             </SidebarBranch>
           ) : (
             <Button asChild variant="ghost" className={`portal-nav-item ${matchesPath(pathname, "/admin") ? "is-active" : ""}`}>

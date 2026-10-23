@@ -48,14 +48,8 @@ function AdminHome() {
   const [query, setQuery] = useState("");
 
   async function load() {
-    const { data: user } = await supabase.auth.getUser();
-    if (user.user) {
-      const { data: roles } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.user.id);
-      setCanEdit((roles ?? []).some((row) => row.role === "admin" || row.role === "rh"));
-    }
+    const { data: allowed } = await supabase.rpc("tem_permissao", { _permissao: "conteudo.editar" });
+    setCanEdit(allowed === true);
     const { data, error } = await supabase
       .from("partners")
       .select("id, slug, name, category_slug, discount, is_active, is_featured, logo_url, partner_categories(name)")
