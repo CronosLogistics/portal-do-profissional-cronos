@@ -3,12 +3,15 @@ import { useNavigate } from "@tanstack/react-router";
 
 import { supabase } from "@/integrations/supabase/client";
 import type { PortalRole } from "@/lib/portal-modules";
+import type { Permissao } from "@/lib/permissions";
 
 export type CurrentUser = {
   id: string;
   email: string;
   fullName: string;
   roles: PortalRole[];
+  permissions: Permissao[];
+  can: (p: Permissao) => boolean;
   isAdmin: boolean;
   isEditor: boolean;
 };
@@ -19,23 +22,30 @@ async function fetchCurrentUser(): Promise<CurrentUser | null> {
   const { data } = await supabase.auth.getUser();
   const user = data.user;
   if (!user) return null;
-  const [{ data: profile }, { data: roleRows }] = await Promise.all([
+  const [{ data: profile }, { data: perms }] = await Promise.all([
     supabase.from("profiles").select("full_name, email").eq("id", user.id).maybeSingle(),
-    supabase.from("user_roles").select("role").eq("user_id", user.id),
+    supabase.rpc("minhas_permissoes"),
   ]);
-  const roles = (roleRows ?? []).map((r) => r.role as PortalRole);
+  const permissions = ((perms as string[] | null) ?? []) as Permissao[];
+  const can = (p: Permissao) => permissions.includes(p);
+  const roles: PortalRole[] = ["funcionario"];
+  if (can("conteudo.editar")) roles.push("rh");
+  if (can("admin.usuarios")) roles.push("admin");
   return {
     id: user.id,
     email: profile?.email ?? user.email ?? "",
     fullName: profile?.full_name ?? "",
     roles,
-    isAdmin: roles.includes("admin"),
-    isEditor: roles.includes("admin") || roles.includes("rh"),
+    permissions,
+    can,
+    isAdmin: can("admin.usuarios") || can("admin.perfis"),
+    isEditor: can("conteudo.editar") || can("admin.usuarios") || can("admin.perfis"),
   };
 }
 
 export function useCurrentUser() {
-  return useQuery({ queryKey: currentUserQueryKey, queryFn: fetchCurrentUser, staleTime: 60_000 });
+  // Recarrega a cada abertura de página: retirar alguém de um perfil vale no próximo carregamento.
+  return useQuery({ queryKey: currentUserQueryKey, queryFn: fetchCurrentUser, staleTime: 30_000 });
 }
 
 export function useSignOut() {

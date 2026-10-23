@@ -10,6 +10,7 @@ export type PortalUser = {
   employeeId: string;
   isActive: boolean;
   role: UserRole;
+  perfis: { id: string; nome: string; sistema: boolean }[];
   lastSignInAt: string | null;
   firstAccessAt: string | null;
   syncedAt: string | null;
@@ -67,7 +68,7 @@ export const listUsers = createServerFn({ method: "POST" })
   .handler(async ({ data, context }): Promise<UsersPage> => {
     await requireAdmin(context as unknown as RpcCtx);
     const [rows, counts] = await Promise.all([
-      context.supabase.rpc("admin_listar_profissionais", {
+      context.supabase.rpc("admin_listar_profissionais_perfis", {
         _busca: data.busca,
         _filtro: data.filtro,
         _limite: USERS_PAGE_SIZE,
@@ -87,7 +88,8 @@ export const listUsers = createServerFn({ method: "POST" })
         fullName: p.full_name,
         employeeId: p.employee_id ?? "",
         isActive: p.is_active,
-        role: p.perfil as UserRole,
+        role: "funcionario" as UserRole,
+        perfis: (p.perfis as { id: string; nome: string; sistema: boolean }[] | null) ?? [],
         lastSignInAt: p.ultimo_acesso ?? null,
         firstAccessAt: p.primeiro_acesso ?? null,
         syncedAt: p.sincronizado_em ?? null,
