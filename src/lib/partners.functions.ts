@@ -57,9 +57,8 @@ function mapPartner(row: Row, fix: (u: string | null) => string | null): PublicP
 }
 
 export const listPublicCategories = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth]).handler(async () => {
-  const { legacyClient } = await import("@/lib/legacy-content.server");
-  const supabase = legacyClient();
+  .middleware([requireSupabaseAuth]).handler(async ({ context }) => {
+  const supabase = context.supabase;
   const { data, error } = await supabase
     .from("partner_categories")
     .select("id, slug, name, description, icon, sort_order")
@@ -74,9 +73,8 @@ export const listPublicCategories = createServerFn({ method: "GET" })
 });
 
 export const listPublicPartners = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth]).handler(async () => {
-  const { legacyClient } = await import("@/lib/legacy-content.server");
-  const supabase = legacyClient();
+  .middleware([requireSupabaseAuth]).handler(async ({ context }) => {
+  const supabase = context.supabase;
   const { data, error } = await supabase
     .from("partners")
     .select(PUBLIC_COLUMNS)
@@ -96,9 +94,8 @@ export const listPublicPartners = createServerFn({ method: "GET" })
 export const getPublicPartner = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: { slug: string }) => data)
-  .handler(async ({ data }) => {
-    const { legacyClient } = await import("@/lib/legacy-content.server");
-    const supabase = legacyClient();
+  .handler(async ({ data, context }) => {
+    const supabase = context.supabase;
     const { data: partner, error } = await supabase
       .from("partners")
       .select(PUBLIC_COLUMNS.replace("!inner", ""))
@@ -132,9 +129,8 @@ export type PublicOffice = { id: string; slug: string; name: string };
 
 export const listPublicOffices = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async () => {
-    const { legacyClient } = await import("@/lib/legacy-content.server");
-    const { data, error } = await legacyClient()
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase
       .from("offices")
       .select("id, slug, name")
       .eq("is_active", true)
