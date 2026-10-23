@@ -15,7 +15,7 @@ import { arquivarAviso, avisosEnviados, avisosKey, cancelarAviso, listarAvisos, 
 import { formatarDataBrasilia, statusAviso, type StatusAviso } from "@/lib/avisos-rules";
 
 export const Route = createFileRoute("/_authenticated/avisos")({
-  validateSearch: (s: Record<string, unknown>): { aviso?: string } => (typeof s.aviso === "string" ? { aviso: s.aviso } : {}),
+  validateSearch: (s: Record<string, unknown>): { aviso?: string } => (typeof s["aviso"] === "string" ? { aviso: s["aviso"] } : {}),
   head: () => ({
     meta: [
       { title: "Avisos | Portal do Profissional Cronos" },
@@ -54,7 +54,7 @@ function AvisosPage() {
       ) : (
         <Recebidos />
       )}
-      <AvisoForm open={form.open} aviso={form.aviso} onClose={() => setForm({ open: false })} />
+      <AvisoForm open={form.open} aviso={form.aviso ?? null} onClose={() => setForm({ open: false })} />
     </main>
   );
 }

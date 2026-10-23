@@ -86,7 +86,7 @@ export function AvisoForm({ open, onClose, aviso }: { open: boolean; onClose: ()
   }, [open, aviso]);
 
   useEffect(() => {
-    if (!aviso && !perfilId && perfis.data?.length === 1) setPerfilId(perfis.data[0].id);
+    if (!aviso && !perfilId && perfis.data?.length === 1 && perfis.data[0]) setPerfilId(perfis.data[0].id);
   }, [perfis.data, perfilId, aviso]);
 
   const salvar = useMutation({

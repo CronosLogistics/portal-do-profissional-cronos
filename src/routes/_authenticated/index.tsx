@@ -30,7 +30,7 @@ function Home() {
   const me = useCurrentUser();
   const naoLidos = useNaoLidos().data ?? 0;
   const actions = [
-    { title: naoLidos ? `${naoLidos} ${naoLidos === 1 ? "aviso não lido" : "avisos não lidos"}` : "Avisos", category: naoLidos ? "Avisos · Ver agora" : "Avisos · Em dia", icon: Megaphone, to: "/avisos" as const },
+    { title: naoLidos ? `${naoLidos} ${naoLidos === 1 ? "aviso não lido" : "avisos não lidos"}` : "Avisos", category: naoLidos ? "Avisos · Ver agora" : "Avisos · Em dia", icon: Megaphone, to: "/avisos" as const, href: undefined },
     ...baseActions,
   ];
   const firstName = me.data?.fullName.trim().split(" ")[0];
