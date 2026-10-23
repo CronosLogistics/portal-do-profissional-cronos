@@ -96,10 +96,7 @@ export const getBenefit = createServerFn({ method: "GET" })
 
     return {
       benefit: benefit as Benefit,
-      images: await (async () => {
-        const { legacyUrl } = await import("@/lib/legacy-content.server");
-        return ((images ?? []) as BenefitImage[]).map((i) => ({ ...i, image_url: legacyUrl(i.image_url) }));
-      })(),
+      images: (images ?? []) as BenefitImage[],
     };
   });
 

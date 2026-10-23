@@ -87,8 +87,7 @@ export const listPublicPartners = createServerFn({ method: "GET" })
     return [] as PublicPartner[];
   }
 
-  const { legacyUrl } = await import("@/lib/legacy-content.server");
-  return ((data ?? []) as unknown as Row[]).map((r) => mapPartner(r, legacyUrl));
+  return ((data ?? []) as unknown as Row[]).map((r) => mapPartner(r, (u) => u));
 });
 
 export const getPublicPartner = createServerFn({ method: "GET" })
@@ -114,13 +113,11 @@ export const getPublicPartner = createServerFn({ method: "GET" })
       .eq("partner_id", (partner as unknown as { id: string }).id)
       .order("sort_order")
       .order("created_at");
-
-    const { legacyUrl, legacyFileUrl } = await import("@/lib/legacy-content.server");
     return {
-      ...mapPartner(partner as unknown as Row, legacyUrl),
+      ...mapPartner(partner as unknown as Row, (u) => u),
       attachments: ((files ?? []) as Omit<PublicAttachment, "url">[]).map((f) => ({
         ...f,
-        url: legacyFileUrl(f.file_path, f.name),
+        url: attachmentUrl(f.file_path, f.name),
       })),
     };
   });
@@ -138,3 +135,9 @@ export const listPublicOffices = createServerFn({ method: "GET" })
     if (error) console.error("Erro ao listar escritórios:", error.message);
     return (data ?? []) as PublicOffice[];
   });
+
+/** Anexos migrados guardam endereço completo; novos ficam no armazenamento do portal. */
+export function attachmentUrl(path: string, name: string) {
+  if (/^https?:\/\//.test(path)) return path;
+  return `/api/public/partner-logo?path=${encodeURIComponent(path)}&name=${encodeURIComponent(name)}`;
+}

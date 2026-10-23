@@ -1,3 +1,4 @@
+import { attachmentUrl } from "@/lib/partners.functions";
 import { useEffect, useRef, useState } from "react";
 import { ArrowDown, ArrowUp, FileText, Paperclip, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -156,7 +157,7 @@ export function PartnerAttachments({ partnerId }: { partnerId: string }) {
               />
               <span className="text-xs text-muted-foreground">{formatBytes(item.size_bytes)}</span>
               <a
-                href={`/api/public/partner-logo?path=${encodeURIComponent(item.file_path)}&name=${encodeURIComponent(item.name)}`}
+                href={attachmentUrl(item.file_path, item.name)}
                 target="_blank"
                 rel="noreferrer noopener"
                 className="px-2 text-xs text-primary hover:underline"
