@@ -1,6 +1,8 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { Award, Building2, ChevronLeft, ChevronRight, Gift, GraduationCap, Home, LogOut, Menu, Settings, Tag, X } from "lucide-react";
+import { Award, Building2, ChevronLeft, ChevronRight, Gift, GraduationCap, Home, LogOut, Megaphone, Menu, Settings, Tag, X } from "lucide-react";
+import { AvisosBell } from "@/components/avisos/AvisosBell";
+import { useAvisosAoVivo, useNaoLidos } from "@/hooks/useAvisos";
 import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
@@ -10,6 +12,7 @@ import { useOffice } from "@/components/clube/OfficeContext";
 import logo from "@/assets/cronos-full-logo.png.asset.json";
 
 const moduleIcons: Record<PortalModule["to"], LucideIcon> = {
+  "/avisos": Megaphone,
   "/beneficios": Gift,
   "/parceiros": Tag,
   "/recompensas": Award,
@@ -85,6 +88,8 @@ export function PortalShell({ children }: { children: ReactNode }) {
   const me = useCurrentUser();
   const navigate = useNavigate();
   const signOut = useSignOut();
+  const naoLidos = useNaoLidos().data ?? 0;
+  useAvisosAoVivo(me.data?.id, naoLidos);
   const { office, openPicker } = useOffice();
   const { pathname } = useLocation();
   const roles = me.data?.roles ?? [];
@@ -122,6 +127,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
                   <Link to={entry.to} title={entry.label} onClick={closeMobile}>
                     <Icon />
                     <span className="sidebar-label">{entry.label}</span>
+                    {entry.to === "/avisos" && naoLidos > 0 && <span className="portal-count-badge portal-nav-badge">{naoLidos > 99 ? "99+" : naoLidos}</span>}
                   </Link>
                 </Button>
               );
@@ -210,6 +216,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
           <div className="flex min-w-0 items-center gap-3"><Button variant="ghost" size="icon" className="portal-mobile-toggle" onClick={() => setMobileOpen(true)} aria-label="Abrir menu"><Menu /></Button><span className="text-sm text-muted-foreground">{title}</span></div>
           <div className="flex min-w-0 items-center gap-4">
             <Button variant="ghost" size="sm" onClick={openPicker} title="Trocar escritório" className="hidden text-muted-foreground sm:flex"><Building2 /><span>{office?.name || "Escritório"}</span></Button>
+            <AvisosBell naoLidos={naoLidos} />
             <div className="portal-user"><span className="portal-avatar">{initials}</span><div className="min-w-0"><p className="truncate text-sm font-bold">{name}</p><p className="max-w-48 truncate text-xs text-muted-foreground">{me.data?.email}</p></div></div>
           </div>
         </header>
