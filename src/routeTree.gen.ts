@@ -19,6 +19,7 @@ import { Route as AuthenticatedTreinamentosRouteImport } from './routes/_authent
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedAdminBeneficiosRouteImport } from './routes/_authenticated/admin.beneficios'
 import { Route as AuthenticatedAdminPaginaInicialRouteImport } from './routes/_authenticated/admin.pagina-inicial'
+import { Route as AuthenticatedAdminPerfisRouteImport } from './routes/_authenticated/admin.perfis'
 import { Route as AuthenticatedAdminRecompensasRouteImport } from './routes/_authenticated/admin.recompensas'
 import { Route as AuthenticatedAdminUsuariosRouteImport } from './routes/_authenticated/admin.usuarios'
 import { Route as AuthenticatedBeneficiosIndexRouteImport } from './routes/_authenticated/beneficios.index'
@@ -85,6 +86,12 @@ const AuthenticatedAdminPaginaInicialRoute =
   AuthenticatedAdminPaginaInicialRouteImport.update({
     id: '/pagina-inicial',
     path: '/pagina-inicial',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminPerfisRoute =
+  AuthenticatedAdminPerfisRouteImport.update({
+    id: '/perfis',
+    path: '/perfis',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 const AuthenticatedAdminRecompensasRoute =
@@ -185,6 +192,7 @@ export interface FileRoutesByFullPath {
   '/treinamentos': typeof AuthenticatedTreinamentosRoute
   '/admin/beneficios': typeof AuthenticatedAdminBeneficiosRoute
   '/admin/pagina-inicial': typeof AuthenticatedAdminPaginaInicialRoute
+  '/admin/perfis': typeof AuthenticatedAdminPerfisRoute
   '/admin/recompensas': typeof AuthenticatedAdminRecompensasRoute
   '/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
   '/beneficios/$slug': typeof AuthenticatedBeneficiosSlugRoute
@@ -210,6 +218,7 @@ export interface FileRoutesByTo {
   '/': typeof AuthenticatedIndexRoute
   '/admin/beneficios': typeof AuthenticatedAdminBeneficiosRoute
   '/admin/pagina-inicial': typeof AuthenticatedAdminPaginaInicialRoute
+  '/admin/perfis': typeof AuthenticatedAdminPerfisRoute
   '/admin/recompensas': typeof AuthenticatedAdminRecompensasRoute
   '/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
   '/beneficios/$slug': typeof AuthenticatedBeneficiosSlugRoute
@@ -238,6 +247,7 @@ export interface FileRoutesById {
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/admin/beneficios': typeof AuthenticatedAdminBeneficiosRoute
   '/_authenticated/admin/pagina-inicial': typeof AuthenticatedAdminPaginaInicialRoute
+  '/_authenticated/admin/perfis': typeof AuthenticatedAdminPerfisRoute
   '/_authenticated/admin/recompensas': typeof AuthenticatedAdminRecompensasRoute
   '/_authenticated/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
   '/_authenticated/beneficios/$slug': typeof AuthenticatedBeneficiosSlugRoute
@@ -266,6 +276,7 @@ export interface FileRouteTypes {
     | '/treinamentos'
     | '/admin/beneficios'
     | '/admin/pagina-inicial'
+    | '/admin/perfis'
     | '/admin/recompensas'
     | '/admin/usuarios'
     | '/beneficios/$slug'
@@ -291,6 +302,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin/beneficios'
     | '/admin/pagina-inicial'
+    | '/admin/perfis'
     | '/admin/recompensas'
     | '/admin/usuarios'
     | '/beneficios/$slug'
@@ -318,6 +330,7 @@ export interface FileRouteTypes {
     | '/_authenticated/'
     | '/_authenticated/admin/beneficios'
     | '/_authenticated/admin/pagina-inicial'
+    | '/_authenticated/admin/perfis'
     | '/_authenticated/admin/recompensas'
     | '/_authenticated/admin/usuarios'
     | '/_authenticated/beneficios/$slug'
@@ -414,6 +427,13 @@ declare module '@tanstack/react-router' {
       path: '/pagina-inicial'
       fullPath: '/admin/pagina-inicial'
       preLoaderRoute: typeof AuthenticatedAdminPaginaInicialRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/perfis': {
+      id: '/_authenticated/admin/perfis'
+      path: '/perfis'
+      fullPath: '/admin/perfis'
+      preLoaderRoute: typeof AuthenticatedAdminPerfisRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/recompensas': {
@@ -527,6 +547,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminBeneficiosRoute: typeof AuthenticatedAdminBeneficiosRoute
   AuthenticatedAdminPaginaInicialRoute: typeof AuthenticatedAdminPaginaInicialRoute
+  AuthenticatedAdminPerfisRoute: typeof AuthenticatedAdminPerfisRoute
   AuthenticatedAdminRecompensasRoute: typeof AuthenticatedAdminRecompensasRoute
   AuthenticatedAdminUsuariosRoute: typeof AuthenticatedAdminUsuariosRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
@@ -540,6 +561,7 @@ interface AuthenticatedAdminRouteChildren {
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminBeneficiosRoute: AuthenticatedAdminBeneficiosRoute,
   AuthenticatedAdminPaginaInicialRoute: AuthenticatedAdminPaginaInicialRoute,
+  AuthenticatedAdminPerfisRoute: AuthenticatedAdminPerfisRoute,
   AuthenticatedAdminRecompensasRoute: AuthenticatedAdminRecompensasRoute,
   AuthenticatedAdminUsuariosRoute: AuthenticatedAdminUsuariosRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
