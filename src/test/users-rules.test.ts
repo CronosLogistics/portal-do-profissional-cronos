@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { normalizeUserInput } from "@/lib/users.rules";
-import { visibleModules } from "@/lib/portal-modules";
+import { principalNav, visibleModules } from "@/lib/portal-modules";
 
 describe("cadastro de usuários", () => {
   it("normaliza o e-mail para minúsculas, evitando contas duplicadas por caixa", () => {
@@ -22,5 +22,19 @@ describe("cadastro de usuários", () => {
 describe("navegação do portal", () => {
   it("mostra a aba Treinamentos para funcionários", () => {
     expect(visibleModules(["funcionario"]).map((m) => m.label)).toContain("Treinamentos");
+  });
+
+  it("coloca Benefícios e Parceiros como submenus do menu Benefícios", () => {
+    const nav = principalNav(["funcionario"]);
+    const group = nav.find((entry) => entry.type === "group");
+    expect(group).toMatchObject({
+      id: "beneficios",
+      label: "Benefícios",
+      children: [
+        { to: "/beneficios", label: "Benefícios" },
+        { to: "/parceiros", label: "Parceiros" },
+      ],
+    });
+    expect(nav.some((entry) => entry.type === "link" && entry.to === "/parceiros")).toBe(false);
   });
 });
