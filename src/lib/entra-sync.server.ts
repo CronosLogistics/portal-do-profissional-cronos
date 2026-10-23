@@ -71,11 +71,11 @@ async function doSync(
         }
       }
     }
-    await supabaseAdmin.from("status_sincronizacao").upsert({ id: true, executado_em: now, sucesso: true, erro: null, alterados });
+    await supabaseAdmin.from("status_sincronizacao").upsert({ id: true, executado_em: now, sucesso: true, erro: null, alterados, ...meta });
     return { sucesso: true, alterados, erro: null as string | null };
   } catch (e) {
     const erro = e instanceof Error ? e.message : "Erro desconhecido.";
-    await supabaseAdmin.from("status_sincronizacao").upsert({ id: true, executado_em: now, sucesso: false, erro, alterados });
+    await supabaseAdmin.from("status_sincronizacao").upsert({ id: true, executado_em: now, sucesso: false, erro, alterados, ...meta });
     return { sucesso: false, alterados, erro };
   }
 }
