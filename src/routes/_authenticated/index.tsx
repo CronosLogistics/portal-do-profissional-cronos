@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Award, CalendarCheck, ClipboardList, Gift, GraduationCap, Tag } from "lucide-react";
+import { ArrowRight, Award, Megaphone, CalendarCheck, ClipboardList, Gift, GraduationCap, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCurrentUser } from "@/hooks/useAuth";
+import { useNaoLidos } from "@/hooks/useAvisos";
 import { LINKS } from "@/components/treinamentos/content";
 
 export const Route = createFileRoute("/_authenticated/")({
@@ -16,7 +17,7 @@ export const Route = createFileRoute("/_authenticated/")({
   component: Home,
 });
 
-const actions = [
+const baseActions = [
   { title: "Cadastrar diploma ou certificado", category: "Treinamentos", icon: GraduationCap, href: LINKS.diplomasCertificados },
   { title: "Cadastrar treinamento", category: "Treinamentos · Líderes", icon: ClipboardList, href: LINKS.cadastroTreinamento },
   { title: "Agendar treinamento existente", category: "Treinamentos · Líderes", icon: CalendarCheck, href: LINKS.agendamentoDireto },
@@ -27,6 +28,11 @@ const actions = [
 
 function Home() {
   const me = useCurrentUser();
+  const naoLidos = useNaoLidos().data ?? 0;
+  const actions = [
+    { title: naoLidos ? `${naoLidos} ${naoLidos === 1 ? "aviso não lido" : "avisos não lidos"}` : "Avisos", category: naoLidos ? "Avisos · Ver agora" : "Avisos · Em dia", icon: Megaphone, to: "/avisos" as const, href: undefined },
+    ...baseActions,
+  ];
   const firstName = me.data?.fullName.trim().split(" ")[0];
   return <main className="portal-home">
     <header className="portal-page-heading">

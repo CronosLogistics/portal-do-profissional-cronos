@@ -14,6 +14,79 @@ export type Database = {
   }
   public: {
     Tables: {
+      avisos: {
+        Row: {
+          arquivado_em: string | null
+          autor_id: string
+          criado_em: string
+          editado_em: string | null
+          expira_em: string | null
+          id: string
+          mensagem: string
+          perfil_id: string
+          publicar_em: string
+          titulo: string
+        }
+        Insert: {
+          arquivado_em?: string | null
+          autor_id?: string
+          criado_em?: string
+          editado_em?: string | null
+          expira_em?: string | null
+          id?: string
+          mensagem?: string
+          perfil_id: string
+          publicar_em?: string
+          titulo: string
+        }
+        Update: {
+          arquivado_em?: string | null
+          autor_id?: string
+          criado_em?: string
+          editado_em?: string | null
+          expira_em?: string | null
+          id?: string
+          mensagem?: string
+          perfil_id?: string
+          publicar_em?: string
+          titulo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "avisos_perfil_id_fkey"
+            columns: ["perfil_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      avisos_leituras: {
+        Row: {
+          aviso_id: string
+          lido_em: string
+          usuario_id: string
+        }
+        Insert: {
+          aviso_id: string
+          lido_em?: string
+          usuario_id?: string
+        }
+        Update: {
+          aviso_id?: string
+          lido_em?: string
+          usuario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "avisos_leituras_aviso_id_fkey"
+            columns: ["aviso_id"]
+            isOneToOne: false
+            referencedRelation: "avisos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       benefit_images: {
         Row: {
           benefit_id: string
@@ -665,6 +738,28 @@ export type Database = {
           ultimo_acesso: string
         }[]
       }
+      aviso_vigente: {
+        Args: { _arquivado: string; _expira: string; _publicar: string }
+        Returns: boolean
+      }
+      avisos_enviados: {
+        Args: never
+        Returns: {
+          arquivado_em: string
+          ativos: number
+          autor_id: string
+          autor_nome: string
+          editado_em: string
+          expira_em: string
+          id: string
+          lidos: number
+          mensagem: string
+          perfil_id: string
+          perfil_nome: string
+          publicar_em: string
+          titulo: string
+        }[]
+      }
       buscar_profissionais_ativos: {
         Args: { _busca: string }
         Returns: {
@@ -672,6 +767,11 @@ export type Database = {
           full_name: string
           id: string
         }[]
+      }
+      contar_nao_lidos: { Args: never; Returns: number }
+      gere_aviso: {
+        Args: { _autor: string; _perfil: string }
+        Returns: boolean
       }
       has_role: {
         Args: {
@@ -682,6 +782,25 @@ export type Database = {
       }
       is_active_user: { Args: { _user_id: string }; Returns: boolean }
       is_editor: { Args: { _user_id: string }; Returns: boolean }
+      limpar_html_aviso: { Args: { _html: string }; Returns: string }
+      listar_avisos: {
+        Args: {
+          _deslocamento?: number
+          _limite?: number
+          _so_nao_lidos?: boolean
+        }
+        Returns: {
+          editado_em: string
+          expira_em: string
+          id: string
+          lido: boolean
+          mensagem: string
+          perfil_nome: string
+          publicar_em: string
+          titulo: string
+        }[]
+      }
+      marcar_todos_avisos_lidos: { Args: never; Returns: number }
       membros_perfil: {
         Args: { _perfil_id: string }
         Returns: {
@@ -691,7 +810,15 @@ export type Database = {
           is_active: boolean
         }[]
       }
+      meus_perfis_remetentes: {
+        Args: never
+        Returns: {
+          id: string
+          nome: string
+        }[]
+      }
       minhas_permissoes: { Args: never; Returns: string[] }
+      pode_enviar_como: { Args: { _perfil_id: string }; Returns: boolean }
       reservar_sincronizacao: { Args: never; Returns: boolean }
       tem_permissao: { Args: { _permissao: string }; Returns: boolean }
       usuario_tem_permissao: {

@@ -29,6 +29,20 @@
       "when": 1792769080058,
       "tag": "0003_perfis_de_acesso",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792769907498,
+      "tag": "0004_avisos",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792769932424,
+      "tag": "0005_avisos_limpeza_html_fix",
+      "breakpoints": true
     }
   ]
 }
