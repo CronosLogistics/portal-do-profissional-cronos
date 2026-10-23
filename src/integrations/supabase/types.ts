@@ -347,6 +347,56 @@ export type Database = {
           },
         ]
       }
+      perfil_permissoes: {
+        Row: {
+          perfil_id: string
+          permissao: string
+        }
+        Insert: {
+          perfil_id: string
+          permissao: string
+        }
+        Update: {
+          perfil_id?: string
+          permissao?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "perfil_permissoes_perfil_id_fkey"
+            columns: ["perfil_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      perfis: {
+        Row: {
+          ativo: boolean
+          criado_em: string
+          descricao: string
+          id: string
+          nome: string
+          sistema: boolean
+        }
+        Insert: {
+          ativo?: boolean
+          criado_em?: string
+          descricao?: string
+          id?: string
+          nome: string
+          sistema?: boolean
+        }
+        Update: {
+          ativo?: boolean
+          criado_em?: string
+          descricao?: string
+          id?: string
+          nome?: string
+          sistema?: boolean
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -524,6 +574,42 @@ export type Database = {
         }
         Relationships: []
       }
+      usuario_perfis: {
+        Row: {
+          atribuido_em: string
+          atribuido_por: string | null
+          perfil_id: string
+          usuario_id: string
+        }
+        Insert: {
+          atribuido_em?: string
+          atribuido_por?: string | null
+          perfil_id: string
+          usuario_id: string
+        }
+        Update: {
+          atribuido_em?: string
+          atribuido_por?: string | null
+          perfil_id?: string
+          usuario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "usuario_perfis_perfil_id_fkey"
+            columns: ["perfil_id"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "usuario_perfis_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -558,6 +644,35 @@ export type Database = {
           ultimo_acesso: string
         }[]
       }
+      admin_listar_profissionais_perfis: {
+        Args: {
+          _busca: string
+          _deslocamento: number
+          _filtro: string
+          _limite: number
+        }
+        Returns: {
+          email: string
+          employee_id: string
+          entra_oid: string
+          full_name: string
+          id: string
+          is_active: boolean
+          perfis: Json
+          primeiro_acesso: string
+          sincronizado_em: string
+          total: number
+          ultimo_acesso: string
+        }[]
+      }
+      buscar_profissionais_ativos: {
+        Args: { _busca: string }
+        Returns: {
+          email: string
+          full_name: string
+          id: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -567,7 +682,22 @@ export type Database = {
       }
       is_active_user: { Args: { _user_id: string }; Returns: boolean }
       is_editor: { Args: { _user_id: string }; Returns: boolean }
+      membros_perfil: {
+        Args: { _perfil_id: string }
+        Returns: {
+          email: string
+          full_name: string
+          id: string
+          is_active: boolean
+        }[]
+      }
+      minhas_permissoes: { Args: never; Returns: string[] }
       reservar_sincronizacao: { Args: never; Returns: boolean }
+      tem_permissao: { Args: { _permissao: string }; Returns: boolean }
+      usuario_tem_permissao: {
+        Args: { _permissao: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "admin" | "rh" | "funcionario"
