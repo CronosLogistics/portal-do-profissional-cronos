@@ -5,5 +5,5 @@
 - [x] Harmonizar as páginas e verificar navegação autenticada e apresentação.
 
 ## Comentários e reações
-- [ ] Aplicar migrações compatíveis para interações do compilado e reações do mural.
-- [ ] Validar permissões, troca de reação e leitura no portal.
+- [x] Aplicar migrações compatíveis para interações do compilado e reações do mural.
+- [x] Validar permissões, troca de reação e leitura no portal.
