@@ -1192,6 +1192,10 @@ export type Database = {
         }[]
       }
       minhas_permissoes: { Args: never; Returns: string[] }
+      mural_post_vigente: {
+        Args: { _hoje: string; _publicado: string }
+        Returns: boolean
+      }
       mural_vigentes: {
         Args: never
         Returns: {
@@ -1210,6 +1214,7 @@ export type Database = {
         Returns: boolean
       }
       pode_ler_insider: { Args: { _id: string }; Returns: boolean }
+      primeiro_util_mes: { Args: { _data: string }; Returns: string }
       publicar_edicao_insider: {
         Args: { _id: string; _perfil: string; _revisao: number }
         Returns: string
