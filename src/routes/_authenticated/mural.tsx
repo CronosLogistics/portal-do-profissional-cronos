@@ -202,13 +202,12 @@ function PostForm({ post, onClose }: { post: PostMural | null; onClose: () => vo
   const qc = useQueryClient();
   const [titulo, setTitulo] = useState(post?.titulo ?? "");
   const [texto, setTexto] = useState(post?.texto ?? "");
-  const [data, setData] = useState(post?.data_post ?? hojeBrasil());
-  const [ate, setAte] = useState(post?.visivel_ate ?? "");
+  const data = post?.data_post ?? hojeBrasil();
   const [arquivo, setArquivo] = useState<File | null>(null);
-  const [tipo, setTipo] = useState<TipoMural>(post?.tipo ?? "geral");
+  const [tipo, setTipo] = useState<TipoMural>(post?.tipo ?? "aniversario");
   const [anos, setAnos] = useState(post?.anos_casa ? String(post.anos_casa) : "");
   const salvar = useMutation({
-    mutationFn: () => salvarPost(post?.id ?? null, { titulo, texto, data_post: data, visivel_ate: ate || null, tipo, anos_casa: anos ? Number(anos) : null, arquivo, imagem_path: post?.imagem_path ?? null }),
+    mutationFn: () => salvarPost(post?.id ?? null, { titulo, texto, data_post: data, visivel_ate: null, tipo, anos_casa: anos ? Number(anos) : null, arquivo, imagem_path: post?.imagem_path ?? null }),
     onSuccess: () => { toast.success("Post publicado."); qc.invalidateQueries({ queryKey: muralKey }); onClose(); },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -227,11 +226,7 @@ function PostForm({ post, onClose }: { post: PostMural | null; onClose: () => vo
           <div><Label htmlFor="mt">Título</Label><Input id="mt" maxLength={120} value={titulo} onChange={(e) => setTitulo(e.target.value)} placeholder="Feliz aniversário, Maria!" /></div>
           <div><Label htmlFor="mx">Texto</Label><Textarea id="mx" rows={4} value={texto} onChange={(e) => setTexto(e.target.value)} /></div>
           <div><Label htmlFor="mi">Imagem (ex.: arte de parabéns)</Label><Input id="mi" type="file" accept="image/*" onChange={(e) => setArquivo(e.target.files?.[0] ?? null)} /></div>
-          <div className="grid grid-cols-2 gap-3">
-            <div><Label htmlFor="md">Data do post</Label><Input id="md" type="date" value={data} onChange={(e) => setData(e.target.value)} /></div>
-            <div><Label htmlFor="ma">No carrossel até</Label><Input id="ma" type="date" value={ate} onChange={(e) => setAte(e.target.value)} /></div>
-          </div>
-          <p className="text-xs text-muted-foreground">Sem data final, o post fica 3 dias no carrossel da Início. No mural ele permanece sempre.</p>
+          <p className="text-xs text-muted-foreground">O post fica no mural e no carrossel da Início do dia da publicação até o último dia do mês. Aniversários e tempo de casa aparecem em slides separados.</p>
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={onClose}>Cancelar</Button>
