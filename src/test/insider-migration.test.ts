@@ -22,9 +22,10 @@ beforeAll(async () => {
     CREATE TABLE storage.objects(id uuid,name text,bucket_id text); ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
     CREATE FUNCTION storage.extension(text) RETURNS text LANGUAGE sql AS $$ SELECT split_part($1,'.',2) $$;`);
   await db.exec(readFileSync(new URL("../../drizzle/migrations/0017_insider_edicoes_mensais.sql", import.meta.url), "utf8"));
+  await db.exec(readFileSync(new URL("../../drizzle/migrations/0018_insider_validacao_editorial.sql", import.meta.url), "utf8"));
 }, 30000);
 beforeEach(async () => {
-  await db.exec(`RESET ROLE; TRUNCATE insider_edicoes,insider_preparacoes,avisos; INSERT INTO insider_edicoes(id,mes_ano,titulo,conteudo) VALUES('${eid}','2026-11','Insider','{"abertura":"Original"}');`);
+  await db.exec(`RESET ROLE; TRUNCATE insider_edicoes,insider_preparacoes,avisos; INSERT INTO insider_edicoes(id,mes_ano,titulo,conteudo) VALUES('${eid}','2026-11','Insider','{"abertura":"Original","eventos":[],"aniversariantes":[],"tempoCasa":[]}');`);
   await viewer();
 });
 afterAll(async () => { await db.close(); });
@@ -48,9 +49,9 @@ it("publica uma única edição e permite leitura por profissional ativo", async
   expect((await db.query("SELECT tipo,autor_id FROM avisos")).rows).toEqual([{ tipo: "insider", autor_id: uid }]);
 });
 it("preserva edição salva e rejeita revisão antiga", async () => {
-  await db.query("SELECT salvar_edicao_insider($1,1,'Insider','{\"abertura\":\"RH editou\"}')", [eid]);
+  await db.query("SELECT salvar_edicao_insider($1,1,'Insider','{\"abertura\":\"RH editou\",\"eventos\":[],\"aniversariantes\":[],\"tempoCasa\":[]}')", [eid]);
   await expect(db.query("SELECT salvar_edicao_insider($1,1,'Insider','{}')", [eid])).rejects.toThrow();
-  expect((await db.query("SELECT conteudo FROM insider_edicoes")).rows).toEqual([{ conteudo: { abertura: "RH editou" } }]);
+  expect((await db.query("SELECT conteudo FROM insider_edicoes")).rows).toEqual([{ conteudo: { abertura: "RH editou", eventos: [], aniversariantes: [], tempoCasa: [] } }]);
 });
 it("nega operações a inativos e visitantes anônimos", async () => {
   await viewer(true,true,false);
@@ -64,4 +65,8 @@ it("reserva o mês apenas uma vez e não sobrescreve edição existente", async 
   expect((await db.query("SELECT reservar_insider('2026-12',$1) AS ok", [uid])).rows).toEqual([{ ok: true }]);
   expect((await db.query("SELECT reservar_insider('2026-12',$1) AS ok", [eid])).rows).toEqual([{ ok: false }]);
   expect((await db.query("SELECT reservar_insider('2026-11',$1) AS ok", [uid])).rows).toEqual([{ ok: false }]);
+});
+it("rejeita foto de outra edição mesmo quando o RPC é chamado diretamente", async () => {
+  const conteudo = { eventos: [], aniversariantes: [{ foto: `${uid}/${uid}.jpg` }], tempoCasa: [] };
+  await expect(db.query("SELECT salvar_edicao_insider($1,1,'Insider',$2::jsonb)", [eid, JSON.stringify(conteudo)])).rejects.toThrow("Imagem de outra edição");
 });
