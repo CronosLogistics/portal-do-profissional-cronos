@@ -57,6 +57,13 @@
       "when": 1793277100019,
       "tag": "0007_minhas_permissoes_insider",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793277678225,
+      "tag": "0008_mural_comemoracoes",
+      "breakpoints": true
     }
   ]
 }
