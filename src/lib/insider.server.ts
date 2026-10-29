@@ -40,7 +40,7 @@ export async function prepararInsider(mes: string, origem: "manual" | "automatic
   if (!reserva.data) throw new Error("Esta edição já está sendo preparada. Aguarde e atualize a lista.");
   try {
     const conteudo = montarConteudoInsider(await lerProfissionaisInsider(), mes);
-    const inserido = await supabaseAdmin.from("insider_edicoes").insert({ mes_ano: mes, titulo: `Cronos Insider — ${nomeMes(mes)}`, conteudo, origem }).select("id").single();
+    const inserido = await supabaseAdmin.from("insider_edicoes").insert({ mes_ano: mes, titulo: `Cronos Insider - ${nomeMes(mes)}`, conteudo, origem }).select("id").single();
     if (inserido.error) throw new Error(inserido.error.message);
     await supabaseAdmin.from("insider_preparacoes").update({ em_execucao_desde: null, concluido_em: new Date().toISOString(), erro: null }).eq("mes_ano", mes).eq("token", token);
     return inserido.data.id;

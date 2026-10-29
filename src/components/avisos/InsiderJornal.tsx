@@ -42,7 +42,7 @@ export function InsiderJornal({ conteudo, mesAno }: { conteudo: ConteudoInsider;
     <Texto value={conteudo.antesTempoCasa} /><Pessoas pessoas={conteudo.tempoCasa} urls={urls} mesAno={mesAno} />
     <Texto value={conteudo.encerramento} />
     <img src={assinatura.url} alt="Assinatura People Management" className="h-auto w-full px-4 sm:px-10" />
-    <img src={rodape.url} alt="Cronos Logistics — certificações e escritórios" className="h-auto w-full px-4 pt-4 sm:px-10" />
+    <img src={rodape.url} alt="Cronos Logistics - certificações e escritórios" className="h-auto w-full px-4 pt-4 sm:px-10" />
   </article>;
 }
 export function InsiderPublicado({ avisoId, fallback }: { avisoId: string; fallback: React.ReactNode }) {

@@ -92,7 +92,7 @@ function BenefitPage() {
           ) : null}
           {benefit.needs_content ? (
             <p className="mt-4 rounded-xl border border-accent/50 bg-accent/10 px-4 py-3 text-xs text-foreground">
-              Conteúdo em preenchimento — informações completas serão publicadas em breve.
+              Conteúdo em preenchimento - informações completas serão publicadas em breve.
             </p>
           ) : null}
         </header>

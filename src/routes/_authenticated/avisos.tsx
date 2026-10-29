@@ -160,7 +160,7 @@ function Enviados({ onEdit }: { onEdit: (a: AvisoEnviado) => void }) {
               <h3 className="mt-1 truncate font-bold">{a.titulo}</h3>
               <p className="text-xs text-muted-foreground">
                 {st === "Agendado" ? "Publica em " : "Publicado em "}{formatarDataBrasilia(a.publicar_em)}
-                {a.expira_em ? ` · expira em ${formatarDataBrasilia(a.expira_em)}` : ""} · por {a.autor_nome || "—"}
+                {a.expira_em ? ` · expira em ${formatarDataBrasilia(a.expira_em)}` : ""} · por {a.autor_nome || "-"}
               </p>
             </div>
             {st !== "Agendado" && <p className="text-sm"><strong>Lido por {a.lidos}</strong> de {a.ativos} ativos</p>}

@@ -24,7 +24,7 @@ export const Route = createFileRoute("/_authenticated/parceiro/$slug")({
       };
     }
     const { partner } = loaderData;
-    const title = `${partner.name} — ${partner.discount} | Portal do Profissional Cronos`;
+    const title = `${partner.name} - ${partner.discount} | Portal do Profissional Cronos`;
     const description = partner.summary || partner.benefit_description;
     return {
       meta: [

@@ -1,4 +1,4 @@
-# Cronos Insider — montagem mensal pelo RH
+# Cronos Insider - montagem mensal pelo RH
 
 ## Resultado
 Todo primeiro dia útil do mês, o portal prepara um **rascunho da edição daquele mês**, usando o modelo enviado e os dados da lista **Profissionais Brasil**. O RH completa os textos, eventos e fotos, revisa e publica no portal. O rascunho não aparece para os demais profissionais antes da publicação.

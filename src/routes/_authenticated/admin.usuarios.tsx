@@ -37,7 +37,7 @@ export const Route = createFileRoute("/_authenticated/admin/usuarios")({
 });
 
 const fmt = (d: string | null) =>
-  d ? new Date(d).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" }) : "—";
+  d ? new Date(d).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" }) : "-";
 
 function UsersPage() {
   const me = useCurrentUser();
@@ -193,7 +193,7 @@ function UsersPage() {
             <TableBody>
               {list.map((u) => (
                 <TableRow key={u.id}>
-                  <TableCell className="font-medium">{u.fullName || "—"}</TableCell>
+                  <TableCell className="font-medium">{u.fullName || "-"}</TableCell>
                   <TableCell className="hidden text-sm md:table-cell">{u.email}</TableCell>
                   <TableCell>
                     <Badge variant={u.isActive ? "secondary" : "outline"}>{u.isActive ? "Ativo" : "Inativo"}</Badge>
