@@ -33,9 +33,11 @@ export function HomeCarrossel() {
   const slides: Slide[] = [];
   if (agora && agora <= CRONOS_DAY_FIM) slides.push({ id: "cronos-day", conteudo: <SlideCronosDay agora={agora} /> });
   const posts = mural.data ?? [];
-  for (const tipo of ["aniversario", "tempo_casa", "geral"] as const) {
-    for (const p of posts.filter((x) => x.tipo === tipo)) slides.push({ id: `mural-${p.id}`, conteudo: <SlideMural post={p} /> });
+  for (const tipo of ["aniversario", "tempo_casa"] as const) {
+    const grupo = posts.filter((x) => x.tipo === tipo);
+    if (grupo.length) slides.push({ id: `mural-${tipo}`, conteudo: <SlideMural posts={grupo} /> });
   }
+  for (const p of posts.filter((x) => x.tipo === "geral")) slides.push({ id: `mural-${p.id}`, conteudo: <SlideMural posts={[p]} /> });
   const ed = insider.data;
   if (ed) {
     slides.push({
@@ -155,31 +157,41 @@ function SlideCronosDay({ agora }: { agora: Date }) {
   );
 }
 
-function SlideMural({ post }: { post: PostVigente }) {
+/** Um slide por categoria: aniversários juntos, tempo de casa juntos (a montagem do RH já reúne as pessoas). */
+function SlideMural({ posts }: { posts: PostVigente[] }) {
   const navigate = useNavigate();
-  const [img, setImg] = useState<string | null>(null);
-  useEffect(() => { urlImagem(post.imagem_path).then(setImg); }, [post.imagem_path]);
+  const post = posts[0]!;
+  const varios = posts.length > 1;
+  const [imgs, setImgs] = useState<(string | null)[]>([]);
+  const chave = posts.map((p) => p.imagem_path ?? "").join("|");
+  useEffect(() => {
+    Promise.all(posts.map((p) => urlImagem(p.imagem_path))).then(setImgs);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chave]);
   const data = post.data_post.split("-").reverse().join("/");
-  const resumo = post.texto ? post.texto.slice(0, 160) + (post.texto.length > 160 ? "…" : "") : "";
+  const resumo = !varios && post.texto ? post.texto.slice(0, 160) + (post.texto.length > 160 ? "…" : "") : "";
+  const titulo = varios ? posts.map((p) => p.titulo).join(" · ") : post.titulo;
+  const anos = !varios ? post.anos_casa : null;
 
   const parabenizar = async () => {
     const { default: confetti } = await import("canvas-confetti");
     const cor = (v: string) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
     confetti({ particleCount: 90, spread: 75, origin: { y: 0.45 }, colors: [cor("--sidebar"), cor("--primary"), cor("--accent"), "#FFD700"] });
-    setTimeout(() => navigate({ to: "/mural", search: { post: post.id } }), 900);
+    setTimeout(() => navigate(varios ? { to: "/mural" } : { to: "/mural", search: { post: post.id } }), 900);
   };
 
   const config = {
-    aniversario: { icone: <CakeSlice />, tag: "Aniversariante do dia", sub: resumo || "Hoje o dia é especial! Desejamos muito sucesso, saúde e realizações.", botao: "Enviar parabéns", emblema: "👑" },
-    tempo_casa: { icone: <Medal />, tag: post.anos_casa ? `${post.anos_casa} ${post.anos_casa === 1 ? "ano" : "anos"} de Cronos` : "Tempo de casa", sub: resumo || "Obrigado pela dedicação e por fazer parte da nossa história!", botao: "Parabenizar", emblema: post.anos_casa ? `${post.anos_casa}` : "★" },
+    aniversario: { icone: <CakeSlice />, tag: varios ? "Aniversariantes" : "Aniversariante do dia", sub: resumo || "Hoje o dia é especial! Desejamos muito sucesso, saúde e realizações.", botao: "Enviar parabéns", emblema: "👑" },
+    tempo_casa: { icone: <Medal />, tag: anos ? `${anos} ${anos === 1 ? "ano" : "anos"} de Cronos` : "Tempo de casa", sub: resumo || "Obrigado pela dedicação e por fazer parte da nossa história!", botao: "Parabenizar", emblema: anos ? `${anos}` : "★" },
     geral: { icone: <Heart />, tag: `Mural de comemorações · ${data}`, sub: resumo || "Clique para deixar sua mensagem.", botao: "Deixar mensagem", emblema: "🎉" },
   }[post.tipo];
 
+  const fotos = imgs.filter(Boolean) as string[];
   return (
     <SlideTexto
       icone={config.icone}
       tag={config.tag}
-      titulo={post.titulo}
+      titulo={titulo}
       texto={config.sub}
       acao={
         <>
@@ -193,7 +205,9 @@ function SlideMural({ post }: { post: PostVigente }) {
         <div className="hc-moldura">
           <div className="hc-moldura-brilho" />
           <div className="hc-moldura-foto">
-            {img ? <img src={img} alt={post.titulo} /> : <div className="hc-moldura-vazia">{config.icone}</div>}
+            {fotos.length === 0 ? <div className="hc-moldura-vazia">{config.icone}</div>
+              : fotos.length === 1 ? <img src={fotos[0]} alt={titulo} />
+              : <div className="hc-moldura-grade">{fotos.slice(0, 4).map((src, i) => <img key={i} src={src} alt={posts[i]?.titulo ?? ""} />)}</div>}
           </div>
           <span className="hc-emblema">{config.emblema}</span>
         </div>
