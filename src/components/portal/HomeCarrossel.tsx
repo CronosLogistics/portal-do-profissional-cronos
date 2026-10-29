@@ -1,11 +1,11 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { CalendarHeart, ChevronLeft, ChevronRight, Newspaper, PartyPopper } from "lucide-react";
+import { Award, CalendarHeart, ChevronLeft, ChevronRight, Newspaper, PartyPopper } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { muralKey, muralVigentes, urlImagem, type PostVigente } from "@/lib/mural-client";
 import { Button } from "@/components/ui/button";
 import { AvisoLeitura, type AvisoExibido } from "@/components/avisos/AvisoLeitura";
-import { avisosKey, insiderVigente } from "@/lib/avisos-client";
+import { avisosKey, compiladoVigente, insiderVigente } from "@/lib/avisos-client";
 import { diasParaCronosDay, formatarDataBrasilia } from "@/lib/avisos-rules";
 
 type Slide = { id: string; conteudo: ReactNode };
