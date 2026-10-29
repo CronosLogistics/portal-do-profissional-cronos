@@ -71,6 +71,13 @@
       "when": 1793278724197,
       "tag": "0009_documentos_links",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793278740792,
+      "tag": "0010_documentos_trigger_fix",
+      "breakpoints": true
     }
   ]
 }
