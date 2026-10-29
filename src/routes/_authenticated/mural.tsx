@@ -60,7 +60,7 @@ function MuralPage() {
   );
 }
 
-function PostCard({ post, emFoco, meuId, podeEditar, onEditar }: { post: PostMural; emFoco: boolean; meuId?: string; podeEditar: boolean; onEditar: () => void }) {
+function PostCard({ post, emFoco, meuId, podeEditar, onEditar }: { post: PostMural; emFoco: boolean; meuId: string | undefined; podeEditar: boolean; onEditar: () => void }) {
   const qc = useQueryClient();
   const ref = useRef<HTMLLIElement>(null);
   const campo = useRef<HTMLTextAreaElement>(null);
