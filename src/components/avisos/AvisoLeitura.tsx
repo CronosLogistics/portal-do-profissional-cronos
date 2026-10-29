@@ -20,6 +20,7 @@ import {
   type EmojiCompilado,
 } from "@/lib/avisos-client";
 import { formatarDataBrasilia } from "@/lib/avisos-rules";
+import { InsiderPublicado } from "./InsiderJornal";
 
 export type AvisoExibido = {
   id?: string;
@@ -60,7 +61,7 @@ export function AvisoCorpo({ aviso }: { aviso: AvisoExibido }) {
           {aviso.editado_em ? " · editado" : ""}
         </DialogDescription>
       </DialogHeader>
-      {aviso.tipo === "compilado" && aviso.id ? <CompiladoHtml avisoId={aviso.id} fallback={aviso.mensagem} /> : <AvisoHtml html={aviso.mensagem} />}
+      {aviso.tipo === "compilado" && aviso.id ? <CompiladoHtml avisoId={aviso.id} fallback={aviso.mensagem} /> : aviso.tipo === "insider" && aviso.id ? <InsiderPublicado avisoId={aviso.id} fallback={<AvisoHtml html={aviso.mensagem} />} /> : <AvisoHtml html={aviso.mensagem} />}
       {aviso.tipo === "compilado" && aviso.id ? <CompiladoInteracoes avisoId={aviso.id} /> : null}
     </>
   );
@@ -259,7 +260,7 @@ export function AvisoLeitura({ aviso, onClose }: { aviso: AvisoExibido | null; o
   return (
     <Dialog open={Boolean(aviso)} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className={grande ? "leitor-modal" : "max-h-[85dvh] max-w-2xl overflow-y-auto"}>
-        {compilado ? <CompiladoAtalhos avisoId={aviso.id!} /> : null}
+        {compilado && aviso?.id ? <CompiladoAtalhos avisoId={aviso.id} /> : null}
         {aviso && <AvisoCorpo aviso={aviso} />}
       </DialogContent>
     </Dialog>
