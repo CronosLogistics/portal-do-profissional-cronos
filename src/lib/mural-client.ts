@@ -6,19 +6,21 @@ export type ComentarioMural = { id: string; texto: string; criado_em: string; ed
 export type PostMural = {
   id: string; titulo: string; texto: string; imagem_path: string | null;
   data_post: string; visivel_ate: string | null; criado_em: string; comentarios: ComentarioMural[];
+  tipo: TipoMural; anos_casa: number | null;
 };
-export type PostVigente = { id: string; titulo: string; texto: string; imagem_path: string | null; data_post: string };
+export type TipoMural = "geral" | "aniversario" | "tempo_casa";
+export type PostVigente = { id: string; titulo: string; texto: string; imagem_path: string | null; data_post: string; tipo: TipoMural; anos_casa: number | null };
 
 export async function listarMural(): Promise<PostMural[]> {
   const { data, error } = await supabase.rpc("listar_mural");
   if (error) throw error;
-  return (data ?? []).map((p) => ({ ...p, comentarios: (p.comentarios as unknown as ComentarioMural[]) ?? [] }));
+  return (data ?? []).map((p) => ({ ...p, comentarios: (p.comentarios as unknown as ComentarioMural[]) ?? [], tipo: p.tipo as TipoMural }));
 }
 
 export async function muralVigentes(): Promise<PostVigente[]> {
   const { data, error } = await supabase.rpc("mural_vigentes");
   if (error) throw error;
-  return data ?? [];
+  return (data ?? []).map((p) => ({ ...p, tipo: p.tipo as TipoMural }));
 }
 
 /** Bucket privado: gera link temporário (1h) para exibir a imagem. */
@@ -28,7 +30,7 @@ export async function urlImagem(path: string | null): Promise<string | null> {
   return data?.signedUrl ?? null;
 }
 
-export type DadosPost = { titulo: string; texto: string; data_post: string; visivel_ate: string | null; arquivo?: File | null; imagem_path?: string | null };
+export type DadosPost = { titulo: string; texto: string; data_post: string; visivel_ate: string | null; tipo: TipoMural; anos_casa: number | null; arquivo?: File | null; imagem_path?: string | null };
 
 export async function salvarPost(id: string | null, d: DadosPost) {
   let imagem_path = d.imagem_path ?? null;
@@ -39,7 +41,7 @@ export async function salvarPost(id: string | null, d: DadosPost) {
     if (error) throw new Error("Não foi possível enviar a imagem.");
     imagem_path = path;
   }
-  const row = { titulo: d.titulo.trim(), texto: d.texto.trim(), data_post: d.data_post, visivel_ate: d.visivel_ate || null, imagem_path };
+  const row = { titulo: d.titulo.trim(), texto: d.texto.trim(), data_post: d.data_post, visivel_ate: d.visivel_ate || null, imagem_path, tipo: d.tipo, anos_casa: d.tipo === "tempo_casa" ? d.anos_casa : null };
   const { error } = id
     ? await supabase.from("mural_posts").update(row).eq("id", id)
     : await supabase.from("mural_posts").insert(row);
