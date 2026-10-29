@@ -7,3 +7,5 @@
 ## Comentários e reações
 - [x] Aplicar migrações compatíveis para interações do compilado e reações do mural.
 - [x] Validar permissões, troca de reação e leitura no portal.
+## Feedback (D1)
+- [x] Menu Feedback com elogios próprios e da equipe (SharePoint RQ0013).
