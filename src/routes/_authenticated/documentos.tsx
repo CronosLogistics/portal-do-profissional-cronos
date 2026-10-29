@@ -24,11 +24,11 @@ export const Route = createFileRoute("/_authenticated/documentos")({
   component: DocumentosPage,
 });
 
-type Documento = { id: string; titulo: string; url: string };
+type Documento = { id: string; titulo: string; url: string; departamento: string | null; cargo: string | null };
 const chave = ["documentos"];
 
 async function listar(): Promise<Documento[]> {
-  const { data, error } = await supabase.from("documentos").select("id,titulo,url").order("titulo");
+  const { data, error } = await supabase.from("documentos").select("id,titulo,url,departamento,cargo").order("titulo");
   if (error) throw error;
   return data;
 }
@@ -110,6 +110,10 @@ function DocForm({ doc, onClose }: { doc?: Documento | undefined; onClose: () =>
         <div className="space-y-4">
           <div className="space-y-1.5"><Label htmlFor="doc-t">Título</Label><Input id="doc-t" maxLength={150} value={titulo} onChange={(e) => setTitulo(e.target.value)} /></div>
           <div className="space-y-1.5"><Label htmlFor="doc-u">Endereço (URL)</Label><Input id="doc-u" placeholder="https://" value={url} onChange={(e) => setUrl(e.target.value)} /></div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5"><Label htmlFor="doc-d">Departamento</Label><Input id="doc-d" maxLength={100} placeholder="Todos" value={departamento} onChange={(e) => setDepartamento(e.target.value)} /></div>
+            <div className="space-y-1.5"><Label htmlFor="doc-c">Cargo</Label><Input id="doc-c" maxLength={100} placeholder="Todos" value={cargo} onChange={(e) => setCargo(e.target.value)} /></div>
+          </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Cancelar</Button>
