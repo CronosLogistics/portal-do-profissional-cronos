@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { Award, Building2, ChevronLeft, ChevronRight, Gift, GraduationCap, Home, LogOut, Megaphone, Menu, Settings, Tag, X } from "lucide-react";
+import { Award, Building2, PartyPopper, ChevronLeft, ChevronRight, Gift, GraduationCap, Home, LogOut, Megaphone, Menu, Settings, Tag, X } from "lucide-react";
 import { AvisosBell } from "@/components/avisos/AvisosBell";
 import { useAvisosAoVivo, useNaoLidos } from "@/hooks/useAvisos";
 import type { LucideIcon } from "lucide-react";
@@ -13,6 +13,7 @@ import logo from "@/assets/cronos-full-logo.png.asset.json";
 
 const moduleIcons: Record<PortalModule["to"], LucideIcon> = {
   "/avisos": Megaphone,
+  "/mural": PartyPopper,
   "/beneficios": Gift,
   "/parceiros": Tag,
   "/recompensas": Award,
