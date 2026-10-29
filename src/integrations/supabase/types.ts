@@ -719,6 +719,7 @@ export type Database = {
           is_active: boolean
           primeiro_acesso: string | null
           sincronizado_em: string | null
+          tour_visto_em: string | null
           ultimo_acesso: string | null
           updated_at: string
         }
@@ -732,6 +733,7 @@ export type Database = {
           is_active?: boolean
           primeiro_acesso?: string | null
           sincronizado_em?: string | null
+          tour_visto_em?: string | null
           ultimo_acesso?: string | null
           updated_at?: string
         }
@@ -745,6 +747,7 @@ export type Database = {
           is_active?: boolean
           primeiro_acesso?: string | null
           sincronizado_em?: string | null
+          tour_visto_em?: string | null
           ultimo_acesso?: string | null
           updated_at?: string
         }
@@ -1097,6 +1100,7 @@ export type Database = {
         }[]
       }
       marcar_todos_avisos_lidos: { Args: never; Returns: number }
+      marcar_tour_visto: { Args: never; Returns: undefined }
       membros_perfil: {
         Args: { _perfil_id: string }
         Returns: {
@@ -1137,6 +1141,7 @@ export type Database = {
       }
       reservar_sincronizacao: { Args: never; Returns: boolean }
       tem_permissao: { Args: { _permissao: string }; Returns: boolean }
+      tour_pendente: { Args: never; Returns: boolean }
       usuario_tem_permissao: {
         Args: { _permissao: string; _user_id: string }
         Returns: boolean
