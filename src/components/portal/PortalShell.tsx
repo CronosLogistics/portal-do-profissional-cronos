@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { Award, Building2, PartyPopper, ChevronLeft, ChevronRight, Gift, GraduationCap, Home, LogOut, Megaphone, Menu, Settings, Tag, X } from "lucide-react";
+import { Award, Building2, ClipboardList, FolderOpen, PartyPopper, ChevronLeft, ChevronRight, Gift, GraduationCap, Home, LogOut, Megaphone, Menu, Settings, Tag, X } from "lucide-react";
 import { AvisosBell } from "@/components/avisos/AvisosBell";
 import { useAvisosAoVivo, useNaoLidos } from "@/hooks/useAvisos";
 import type { LucideIcon } from "lucide-react";
@@ -18,6 +18,8 @@ const moduleIcons: Record<PortalModule["to"], LucideIcon> = {
   "/parceiros": Tag,
   "/recompensas": Award,
   "/treinamentos": GraduationCap,
+  "/formularios": ClipboardList,
+  "/documentos": FolderOpen,
 };
 
 const groupIcons: Record<PortalNavGroup, LucideIcon> = { beneficios: Gift };
