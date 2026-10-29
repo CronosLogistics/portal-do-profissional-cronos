@@ -160,7 +160,7 @@ function SlideCronosDay({ agora }: { agora: Date }) {
 /** Um slide por categoria: aniversários juntos, tempo de casa juntos (a montagem do RH já reúne as pessoas). */
 function SlideMural({ posts }: { posts: PostVigente[] }) {
   const navigate = useNavigate();
-  const post = posts[0];
+  const post = posts[0]!;
   const varios = posts.length > 1;
   const [imgs, setImgs] = useState<(string | null)[]>([]);
   const chave = posts.map((p) => p.imagem_path ?? "").join("|");
