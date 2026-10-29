@@ -32,6 +32,7 @@ import { Route as AuthenticatedCategoriasSlugRouteImport } from './routes/_authe
 import { Route as AuthenticatedParceiroSlugRouteImport } from './routes/_authenticated/parceiro.$slug'
 import { Route as AuthenticatedRecompensasIndexRouteImport } from './routes/_authenticated/recompensas.index'
 import { Route as AuthenticatedRecompensasSlugRouteImport } from './routes/_authenticated/recompensas.$slug'
+import { Route as ApiPublicCompiladoElogiosRouteImport } from './routes/api/public/compilado-elogios'
 import { Route as ApiPublicPartnerLogoRouteImport } from './routes/api/public/partner-logo'
 import { Route as AuthenticatedAdminBeneficioIdRouteImport } from './routes/_authenticated/admin.beneficio.$id'
 import { Route as AuthenticatedAdminCadastrosIndexRouteImport } from './routes/_authenticated/admin.cadastros.index'
@@ -167,6 +168,12 @@ const AuthenticatedRecompensasSlugRoute =
     path: '/recompensas/$slug',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiPublicCompiladoElogiosRoute =
+  ApiPublicCompiladoElogiosRouteImport.update({
+    id: '/api/public/compilado-elogios',
+    path: '/api/public/compilado-elogios',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicPartnerLogoRoute = ApiPublicPartnerLogoRouteImport.update({
   id: '/api/public/partner-logo',
   path: '/api/public/partner-logo',
@@ -228,6 +235,7 @@ export interface FileRoutesByFullPath {
   '/categorias/$slug': typeof AuthenticatedCategoriasSlugRoute
   '/parceiro/$slug': typeof AuthenticatedParceiroSlugRoute
   '/recompensas/$slug': typeof AuthenticatedRecompensasSlugRoute
+  '/api/public/compilado-elogios': typeof ApiPublicCompiladoElogiosRoute
   '/api/public/partner-logo': typeof ApiPublicPartnerLogoRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/beneficios/': typeof AuthenticatedBeneficiosIndexRoute
@@ -258,6 +266,7 @@ export interface FileRoutesByTo {
   '/categorias/$slug': typeof AuthenticatedCategoriasSlugRoute
   '/parceiro/$slug': typeof AuthenticatedParceiroSlugRoute
   '/recompensas/$slug': typeof AuthenticatedRecompensasSlugRoute
+  '/api/public/compilado-elogios': typeof ApiPublicCompiladoElogiosRoute
   '/api/public/partner-logo': typeof ApiPublicPartnerLogoRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/beneficios': typeof AuthenticatedBeneficiosIndexRoute
@@ -291,6 +300,7 @@ export interface FileRoutesById {
   '/_authenticated/categorias/$slug': typeof AuthenticatedCategoriasSlugRoute
   '/_authenticated/parceiro/$slug': typeof AuthenticatedParceiroSlugRoute
   '/_authenticated/recompensas/$slug': typeof AuthenticatedRecompensasSlugRoute
+  '/api/public/compilado-elogios': typeof ApiPublicCompiladoElogiosRoute
   '/api/public/partner-logo': typeof ApiPublicPartnerLogoRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/beneficios/': typeof AuthenticatedBeneficiosIndexRoute
@@ -324,6 +334,7 @@ export interface FileRouteTypes {
     | '/categorias/$slug'
     | '/parceiro/$slug'
     | '/recompensas/$slug'
+    | '/api/public/compilado-elogios'
     | '/api/public/partner-logo'
     | '/admin/'
     | '/beneficios/'
@@ -354,6 +365,7 @@ export interface FileRouteTypes {
     | '/categorias/$slug'
     | '/parceiro/$slug'
     | '/recompensas/$slug'
+    | '/api/public/compilado-elogios'
     | '/api/public/partner-logo'
     | '/admin'
     | '/beneficios'
@@ -386,6 +398,7 @@ export interface FileRouteTypes {
     | '/_authenticated/categorias/$slug'
     | '/_authenticated/parceiro/$slug'
     | '/_authenticated/recompensas/$slug'
+    | '/api/public/compilado-elogios'
     | '/api/public/partner-logo'
     | '/_authenticated/admin/'
     | '/_authenticated/beneficios/'
@@ -402,6 +415,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   DefinirSenhaRoute: typeof DefinirSenhaRoute
+  ApiPublicCompiladoElogiosRoute: typeof ApiPublicCompiladoElogiosRoute
   ApiPublicPartnerLogoRoute: typeof ApiPublicPartnerLogoRoute
   ApiPublicJobsEntraSyncRoute: typeof ApiPublicJobsEntraSyncRoute
 }
@@ -569,6 +583,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRecompensasSlugRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/compilado-elogios': {
+      id: '/api/public/compilado-elogios'
+      path: '/api/public/compilado-elogios'
+      fullPath: '/api/public/compilado-elogios'
+      preLoaderRoute: typeof ApiPublicCompiladoElogiosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/partner-logo': {
       id: '/api/public/partner-logo'
       path: '/api/public/partner-logo'
@@ -694,6 +715,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   DefinirSenhaRoute: DefinirSenhaRoute,
+  ApiPublicCompiladoElogiosRoute: ApiPublicCompiladoElogiosRoute,
   ApiPublicPartnerLogoRoute: ApiPublicPartnerLogoRoute,
   ApiPublicJobsEntraSyncRoute: ApiPublicJobsEntraSyncRoute,
 }

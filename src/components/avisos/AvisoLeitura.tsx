@@ -1,7 +1,7 @@
 import { useEffect } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { avisosKey, marcarLido } from "@/lib/avisos-client";
+import { avisosKey, htmlCompilado, marcarLido } from "@/lib/avisos-client";
 import { formatarDataBrasilia } from "@/lib/avisos-rules";
 
 export type AvisoExibido = { id?: string; titulo: string; mensagem: string; perfil_nome: string; publicar_em: string; editado_em?: string | null; lido?: boolean; tipo?: string };
@@ -34,9 +34,18 @@ export function AvisoCorpo({ aviso }: { aviso: AvisoExibido }) {
           {aviso.editado_em ? " · editado" : ""}
         </DialogDescription>
       </DialogHeader>
-      <AvisoHtml html={aviso.mensagem} />
+      {aviso.tipo === "compilado" && aviso.id ? <CompiladoHtml avisoId={aviso.id} fallback={aviso.mensagem} /> : <AvisoHtml html={aviso.mensagem} />}
     </>
   );
+}
+
+/** HTML do Power Automate exibido inteiro num quadro isolado (sem scripts), preservando tabelas e estilos. */
+function CompiladoHtml({ avisoId, fallback }: { avisoId: string; fallback: string }) {
+  const q = useQuery({ queryKey: [...avisosKey, "compilado-html", avisoId], queryFn: () => htmlCompilado(avisoId) });
+  if (q.isLoading) return <p className="text-sm text-muted-foreground">Carregando…</p>;
+  if (!q.data) return <AvisoHtml html={fallback} />;
+  const doc = `<base target="_blank">${q.data}`;
+  return <iframe title="Compilado de elogios" className="compilado-frame" sandbox="allow-popups allow-popups-to-escape-sandbox" srcDoc={doc} />;
 }
 
 /** Abrir o aviso grava a leitura. */
