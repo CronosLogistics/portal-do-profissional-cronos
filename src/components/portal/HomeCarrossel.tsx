@@ -4,7 +4,7 @@ import { Award, CakeSlice, CalendarCheck, ChevronLeft, ChevronRight, Heart, MapP
 import { Link, useNavigate } from "@tanstack/react-router";
 import { muralKey, muralVigentes, urlImagem, type PostVigente } from "@/lib/mural-client";
 import { AvisoLeitura, type AvisoExibido } from "@/components/avisos/AvisoLeitura";
-import { avisosKey, compiladoVigente, insiderVigente } from "@/lib/avisos-rules-client";
+import { avisosKey, compiladoVigente, insiderVigente } from "@/lib/avisos-client";
 import { CRONOS_DAY_FIM, formatarDataBrasilia } from "@/lib/avisos-rules";
 
 type Slide = { id: string; conteudo: ReactNode };
