@@ -16,7 +16,7 @@ export type TipoMural = "geral" | "aniversario" | "tempo_casa";
 export type PostVigente = { id: string; titulo: string; texto: string; imagem_path: string | null; data_post: string; tipo: TipoMural; anos_casa: number | null };
 
 export async function listarMural(): Promise<PostMural[]> {
-  const { data, error } = await supabase.rpc("listar_mural");
+  const { data, error } = await supabase.rpc("listar_mural_com_reacoes");
   if (error) throw error;
   return (data ?? []).map((p) => ({
     ...p,
