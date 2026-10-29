@@ -59,7 +59,7 @@ export function TourBoasVindas({ userId }: { userId: string | undefined }) {
   }, [passo]);
 
   if (!passos || !passo) return null;
-  const encerrar = () => { setPassos(null); void supabase.rpc("marcar_tour_visto"); };
+  const encerrar = () => { setPassos(null); void supabase.rpc("marcar_tour_visto").then(({ error }) => { if (error) console.error(error); }); };
   const ultimo = i === passos.length - 1;
 
   const pad = 6;
