@@ -16,6 +16,7 @@ import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAvisosRouteImport } from './routes/_authenticated/avisos'
 import { Route as AuthenticatedDocumentosRouteImport } from './routes/_authenticated/documentos'
+import { Route as AuthenticatedFeedbackRouteImport } from './routes/_authenticated/feedback'
 import { Route as AuthenticatedFormulariosRouteImport } from './routes/_authenticated/formularios'
 import { Route as AuthenticatedMuralRouteImport } from './routes/_authenticated/mural'
 import { Route as AuthenticatedParceirosRouteImport } from './routes/_authenticated/parceiros'
@@ -73,6 +74,11 @@ const AuthenticatedAvisosRoute = AuthenticatedAvisosRouteImport.update({
 const AuthenticatedDocumentosRoute = AuthenticatedDocumentosRouteImport.update({
   id: '/documentos',
   path: '/documentos',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedFeedbackRoute = AuthenticatedFeedbackRouteImport.update({
+  id: '/feedback',
+  path: '/feedback',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedFormulariosRoute =
@@ -222,6 +228,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/avisos': typeof AuthenticatedAvisosRoute
   '/documentos': typeof AuthenticatedDocumentosRoute
+  '/feedback': typeof AuthenticatedFeedbackRoute
   '/formularios': typeof AuthenticatedFormulariosRoute
   '/mural': typeof AuthenticatedMuralRoute
   '/parceiros': typeof AuthenticatedParceirosRoute
@@ -252,6 +259,7 @@ export interface FileRoutesByTo {
   '/definir-senha': typeof DefinirSenhaRoute
   '/avisos': typeof AuthenticatedAvisosRoute
   '/documentos': typeof AuthenticatedDocumentosRoute
+  '/feedback': typeof AuthenticatedFeedbackRoute
   '/formularios': typeof AuthenticatedFormulariosRoute
   '/mural': typeof AuthenticatedMuralRoute
   '/parceiros': typeof AuthenticatedParceirosRoute
@@ -286,6 +294,7 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/avisos': typeof AuthenticatedAvisosRoute
   '/_authenticated/documentos': typeof AuthenticatedDocumentosRoute
+  '/_authenticated/feedback': typeof AuthenticatedFeedbackRoute
   '/_authenticated/formularios': typeof AuthenticatedFormulariosRoute
   '/_authenticated/mural': typeof AuthenticatedMuralRoute
   '/_authenticated/parceiros': typeof AuthenticatedParceirosRoute
@@ -321,6 +330,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/avisos'
     | '/documentos'
+    | '/feedback'
     | '/formularios'
     | '/mural'
     | '/parceiros'
@@ -351,6 +361,7 @@ export interface FileRouteTypes {
     | '/definir-senha'
     | '/avisos'
     | '/documentos'
+    | '/feedback'
     | '/formularios'
     | '/mural'
     | '/parceiros'
@@ -384,6 +395,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/_authenticated/avisos'
     | '/_authenticated/documentos'
+    | '/_authenticated/feedback'
     | '/_authenticated/formularios'
     | '/_authenticated/mural'
     | '/_authenticated/parceiros'
@@ -469,6 +481,13 @@ declare module '@tanstack/react-router' {
       path: '/documentos'
       fullPath: '/documentos'
       preLoaderRoute: typeof AuthenticatedDocumentosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/feedback': {
+      id: '/_authenticated/feedback'
+      path: '/feedback'
+      fullPath: '/feedback'
+      preLoaderRoute: typeof AuthenticatedFeedbackRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/formularios': {
@@ -678,6 +697,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedAvisosRoute: typeof AuthenticatedAvisosRoute
   AuthenticatedDocumentosRoute: typeof AuthenticatedDocumentosRoute
+  AuthenticatedFeedbackRoute: typeof AuthenticatedFeedbackRoute
   AuthenticatedFormulariosRoute: typeof AuthenticatedFormulariosRoute
   AuthenticatedMuralRoute: typeof AuthenticatedMuralRoute
   AuthenticatedParceirosRoute: typeof AuthenticatedParceirosRoute
@@ -695,6 +715,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedAvisosRoute: AuthenticatedAvisosRoute,
   AuthenticatedDocumentosRoute: AuthenticatedDocumentosRoute,
+  AuthenticatedFeedbackRoute: AuthenticatedFeedbackRoute,
   AuthenticatedFormulariosRoute: AuthenticatedFormulariosRoute,
   AuthenticatedMuralRoute: AuthenticatedMuralRoute,
   AuthenticatedParceirosRoute: AuthenticatedParceirosRoute,
