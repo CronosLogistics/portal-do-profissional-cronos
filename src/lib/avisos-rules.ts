@@ -38,3 +38,13 @@ export function tituloComContador(titulo: string, naoLidos: number): string {
 export function podeEditarAviso(status: StatusAviso) {
   return status === "Agendado" || status === "Publicado";
 }
+
+/** Cronos Day: fim do dia 12/12/2026, horário de Brasília. Fixo no código. */
+export const CRONOS_DAY_FIM = new Date("2026-12-12T23:59:59.999-03:00");
+
+/** Dias que faltam para o Cronos Day contados por data de Brasília; null a partir de 13/12/2026 (slide sai). */
+export function diasParaCronosDay(agora: Date = new Date()): number | null {
+  if (agora > CRONOS_DAY_FIM) return null;
+  const hoje = new Date(agora.getTime() - 3 * 3600_000).toISOString().slice(0, 10);
+  return Math.round((Date.UTC(2026, 11, 12) - Date.parse(`${hoje}T00:00:00Z`)) / 86_400_000);
+}
