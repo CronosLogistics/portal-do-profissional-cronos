@@ -11,6 +11,7 @@ import { useCurrentUser } from "@/hooks/useAuth";
 import { useNaoLidos } from "@/hooks/useAvisos";
 import { AvisoLeitura, type AvisoExibido } from "@/components/avisos/AvisoLeitura";
 import { AvisoForm } from "@/components/avisos/AvisoForm";
+import { InsiderEditor } from "@/components/avisos/InsiderEditor";
 import { arquivarAviso, avisosEnviados, avisosKey, cancelarAviso, listarAvisos, marcarTodosLidos, POR_PAGINA, type AvisoEnviado } from "@/lib/avisos-client";
 import { formatarDataBrasilia, statusAviso, type StatusAviso } from "@/lib/avisos-rules";
 
@@ -42,14 +43,16 @@ function AvisosPage() {
         </div>
         {me.data?.can("avisos.publicar") && <Button onClick={() => setForm({ open: true, aviso: null })}><Plus />Novo aviso</Button>}
       </header>
-      {podePublicar ? (
+      {podePublicar || me.data?.can("avisos.insider") ? (
         <Tabs defaultValue="recebidos">
           <TabsList>
             <TabsTrigger value="recebidos">Recebidos</TabsTrigger>
-            <TabsTrigger value="enviados">Enviados</TabsTrigger>
+            {podePublicar && <TabsTrigger value="enviados">Enviados</TabsTrigger>}
+            {me.data?.can("avisos.insider") && <TabsTrigger value="insider">Cronos Insider</TabsTrigger>}
           </TabsList>
           <TabsContent value="recebidos"><Recebidos /></TabsContent>
           <TabsContent value="enviados"><Enviados onEdit={(a) => setForm({ open: true, aviso: a })} /></TabsContent>
+          {me.data?.can("avisos.insider") && <TabsContent value="insider"><InsiderEditor /></TabsContent>}
         </Tabs>
       ) : (
         <Recebidos />

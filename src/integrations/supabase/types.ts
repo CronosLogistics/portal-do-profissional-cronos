@@ -341,6 +341,74 @@ export type Database = {
         }
         Relationships: []
       }
+      insider_edicoes: {
+        Row: {
+          atualizado_em: string
+          aviso_id: string | null
+          conteudo: Json
+          criado_em: string
+          id: string
+          mes_ano: string
+          origem: string
+          revisao: number
+          titulo: string
+        }
+        Insert: {
+          atualizado_em?: string
+          aviso_id?: string | null
+          conteudo?: Json
+          criado_em?: string
+          id?: string
+          mes_ano: string
+          origem?: string
+          revisao?: number
+          titulo: string
+        }
+        Update: {
+          atualizado_em?: string
+          aviso_id?: string | null
+          conteudo?: Json
+          criado_em?: string
+          id?: string
+          mes_ano?: string
+          origem?: string
+          revisao?: number
+          titulo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "insider_edicoes_aviso_id_fkey"
+            columns: ["aviso_id"]
+            isOneToOne: true
+            referencedRelation: "avisos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      insider_preparacoes: {
+        Row: {
+          concluido_em: string | null
+          em_execucao_desde: string | null
+          erro: string | null
+          mes_ano: string
+          token: string | null
+        }
+        Insert: {
+          concluido_em?: string | null
+          em_execucao_desde?: string | null
+          erro?: string | null
+          mes_ano: string
+          token?: string | null
+        }
+        Update: {
+          concluido_em?: string | null
+          em_execucao_desde?: string | null
+          erro?: string | null
+          mes_ano?: string
+          token?: string | null
+        }
+        Relationships: []
+      }
       mural_comentarios: {
         Row: {
           criado_em: string
@@ -1141,11 +1209,45 @@ export type Database = {
         Args: { _aviso_id: string }
         Returns: boolean
       }
+      pode_ler_insider: { Args: { _id: string }; Returns: boolean }
+      publicar_edicao_insider: {
+        Args: { _id: string; _perfil: string; _revisao: number }
+        Returns: string
+      }
       receber_compilado: {
         Args: { _html: string; _mes_ano: string; _titulo: string }
         Returns: string
       }
+      reservar_insider: {
+        Args: { _mes: string; _token: string }
+        Returns: boolean
+      }
       reservar_sincronizacao: { Args: never; Returns: boolean }
+      salvar_edicao_insider: {
+        Args: {
+          _conteudo: Json
+          _id: string
+          _revisao: number
+          _titulo: string
+        }
+        Returns: {
+          atualizado_em: string
+          aviso_id: string | null
+          conteudo: Json
+          criado_em: string
+          id: string
+          mes_ano: string
+          origem: string
+          revisao: number
+          titulo: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "insider_edicoes"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       tem_permissao: { Args: { _permissao: string }; Returns: boolean }
       tour_pendente: { Args: never; Returns: boolean }
       usuario_tem_permissao: {

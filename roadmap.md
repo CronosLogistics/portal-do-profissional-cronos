@@ -16,4 +16,5 @@
 ## Montagem mensal do Cronos Insider
 - [x] Validar modelo, campos do SharePoint e decisões de calendário e saída.
 - [x] Apresentar plano para editor do RH e preparação mensal automática.
-- [ ] Implementar após definição do fluxo e aprovação do plano.
+- [x] Implementar editor do RH, fotos, prévia e publicação integrada aos avisos.
+- [x] Agendar preparação no primeiro dia de segunda a sexta e validar regras e fluxo real.

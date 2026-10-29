@@ -40,6 +40,7 @@ import { Route as AuthenticatedAdminCadastrosIndexRouteImport } from './routes/_
 import { Route as AuthenticatedAdminParceiroIdRouteImport } from './routes/_authenticated/admin.parceiro.$id'
 import { Route as AuthenticatedAdminRecompensaIdRouteImport } from './routes/_authenticated/admin.recompensa.$id'
 import { Route as ApiPublicJobsEntraSyncRouteImport } from './routes/api/public/jobs/entra-sync'
+import { Route as ApiPublicJobsInsiderRouteImport } from './routes/api/public/jobs/insider'
 import { Route as AuthenticatedAdminCadastrosCategoriaIdRouteImport } from './routes/_authenticated/admin.cadastros.categoria.$id'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
@@ -214,6 +215,11 @@ const ApiPublicJobsEntraSyncRoute = ApiPublicJobsEntraSyncRouteImport.update({
   path: '/api/public/jobs/entra-sync',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicJobsInsiderRoute = ApiPublicJobsInsiderRouteImport.update({
+  id: '/api/public/jobs/insider',
+  path: '/api/public/jobs/insider',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedAdminCadastrosCategoriaIdRoute =
   AuthenticatedAdminCadastrosCategoriaIdRouteImport.update({
     id: '/cadastros/categoria/$id',
@@ -251,6 +257,7 @@ export interface FileRoutesByFullPath {
   '/admin/parceiro/$id': typeof AuthenticatedAdminParceiroIdRoute
   '/admin/recompensa/$id': typeof AuthenticatedAdminRecompensaIdRoute
   '/api/public/jobs/entra-sync': typeof ApiPublicJobsEntraSyncRoute
+  '/api/public/jobs/insider': typeof ApiPublicJobsInsiderRoute
   '/admin/cadastros/': typeof AuthenticatedAdminCadastrosIndexRoute
   '/admin/cadastros/categoria/$id': typeof AuthenticatedAdminCadastrosCategoriaIdRoute
 }
@@ -283,6 +290,7 @@ export interface FileRoutesByTo {
   '/admin/parceiro/$id': typeof AuthenticatedAdminParceiroIdRoute
   '/admin/recompensa/$id': typeof AuthenticatedAdminRecompensaIdRoute
   '/api/public/jobs/entra-sync': typeof ApiPublicJobsEntraSyncRoute
+  '/api/public/jobs/insider': typeof ApiPublicJobsInsiderRoute
   '/admin/cadastros': typeof AuthenticatedAdminCadastrosIndexRoute
   '/admin/cadastros/categoria/$id': typeof AuthenticatedAdminCadastrosCategoriaIdRoute
 }
@@ -318,6 +326,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/parceiro/$id': typeof AuthenticatedAdminParceiroIdRoute
   '/_authenticated/admin/recompensa/$id': typeof AuthenticatedAdminRecompensaIdRoute
   '/api/public/jobs/entra-sync': typeof ApiPublicJobsEntraSyncRoute
+  '/api/public/jobs/insider': typeof ApiPublicJobsInsiderRoute
   '/_authenticated/admin/cadastros/': typeof AuthenticatedAdminCadastrosIndexRoute
   '/_authenticated/admin/cadastros/categoria/$id': typeof AuthenticatedAdminCadastrosCategoriaIdRoute
 }
@@ -353,6 +362,7 @@ export interface FileRouteTypes {
     | '/admin/parceiro/$id'
     | '/admin/recompensa/$id'
     | '/api/public/jobs/entra-sync'
+    | '/api/public/jobs/insider'
     | '/admin/cadastros/'
     | '/admin/cadastros/categoria/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -385,6 +395,7 @@ export interface FileRouteTypes {
     | '/admin/parceiro/$id'
     | '/admin/recompensa/$id'
     | '/api/public/jobs/entra-sync'
+    | '/api/public/jobs/insider'
     | '/admin/cadastros'
     | '/admin/cadastros/categoria/$id'
   id:
@@ -419,6 +430,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/parceiro/$id'
     | '/_authenticated/admin/recompensa/$id'
     | '/api/public/jobs/entra-sync'
+    | '/api/public/jobs/insider'
     | '/_authenticated/admin/cadastros/'
     | '/_authenticated/admin/cadastros/categoria/$id'
   fileRoutesById: FileRoutesById
@@ -430,6 +442,7 @@ export interface RootRouteChildren {
   ApiPublicCompiladoElogiosRoute: typeof ApiPublicCompiladoElogiosRoute
   ApiPublicPartnerLogoRoute: typeof ApiPublicPartnerLogoRoute
   ApiPublicJobsEntraSyncRoute: typeof ApiPublicJobsEntraSyncRoute
+  ApiPublicJobsInsiderRoute: typeof ApiPublicJobsInsiderRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -651,6 +664,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicJobsEntraSyncRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/jobs/insider': {
+      id: '/api/public/jobs/insider'
+      path: '/api/public/jobs/insider'
+      fullPath: '/api/public/jobs/insider'
+      preLoaderRoute: typeof ApiPublicJobsInsiderRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/admin/cadastros/categoria/$id': {
       id: '/_authenticated/admin/cadastros/categoria/$id'
       path: '/cadastros/categoria/$id'
@@ -739,6 +759,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCompiladoElogiosRoute: ApiPublicCompiladoElogiosRoute,
   ApiPublicPartnerLogoRoute: ApiPublicPartnerLogoRoute,
   ApiPublicJobsEntraSyncRoute: ApiPublicJobsEntraSyncRoute,
+  ApiPublicJobsInsiderRoute: ApiPublicJobsInsiderRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
