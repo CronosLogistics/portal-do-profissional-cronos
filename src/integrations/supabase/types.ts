@@ -206,6 +206,74 @@ export type Database = {
         }
         Relationships: []
       }
+      mural_comentarios: {
+        Row: {
+          criado_em: string
+          editado_em: string | null
+          id: string
+          post_id: string
+          texto: string
+          usuario_id: string
+        }
+        Insert: {
+          criado_em?: string
+          editado_em?: string | null
+          id?: string
+          post_id: string
+          texto: string
+          usuario_id?: string
+        }
+        Update: {
+          criado_em?: string
+          editado_em?: string | null
+          id?: string
+          post_id?: string
+          texto?: string
+          usuario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mural_comentarios_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "mural_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mural_posts: {
+        Row: {
+          autor_id: string
+          criado_em: string
+          data_post: string
+          id: string
+          imagem_path: string | null
+          texto: string
+          titulo: string
+          visivel_ate: string | null
+        }
+        Insert: {
+          autor_id?: string
+          criado_em?: string
+          data_post?: string
+          id?: string
+          imagem_path?: string | null
+          texto?: string
+          titulo: string
+          visivel_ate?: string | null
+        }
+        Update: {
+          autor_id?: string
+          criado_em?: string
+          data_post?: string
+          id?: string
+          imagem_path?: string | null
+          texto?: string
+          titulo?: string
+          visivel_ate?: string | null
+        }
+        Relationships: []
+      }
       offices: {
         Row: {
           created_at: string
@@ -816,6 +884,19 @@ export type Database = {
           titulo: string
         }[]
       }
+      listar_mural: {
+        Args: never
+        Returns: {
+          comentarios: Json
+          criado_em: string
+          data_post: string
+          id: string
+          imagem_path: string
+          texto: string
+          titulo: string
+          visivel_ate: string
+        }[]
+      }
       marcar_todos_avisos_lidos: { Args: never; Returns: number }
       membros_perfil: {
         Args: { _perfil_id: string }
@@ -834,6 +915,16 @@ export type Database = {
         }[]
       }
       minhas_permissoes: { Args: never; Returns: string[] }
+      mural_vigentes: {
+        Args: never
+        Returns: {
+          data_post: string
+          id: string
+          imagem_path: string
+          texto: string
+          titulo: string
+        }[]
+      }
       pode_enviar_como: { Args: { _perfil_id: string }; Returns: boolean }
       reservar_sincronizacao: { Args: never; Returns: boolean }
       tem_permissao: { Args: { _permissao: string }; Returns: boolean }
