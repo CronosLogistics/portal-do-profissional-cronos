@@ -64,6 +64,41 @@ export type Database = {
           },
         ]
       }
+      avisos_comentarios: {
+        Row: {
+          aviso_id: string
+          criado_em: string
+          editado_em: string | null
+          id: string
+          texto: string
+          usuario_id: string
+        }
+        Insert: {
+          aviso_id: string
+          criado_em?: string
+          editado_em?: string | null
+          id?: string
+          texto: string
+          usuario_id?: string
+        }
+        Update: {
+          aviso_id?: string
+          criado_em?: string
+          editado_em?: string | null
+          id?: string
+          texto?: string
+          usuario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "avisos_comentarios_aviso_id_fkey"
+            columns: ["aviso_id"]
+            isOneToOne: false
+            referencedRelation: "avisos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       avisos_leituras: {
         Row: {
           aviso_id: string
@@ -83,6 +118,38 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "avisos_leituras_aviso_id_fkey"
+            columns: ["aviso_id"]
+            isOneToOne: false
+            referencedRelation: "avisos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      avisos_reacoes: {
+        Row: {
+          aviso_id: string
+          criado_em: string
+          emoji: string
+          id: string
+          usuario_id: string
+        }
+        Insert: {
+          aviso_id: string
+          criado_em?: string
+          emoji: string
+          id?: string
+          usuario_id?: string
+        }
+        Update: {
+          aviso_id?: string
+          criado_em?: string
+          emoji?: string
+          id?: string
+          usuario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "avisos_reacoes_aviso_id_fkey"
             columns: ["aviso_id"]
             isOneToOne: false
             referencedRelation: "avisos"
@@ -341,6 +408,38 @@ export type Database = {
           visivel_ate?: string | null
         }
         Relationships: []
+      }
+      mural_reacoes: {
+        Row: {
+          criado_em: string
+          emoji: string
+          id: string
+          post_id: string
+          usuario_id: string
+        }
+        Insert: {
+          criado_em?: string
+          emoji: string
+          id?: string
+          post_id: string
+          usuario_id?: string
+        }
+        Update: {
+          criado_em?: string
+          emoji?: string
+          id?: string
+          post_id?: string
+          usuario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mural_reacoes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "mural_posts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       offices: {
         Row: {
@@ -943,6 +1042,7 @@ export type Database = {
           titulo: string
         }[]
       }
+      interacoes_compilado: { Args: { _aviso_id: string }; Returns: Json }
       is_active_user: { Args: { _user_id: string }; Returns: boolean }
       is_editor: { Args: { _user_id: string }; Returns: boolean }
       limpar_html_aviso: { Args: { _html: string }; Returns: string }
@@ -973,6 +1073,23 @@ export type Database = {
           data_post: string
           id: string
           imagem_path: string
+          texto: string
+          tipo: string
+          titulo: string
+          visivel_ate: string
+        }[]
+      }
+      listar_mural_com_reacoes: {
+        Args: never
+        Returns: {
+          anos_casa: number
+          comentarios: Json
+          criado_em: string
+          data_post: string
+          id: string
+          imagem_path: string
+          minha_reacao: string
+          reacoes: Json
           texto: string
           tipo: string
           titulo: string
@@ -1010,6 +1127,10 @@ export type Database = {
         }[]
       }
       pode_enviar_como: { Args: { _perfil_id: string }; Returns: boolean }
+      pode_interagir_compilado: {
+        Args: { _aviso_id: string }
+        Returns: boolean
+      }
       receber_compilado: {
         Args: { _html: string; _mes_ano: string; _titulo: string }
         Returns: string
