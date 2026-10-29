@@ -144,7 +144,7 @@ function PostForm({ post, onClose }: { post: PostMural | null; onClose: () => vo
   const [ate, setAte] = useState(post?.visivel_ate ?? "");
   const [arquivo, setArquivo] = useState<File | null>(null);
   const salvar = useMutation({
-    mutationFn: () => salvarPost(post?.id ?? null, { titulo, texto, data_post: data, visivel_ate: ate || null, arquivo, imagem_path: post?.imagem_path }),
+    mutationFn: () => salvarPost(post?.id ?? null, { titulo, texto, data_post: data, visivel_ate: ate || null, arquivo, imagem_path: post?.imagem_path ?? null }),
     onSuccess: () => { toast.success("Post publicado."); qc.invalidateQueries({ queryKey: muralKey }); onClose(); },
     onError: (e: Error) => toast.error(e.message),
   });
