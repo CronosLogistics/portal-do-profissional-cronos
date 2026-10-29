@@ -226,7 +226,7 @@ function PostForm({ post, onClose }: { post: PostMural | null; onClose: () => vo
           <div><Label htmlFor="mt">Título</Label><Input id="mt" maxLength={120} value={titulo} onChange={(e) => setTitulo(e.target.value)} placeholder="Feliz aniversário, Maria!" /></div>
           <div><Label htmlFor="mx">Texto</Label><Textarea id="mx" rows={4} value={texto} onChange={(e) => setTexto(e.target.value)} /></div>
           <div><Label htmlFor="mi">Imagem (ex.: arte de parabéns)</Label><Input id="mi" type="file" accept="image/*" onChange={(e) => setArquivo(e.target.files?.[0] ?? null)} /></div>
-          <p className="text-xs text-muted-foreground">O post fica no mural e no carrossel da Início do dia da publicação até o último dia do mês. Aniversários e tempo de casa aparecem em slides separados.</p>
+          <p className="text-xs text-muted-foreground">O post sai automaticamente no primeiro dia útil do mês seguinte. Aniversários e tempo de casa aparecem em slides separados.</p>
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={onClose}>Cancelar</Button>
