@@ -38,7 +38,7 @@ function DocumentosPage() {
   const pode = Boolean(me.data?.can("documentos.gerenciar"));
   const docs = useQuery({ queryKey: chave, queryFn: listar });
   const qc = useQueryClient();
-  const [form, setForm] = useState<{ open: boolean; doc?: Documento }>({ open: false });
+  const [form, setForm] = useState<{ open: boolean; doc?: Documento | undefined }>({ open: false });
   const excluir = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("documentos").delete().eq("id", id);
@@ -84,7 +84,7 @@ function DocumentosPage() {
   );
 }
 
-function DocForm({ doc, onClose }: { doc?: Documento; onClose: () => void }) {
+function DocForm({ doc, onClose }: { doc?: Documento | undefined; onClose: () => void }) {
   const qc = useQueryClient();
   const [titulo, setTitulo] = useState(doc?.titulo ?? "");
   const [url, setUrl] = useState(doc?.url ?? "");
