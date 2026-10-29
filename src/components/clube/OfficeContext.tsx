@@ -1,6 +1,8 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { useLocation } from "@tanstack/react-router";
-import { Building2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { useCurrentUser } from "@/hooks/useAuth";
+import { meuEscritorio } from "@/lib/office.functions";
 
 import { listPublicOffices } from "@/lib/partners.functions";
 
@@ -22,91 +24,34 @@ const OfficeCtx = createContext<Ctx>({
   openPicker: () => {},
 });
 
-const STORAGE_KEY = "cronos-office";
-
 export function OfficeProvider({ children }: { children: ReactNode }) {
   const [offices, setOffices] = useState<Office[]>([]);
-  const [slug, setSlug] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
-  const [pickerOpen, setPickerOpen] = useState(false);
-  const location = useLocation();
+  const me = useCurrentUser();
+  const buscar = useServerFn(meuEscritorio);
+  const resolved = useQuery({ queryKey: ["meu-escritorio", me.data?.id], queryFn: () => buscar(), enabled: Boolean(me.data?.id), staleTime: 5 * 60000, retry: false });
 
   useEffect(() => {
-    setSlug(window.localStorage.getItem(STORAGE_KEY));
     void listPublicOffices()
       .then((data) => setOffices(data ?? []))
       .catch(() => setOffices([]))
       .finally(() => setReady(true));
   }, []);
 
-  const office = offices.find((item) => item.slug === slug) ?? null;
+  const office = me.data?.id ? resolved.data ?? null : null;
 
   const value = useMemo<Ctx>(
     () => ({
       offices,
       office,
       ready,
-      choose: (item) => {
-        window.localStorage.setItem(STORAGE_KEY, item.slug);
-        setSlug(item.slug);
-        setPickerOpen(false);
-      },
-      openPicker: () => setPickerOpen(true),
+      choose: () => {},
+      openPicker: () => {},
     }),
     [offices, office, ready],
   );
 
-  const isRestricted = location.pathname.startsWith("/admin") || location.pathname.startsWith("/auth");
-  const showPicker = !isRestricted && ready && offices.length > 0 && (!office || pickerOpen);
-
-  return (
-    <OfficeCtx.Provider value={value}>
-      {children}
-      {showPicker ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/85 p-4 backdrop-blur-md">
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="office-title"
-            className="glass-card w-full max-w-lg rounded-3xl p-8"
-          >
-            <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-accent text-primary-foreground">
-              <Building2 className="h-6 w-6" aria-hidden="true" />
-            </span>
-            <h2 id="office-title" className="mt-4 font-display text-2xl font-extrabold">
-              Qual é o seu escritório?
-            </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Mostraremos as parcerias disponíveis na sua cidade. Você pode trocar quando quiser.
-            </p>
-            <div className="mt-6 grid gap-2 sm:grid-cols-2">
-              {offices.map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => value.choose(item)}
-                  className={`rounded-xl border px-4 py-3 text-left text-sm font-semibold transition-colors hover:border-primary hover:bg-primary/10 ${
-                    office?.id === item.id ? "border-primary bg-primary/15" : "border-border"
-                  }`}
-                >
-                  {item.name}
-                </button>
-              ))}
-            </div>
-            {office ? (
-              <button
-                type="button"
-                onClick={() => setPickerOpen(false)}
-                className="mt-4 text-xs text-muted-foreground hover:text-foreground"
-              >
-                Cancelar
-              </button>
-            ) : null}
-          </div>
-        </div>
-      ) : null}
-    </OfficeCtx.Provider>
-  );
+  return <OfficeCtx.Provider value={value}>{children}</OfficeCtx.Provider>;
 }
 
 export function useOffice() {

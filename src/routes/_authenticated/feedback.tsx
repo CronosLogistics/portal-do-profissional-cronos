@@ -68,6 +68,7 @@ function Cartao({ e }: { e: Elogio }) {
         {e.cliente && <div className="flex gap-1"><Building2 className="h-3.5 w-3.5" /> Cliente: {e.cliente}</div>}
         {e.envolvidos.length > 0 && <div className="flex gap-1"><Users className="h-3.5 w-3.5" /> Envolvidos: {e.envolvidos.join(", ")}</div>}
         {e.gestor && <div className="flex gap-1"><UserRound className="h-3.5 w-3.5" /> Gestor(a): {e.gestor}</div>}
+        <div className="flex gap-1"><UserRound className="h-3.5 w-3.5" /> Elogio de: {e.elogiador || "Não informado"}</div>
       </dl>
     </article>
   );
