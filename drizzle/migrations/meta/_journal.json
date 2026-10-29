@@ -85,6 +85,13 @@
       "when": 1793279449853,
       "tag": "0011_compilado_elogios",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1793285598752,
+      "tag": "0012_mural_tipo_slide",
+      "breakpoints": true
     }
   ]
 }

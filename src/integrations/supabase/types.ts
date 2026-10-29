@@ -305,32 +305,38 @@ export type Database = {
       }
       mural_posts: {
         Row: {
+          anos_casa: number | null
           autor_id: string
           criado_em: string
           data_post: string
           id: string
           imagem_path: string | null
           texto: string
+          tipo: string
           titulo: string
           visivel_ate: string | null
         }
         Insert: {
+          anos_casa?: number | null
           autor_id?: string
           criado_em?: string
           data_post?: string
           id?: string
           imagem_path?: string | null
           texto?: string
+          tipo?: string
           titulo: string
           visivel_ate?: string | null
         }
         Update: {
+          anos_casa?: number | null
           autor_id?: string
           criado_em?: string
           data_post?: string
           id?: string
           imagem_path?: string | null
           texto?: string
+          tipo?: string
           titulo?: string
           visivel_ate?: string | null
         }
@@ -992,10 +998,12 @@ export type Database = {
       mural_vigentes: {
         Args: never
         Returns: {
+          anos_casa: number
           data_post: string
           id: string
           imagem_path: string
           texto: string
+          tipo: string
           titulo: string
         }[]
       }
