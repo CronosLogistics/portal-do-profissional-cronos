@@ -25,6 +25,7 @@ export type Database = {
           mensagem: string
           perfil_id: string
           publicar_em: string
+          tipo: string
           titulo: string
         }
         Insert: {
@@ -37,6 +38,7 @@ export type Database = {
           mensagem?: string
           perfil_id: string
           publicar_em?: string
+          tipo?: string
           titulo: string
         }
         Update: {
@@ -49,6 +51,7 @@ export type Database = {
           mensagem?: string
           perfil_id?: string
           publicar_em?: string
+          tipo?: string
           titulo?: string
         }
         Relationships: [
@@ -757,6 +760,7 @@ export type Database = {
           perfil_id: string
           perfil_nome: string
           publicar_em: string
+          tipo: string
           titulo: string
         }[]
       }
@@ -780,6 +784,17 @@ export type Database = {
         }
         Returns: boolean
       }
+      insider_vigente: {
+        Args: never
+        Returns: {
+          editado_em: string
+          id: string
+          mensagem: string
+          perfil_nome: string
+          publicar_em: string
+          titulo: string
+        }[]
+      }
       is_active_user: { Args: { _user_id: string }; Returns: boolean }
       is_editor: { Args: { _user_id: string }; Returns: boolean }
       limpar_html_aviso: { Args: { _html: string }; Returns: string }
@@ -797,6 +812,7 @@ export type Database = {
           mensagem: string
           perfil_nome: string
           publicar_em: string
+          tipo: string
           titulo: string
         }[]
       }
