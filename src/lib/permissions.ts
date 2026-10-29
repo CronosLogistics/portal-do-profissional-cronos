@@ -9,6 +9,7 @@ export const PERMISSOES = [
   { codigo: "avisos.gerenciar", nome: "Gerenciar avisos", descricao: "Editar e arquivar avisos de qualquer perfil." },
   { codigo: "avisos.insider", nome: "Publicar o Cronos Insider", descricao: "Ver a opção Cronos Insider em Novo aviso; a edição fica 3 dias no carrossel da página Início." },
   { codigo: "conteudo.editar", nome: "Editar conteúdos", descricao: "Cadastrar benefícios, parceiros, recompensas e textos do portal." },
+  { codigo: "documentos.gerenciar", nome: "Gerenciar documentos", descricao: "Incluir, editar e remover links na página Documentos." },
 ] as const;
 
 export type Permissao = (typeof PERMISSOES)[number]["codigo"];

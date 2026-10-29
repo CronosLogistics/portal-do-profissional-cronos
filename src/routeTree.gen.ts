@@ -15,6 +15,8 @@ import { Route as DefinirSenhaRouteImport } from './routes/definir-senha'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAvisosRouteImport } from './routes/_authenticated/avisos'
+import { Route as AuthenticatedDocumentosRouteImport } from './routes/_authenticated/documentos'
+import { Route as AuthenticatedFormulariosRouteImport } from './routes/_authenticated/formularios'
 import { Route as AuthenticatedMuralRouteImport } from './routes/_authenticated/mural'
 import { Route as AuthenticatedParceirosRouteImport } from './routes/_authenticated/parceiros'
 import { Route as AuthenticatedTreinamentosRouteImport } from './routes/_authenticated/treinamentos'
@@ -67,6 +69,17 @@ const AuthenticatedAvisosRoute = AuthenticatedAvisosRouteImport.update({
   path: '/avisos',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedDocumentosRoute = AuthenticatedDocumentosRouteImport.update({
+  id: '/documentos',
+  path: '/documentos',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedFormulariosRoute =
+  AuthenticatedFormulariosRouteImport.update({
+    id: '/formularios',
+    path: '/formularios',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedMuralRoute = AuthenticatedMuralRouteImport.update({
   id: '/mural',
   path: '/mural',
@@ -201,6 +214,8 @@ export interface FileRoutesByFullPath {
   '/definir-senha': typeof DefinirSenhaRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/avisos': typeof AuthenticatedAvisosRoute
+  '/documentos': typeof AuthenticatedDocumentosRoute
+  '/formularios': typeof AuthenticatedFormulariosRoute
   '/mural': typeof AuthenticatedMuralRoute
   '/parceiros': typeof AuthenticatedParceirosRoute
   '/treinamentos': typeof AuthenticatedTreinamentosRoute
@@ -228,6 +243,8 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/definir-senha': typeof DefinirSenhaRoute
   '/avisos': typeof AuthenticatedAvisosRoute
+  '/documentos': typeof AuthenticatedDocumentosRoute
+  '/formularios': typeof AuthenticatedFormulariosRoute
   '/mural': typeof AuthenticatedMuralRoute
   '/parceiros': typeof AuthenticatedParceirosRoute
   '/treinamentos': typeof AuthenticatedTreinamentosRoute
@@ -259,6 +276,8 @@ export interface FileRoutesById {
   '/definir-senha': typeof DefinirSenhaRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/avisos': typeof AuthenticatedAvisosRoute
+  '/_authenticated/documentos': typeof AuthenticatedDocumentosRoute
+  '/_authenticated/formularios': typeof AuthenticatedFormulariosRoute
   '/_authenticated/mural': typeof AuthenticatedMuralRoute
   '/_authenticated/parceiros': typeof AuthenticatedParceirosRoute
   '/_authenticated/treinamentos': typeof AuthenticatedTreinamentosRoute
@@ -291,6 +310,8 @@ export interface FileRouteTypes {
     | '/definir-senha'
     | '/admin'
     | '/avisos'
+    | '/documentos'
+    | '/formularios'
     | '/mural'
     | '/parceiros'
     | '/treinamentos'
@@ -318,6 +339,8 @@ export interface FileRouteTypes {
     | '/auth'
     | '/definir-senha'
     | '/avisos'
+    | '/documentos'
+    | '/formularios'
     | '/mural'
     | '/parceiros'
     | '/treinamentos'
@@ -348,6 +371,8 @@ export interface FileRouteTypes {
     | '/definir-senha'
     | '/_authenticated/admin'
     | '/_authenticated/avisos'
+    | '/_authenticated/documentos'
+    | '/_authenticated/formularios'
     | '/_authenticated/mural'
     | '/_authenticated/parceiros'
     | '/_authenticated/treinamentos'
@@ -423,6 +448,20 @@ declare module '@tanstack/react-router' {
       path: '/avisos'
       fullPath: '/avisos'
       preLoaderRoute: typeof AuthenticatedAvisosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/documentos': {
+      id: '/_authenticated/documentos'
+      path: '/documentos'
+      fullPath: '/documentos'
+      preLoaderRoute: typeof AuthenticatedDocumentosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/formularios': {
+      id: '/_authenticated/formularios'
+      path: '/formularios'
+      fullPath: '/formularios'
+      preLoaderRoute: typeof AuthenticatedFormulariosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/mural': {
@@ -617,6 +656,8 @@ const AuthenticatedAdminRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedAvisosRoute: typeof AuthenticatedAvisosRoute
+  AuthenticatedDocumentosRoute: typeof AuthenticatedDocumentosRoute
+  AuthenticatedFormulariosRoute: typeof AuthenticatedFormulariosRoute
   AuthenticatedMuralRoute: typeof AuthenticatedMuralRoute
   AuthenticatedParceirosRoute: typeof AuthenticatedParceirosRoute
   AuthenticatedTreinamentosRoute: typeof AuthenticatedTreinamentosRoute
@@ -632,6 +673,8 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedAvisosRoute: AuthenticatedAvisosRoute,
+  AuthenticatedDocumentosRoute: AuthenticatedDocumentosRoute,
+  AuthenticatedFormulariosRoute: AuthenticatedFormulariosRoute,
   AuthenticatedMuralRoute: AuthenticatedMuralRoute,
   AuthenticatedParceirosRoute: AuthenticatedParceirosRoute,
   AuthenticatedTreinamentosRoute: AuthenticatedTreinamentosRoute,

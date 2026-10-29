@@ -206,6 +206,33 @@ export type Database = {
         }
         Relationships: []
       }
+      documentos: {
+        Row: {
+          atualizado_em: string
+          criado_em: string
+          criado_por: string | null
+          id: string
+          titulo: string
+          url: string
+        }
+        Insert: {
+          atualizado_em?: string
+          criado_em?: string
+          criado_por?: string | null
+          id?: string
+          titulo: string
+          url: string
+        }
+        Update: {
+          atualizado_em?: string
+          criado_em?: string
+          criado_por?: string | null
+          id?: string
+          titulo?: string
+          url?: string
+        }
+        Relationships: []
+      }
       mural_comentarios: {
         Row: {
           criado_em: string
