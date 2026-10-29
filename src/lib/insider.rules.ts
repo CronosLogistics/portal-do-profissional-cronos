@@ -44,8 +44,8 @@ export function montarConteudoInsider(profissionais: ProfissionalInsider[], mes:
     if (!["ATIVO", "EFETIVADO/ATIVO"].includes(f.field_1?.trim().toUpperCase() ?? "") || !f.Title?.trim()) continue;
     const base = { id: p.id, nome: f.Title.trim(), departamento: f.DEPARTAMENTOATUAL ?? "", escritorio: f.field_3 ?? "", foto: "" };
     const nasc = dataCivil(f.DATADENASC_x002e_), adm = dataCivil(f.field_4);
-    if (nasc?.mes === numeroMes) aniversariantes.push({ ...base, dia: nasc.dia });
-    if (adm?.mes === numeroMes && ano !== undefined && ano - adm.ano >= 1) tempoCasa.push({ ...base, dia: adm.dia, anos: ano - adm.ano });
+    if (nasc && nasc.mes === numeroMes) aniversariantes.push({ ...base, dia: nasc.dia });
+    if (adm && adm.mes === numeroMes && ano !== undefined && ano - adm.ano >= 1) tempoCasa.push({ ...base, dia: adm.dia, anos: ano - adm.ano });
   }
   const ordenar = (a: PessoaInsider, b: PessoaInsider) => a.dia - b.dia || a.nome.localeCompare(b.nome, "pt-BR");
   return { abertura: "", antesEventos: "", antesAniversarios: "", antesTempoCasa: "", encerramento: "", bannerMes: "", eventos: [], aniversariantes: aniversariantes.sort(ordenar), tempoCasa: tempoCasa.sort(ordenar) };
