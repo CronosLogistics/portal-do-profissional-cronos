@@ -110,3 +110,19 @@ export async function insiderVigente(): Promise<InsiderVigente | null> {
   if (error) throw amigavel(error.message);
   return (data?.[0] as InsiderVigente | undefined) ?? null;
 }
+
+export type CompiladoVigente = InsiderVigente & { mes_ano: string };
+
+/** Compilado de elogios no slide 4 (um mês a partir da publicação). */
+export async function compiladoVigente(): Promise<CompiladoVigente | null> {
+  const { data, error } = await supabase.rpc("compilado_vigente");
+  if (error) throw amigavel(error.message);
+  return (data?.[0] as CompiladoVigente | undefined) ?? null;
+}
+
+/** HTML completo do compilado (fora de avisos.mensagem, para manter tabelas e estilos). */
+export async function htmlCompilado(avisoId: string): Promise<string | null> {
+  const { data, error } = await supabase.from("compilados_elogios").select("html").eq("aviso_id", avisoId).maybeSingle();
+  if (error) throw amigavel(error.message);
+  return data?.html ?? null;
+}

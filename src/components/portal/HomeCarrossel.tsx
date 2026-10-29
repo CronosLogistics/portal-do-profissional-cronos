@@ -1,11 +1,11 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { CalendarHeart, ChevronLeft, ChevronRight, Newspaper, PartyPopper } from "lucide-react";
+import { Award, CalendarHeart, ChevronLeft, ChevronRight, Newspaper, PartyPopper } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { muralKey, muralVigentes, urlImagem, type PostVigente } from "@/lib/mural-client";
 import { Button } from "@/components/ui/button";
 import { AvisoLeitura, type AvisoExibido } from "@/components/avisos/AvisoLeitura";
-import { avisosKey, insiderVigente } from "@/lib/avisos-client";
+import { avisosKey, compiladoVigente, insiderVigente } from "@/lib/avisos-client";
 import { diasParaCronosDay, formatarDataBrasilia } from "@/lib/avisos-rules";
 
 type Slide = { id: string; conteudo: ReactNode };
@@ -22,6 +22,7 @@ export function HomeCarrossel() {
     return () => clearInterval(t);
   }, []);
   const insider = useQuery({ queryKey: [...avisosKey, "insider-vigente"], queryFn: insiderVigente, staleTime: 60_000 });
+  const compilado = useQuery({ queryKey: [...avisosKey, "compilado-vigente"], queryFn: compiladoVigente, staleTime: 60_000 });
   const mural = useQuery({ queryKey: [...muralKey, "vigentes"], queryFn: muralVigentes, staleTime: 60_000 });
   const [aberto, setAberto] = useState<AvisoExibido | null>(null);
   const [atual, setAtual] = useState(0);
@@ -57,6 +58,22 @@ export function HomeCarrossel() {
             <p className="home-slide-tag">Cronos Insider · {formatarDataBrasilia(ed.publicar_em).slice(0, 10)}</p>
             <p className="home-slide-big">{ed.titulo}</p>
             <p className="home-slide-sub">Clique para ler a edição completa.</p>
+          </div>
+        </button>
+      ),
+    });
+  }
+  const comp = compilado.data;
+  if (comp) {
+    slides.push({
+      id: "compilado",
+      conteudo: (
+        <button type="button" className="home-slide home-slide-insider" onClick={() => setAberto({ ...comp, tipo: "compilado" })}>
+          <Award className="home-slide-icon" />
+          <div>
+            <p className="home-slide-tag">Compilado de elogios · {comp.mes_ano.split("-").reverse().join("/")}</p>
+            <p className="home-slide-big">{comp.titulo}</p>
+            <p className="home-slide-sub">Clique para ver todos os elogios do mês.</p>
           </div>
         </button>
       ),

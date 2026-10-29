@@ -78,6 +78,13 @@
       "when": 1793278740792,
       "tag": "0010_documentos_trigger_fix",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1793279449853,
+      "tag": "0011_compilado_elogios",
+      "breakpoints": true
     }
   ]
 }
