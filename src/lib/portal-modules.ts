@@ -8,7 +8,7 @@ export type PortalRole = "admin" | "rh" | "funcionario";
 export type PortalNavGroup = "beneficios";
 
 export type PortalModule = {
-  to: "/avisos" | "/mural" | "/beneficios" | "/parceiros" | "/recompensas" | "/treinamentos" | "/formularios" | "/documentos";
+  to: "/avisos" | "/mural" | "/beneficios" | "/parceiros" | "/recompensas" | "/treinamentos" | "/formularios" | "/documentos" | "/feedback";
   label: string;
   /** Texto do item quando o módulo aparece como submenu. */
   menuLabel?: string;
@@ -31,6 +31,7 @@ export const PORTAL_MODULES: PortalModule[] = [
   { to: "/treinamentos", label: "Treinamentos" },
   { to: "/formularios", label: "Formulários" },
   { to: "/documentos", label: "Documentos" },
+  { to: "/feedback", label: "Feedback" },
 ];
 
 export type PrincipalNavLink = {
