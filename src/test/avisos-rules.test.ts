@@ -33,3 +33,11 @@ describe("título da aba", () => {
     expect(tituloComContador("(3) Portal do Profissional", 0)).toBe("Portal do Profissional");
   });
 });
+
+import { diasParaCronosDay } from "@/lib/avisos-rules";
+describe("Cronos Day (12/12/2026, Brasília)", () => {
+  it("conta 1 dia em 11/12 às 23h de Brasília", () => expect(diasParaCronosDay(new Date("2026-12-11T23:00:00-03:00"))).toBe(1));
+  it("mostra 0 no próprio dia, mesmo já 02h UTC do dia 13", () => expect(diasParaCronosDay(new Date("2026-12-13T02:00:00Z"))).toBe(0));
+  it("sai do carrossel em 13/12 de Brasília", () => expect(diasParaCronosDay(new Date("2026-12-13T00:00:01-03:00"))).toBeNull());
+  it("conta 44 dias em 29/10/2026", () => expect(diasParaCronosDay(new Date("2026-10-29T09:00:00-03:00"))).toBe(44));
+});
