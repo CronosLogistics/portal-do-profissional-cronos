@@ -1,6 +1,8 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { CalendarHeart, ChevronLeft, ChevronRight, Newspaper } from "lucide-react";
+import { CalendarHeart, ChevronLeft, ChevronRight, Newspaper, PartyPopper } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { muralKey, muralVigentes, urlImagem, type PostVigente } from "@/lib/mural-client";
 import { Button } from "@/components/ui/button";
 import { AvisoLeitura, type AvisoExibido } from "@/components/avisos/AvisoLeitura";
 import { avisosKey, insiderVigente } from "@/lib/avisos-client";
@@ -20,6 +22,7 @@ export function HomeCarrossel() {
     return () => clearInterval(t);
   }, []);
   const insider = useQuery({ queryKey: [...avisosKey, "insider-vigente"], queryFn: insiderVigente, staleTime: 60_000 });
+  const mural = useQuery({ queryKey: [...muralKey, "vigentes"], queryFn: muralVigentes, staleTime: 60_000 });
   const [aberto, setAberto] = useState<AvisoExibido | null>(null);
   const [atual, setAtual] = useState(0);
 
@@ -39,6 +42,9 @@ export function HomeCarrossel() {
         </div>
       ),
     });
+  }
+  for (const p of mural.data ?? []) {
+    slides.push({ id: `mural-${p.id}`, conteudo: <SlideMural post={p} /> });
   }
   const ed = insider.data;
   if (ed) {
@@ -82,5 +88,20 @@ export function HomeCarrossel() {
       )}
       <AvisoLeitura aviso={aberto} onClose={() => setAberto(null)} />
     </section>
+  );
+}
+
+function SlideMural({ post }: { post: PostVigente }) {
+  const [img, setImg] = useState<string | null>(null);
+  useEffect(() => { urlImagem(post.imagem_path).then(setImg); }, [post.imagem_path]);
+  return (
+    <Link to="/mural" search={{ post: post.id }} className="home-slide home-slide-mural">
+      {img ? <img src={img} alt="" /> : <PartyPopper className="home-slide-icon" />}
+      <div>
+        <p className="home-slide-tag">Mural de comemorações · {post.data_post.split("-").reverse().join("/")}</p>
+        <p className="home-slide-big">{post.titulo}</p>
+        <p className="home-slide-sub">{post.texto ? post.texto.slice(0, 110) + (post.texto.length > 110 ? "…" : "") : "Clique para deixar sua mensagem."}</p>
+      </div>
+    </Link>
   );
 }
