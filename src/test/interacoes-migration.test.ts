@@ -36,6 +36,7 @@ beforeAll(async () => {
     CREATE TABLE public.avisos(id uuid PRIMARY KEY, tipo text, autor_id uuid, perfil_id uuid, publicar_em timestamptz, expira_em timestamptz, arquivado_em timestamptz);
     INSERT INTO public.avisos VALUES ('${aviso}', 'compilado', '${owner}', '${owner}', now(), NULL, NULL), ('${common}', 'comum', '${owner}', '${owner}', now(), NULL, NULL), ('${hidden}', 'compilado', '${owner}', '${owner}', now() + interval '1 day', NULL, NULL);
     CREATE TABLE public.mural_posts(id uuid PRIMARY KEY, titulo text, texto text, imagem_path text, data_post date, visivel_ate date, criado_em timestamptz, tipo text, anos_casa integer);
+    CREATE TABLE public.mural_comentarios(id uuid,post_id uuid,usuario_id uuid,texto text,criado_em timestamptz,editado_em timestamptz);
     INSERT INTO public.mural_posts VALUES ('${post}', 'Aniversários', 'Equipe', NULL, current_date, NULL, now(), 'aniversario', NULL), ('${post2}', 'Tempo de casa', 'Equipe', NULL, current_date, NULL, now(), 'tempo_casa', 5);
     CREATE FUNCTION public.listar_mural() RETURNS TABLE(id uuid, titulo text, texto text, imagem_path text, data_post date, visivel_ate date, criado_em timestamptz, comentarios jsonb, tipo text, anos_casa integer) LANGUAGE sql STABLE SECURITY DEFINER SET search_path=public AS $$ SELECT p.id,p.titulo,p.texto,p.imagem_path,p.data_post,p.visivel_ate,p.criado_em,'[]'::jsonb,p.tipo,p.anos_casa FROM mural_posts p WHERE is_active_user(auth.uid()) $$;
   `);
