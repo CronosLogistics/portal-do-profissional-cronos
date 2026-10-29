@@ -40,6 +40,7 @@ beforeAll(async () => {
     CREATE FUNCTION public.listar_mural() RETURNS TABLE(id uuid, titulo text, texto text, imagem_path text, data_post date, visivel_ate date, criado_em timestamptz, comentarios jsonb, tipo text, anos_casa integer) LANGUAGE sql STABLE SECURITY DEFINER SET search_path=public AS $$ SELECT p.id,p.titulo,p.texto,p.imagem_path,p.data_post,p.visivel_ate,p.criado_em,'[]'::jsonb,p.tipo,p.anos_casa FROM mural_posts p WHERE is_active_user(auth.uid()) $$;
   `);
   await db.exec(readFileSync(new URL("../../drizzle/migrations/0014_comentarios_compilado_reacoes_mural.sql", import.meta.url), "utf8"));
+  await db.exec(readFileSync(new URL("../../drizzle/migrations/0019_mural_primeiro_util_insider_interacoes.sql", import.meta.url), "utf8"));
 }, 30000);
 
 beforeEach(async () => {
@@ -49,6 +50,19 @@ beforeEach(async () => {
 afterAll(async () => { await db?.close(); });
 
 describe("Applied interactions migration", () => {
+  it("retira comemorações no primeiro dia útil seguinte, não no domingo", async () => {
+    expect((await db.query("SELECT mural_post_vigente('2026-10-15','2026-11-01') AS domingo,mural_post_vigente('2026-10-15','2026-11-02') AS segunda,mural_post_vigente('2026-07-10','2026-08-02') AS antes,mural_post_vigente('2026-07-10','2026-08-03') AS depois")).rows).toEqual([{domingo:true,segunda:false,antes:true,depois:false}]);
+  });
+  it("permite comentários e reações em Insider vigente como no compilado", async () => {
+    await db.exec("RESET ROLE");
+    await db.query("UPDATE avisos SET tipo='insider' WHERE id=$1",[aviso]);
+    await asUser(owner);
+    await db.query("INSERT INTO avisos_comentarios(aviso_id,texto) VALUES ($1,'Parabéns Insider')",[aviso]);
+    await db.query("INSERT INTO avisos_reacoes(aviso_id,emoji) VALUES ($1,'👏')",[aviso]);
+    const r = await db.query<{data:{comentarios:{texto:string}[];minha_reacao:string}}>("SELECT interacoes_compilado($1) AS data",[aviso]);
+    expect(r.rows[0]?.data.comentarios[0]?.texto).toBe("Parabéns Insider");
+    expect(r.rows[0]?.data.minha_reacao).toBe("👏");
+  });
   it("stores trimmed comments and reads the frontend JSON contract", async () => {
     await db.query("INSERT INTO avisos_comentarios(aviso_id,texto) VALUES ($1,'  Parabéns!  ')", [aviso]);
     const { rows } = await db.query<{ data: { comentarios: { texto: string; usuario_id: string; nome: string }[]; reacoes: unknown[]; minha_reacao: string | null } }>("SELECT interacoes_compilado($1) AS data", [aviso]);
