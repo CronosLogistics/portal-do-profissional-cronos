@@ -4,7 +4,6 @@ import { nomeMes, type ConteudoInsider, type PessoaInsider } from "@/lib/insider
 import banner from "@/assets/banner_cronos_insider.webp.asset.json";
 import aniv from "@/assets/aniv_cronos_insider.webp.asset.json";
 import tempo from "@/assets/tempo_casa_cronos_insider.webp.asset.json";
-import mes from "@/assets/mes_cronos_insider.webp.asset.json";
 import assinatura from "@/assets/ass_cronos_insider.webp.asset.json";
 import rodape from "@/assets/rodape_cronos_insider.webp.asset.json";
 
@@ -31,7 +30,7 @@ export function InsiderJornal({ conteudo, mesAno }: { conteudo: ConteudoInsider;
     <img src={banner.url} alt="Cronos Insider" className="h-auto w-full px-4 sm:px-10" />
     <p className="px-4 pt-4 text-sm font-bold capitalize text-accent sm:px-10">{nomeMes(mesAno)}</p>
     <Texto value={conteudo.abertura} />
-    <img src={conteudo.bannerMes && urls[conteudo.bannerMes] ? urls[conteudo.bannerMes] : mes.url} alt="Destaques do mês" className="h-auto w-full px-4 sm:px-10" />
+    {conteudo.bannerMes && urls[conteudo.bannerMes] ? <img src={urls[conteudo.bannerMes]} alt="Destaques do mês" className="h-auto w-full px-4 sm:px-10" /> : <h2 className="mx-4 bg-primary px-6 py-5 text-2xl font-bold capitalize text-primary-foreground sm:mx-10">{nomeMes(mesAno).split(" de ")[0]}</h2>}
     <Texto value={conteudo.antesEventos} />
     <div className="grid grid-cols-1 gap-6 px-4 py-5 sm:grid-cols-3 sm:px-10">{conteudo.eventos.map(e => <article key={e.id} className="min-w-0 text-center">
       {e.imagem && urls[e.imagem] && <img src={urls[e.imagem]} alt={e.titulo} className="mx-auto mb-3 aspect-square w-full max-w-44 rounded-md object-contain" />}
