@@ -62,7 +62,7 @@ export function AvisoCorpo({ aviso }: { aviso: AvisoExibido }) {
         </DialogDescription>
       </DialogHeader>
       {aviso.tipo === "compilado" && aviso.id ? <CompiladoHtml avisoId={aviso.id} fallback={aviso.mensagem} /> : aviso.tipo === "insider" && aviso.id ? <InsiderPublicado avisoId={aviso.id} fallback={<AvisoHtml html={aviso.mensagem} />} /> : <AvisoHtml html={aviso.mensagem} />}
-      {aviso.tipo === "compilado" && aviso.id ? <CompiladoInteracoes avisoId={aviso.id} /> : null}
+      {(aviso.tipo === "compilado" || aviso.tipo === "insider") && aviso.id ? <CompiladoInteracoes avisoId={aviso.id} /> : null}
     </>
   );
 }
@@ -199,7 +199,7 @@ function CompiladoInteracoes({ avisoId }: { avisoId: string }) {
           maxLength={1000}
           value={texto}
           onChange={(e) => setTexto(e.target.value)}
-          placeholder="Deixe um comentário sobre os elogios…"
+          placeholder="Deixe um comentário…"
           aria-label="Comentário"
         />
         <Button type="submit" disabled={!texto.trim() || enviar.isPending}>
@@ -256,7 +256,7 @@ export function AvisoLeitura({ aviso, onClose }: { aviso: AvisoExibido | null; o
     void marcarLido(aviso.id).then(() => qc.invalidateQueries({ queryKey: avisosKey }));
   }, [aviso?.id, aviso?.lido, qc]);
   const grande = leituraGrande(aviso);
-  const compilado = aviso?.tipo === "compilado" && aviso.id;
+  const compilado = (aviso?.tipo === "compilado" || aviso?.tipo === "insider") && aviso?.id;
   return (
     <Dialog open={Boolean(aviso)} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className={grande ? "leitor-modal" : "max-h-[85dvh] max-w-2xl overflow-y-auto"}>
