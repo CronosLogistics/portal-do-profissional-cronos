@@ -10,6 +10,14 @@ const itens: ItemLista[] = [
 ];
 
 describe("elogiosVisiveis", () => {
+  it("mostra o contato que deu o elogio, sem confundir com quem preencheu", () => {
+    const item = { ...itens[0], id: "nome", fields: { ...itens[0]?.fields, field_11: "Cliente Ana", field_3: "Qualidade", field_6: "Identificador" } };
+    expect(elogiosVisiveis([item], "ana@cronos.com", usuarios)[0]?.elogiador).toBe("Cliente Ana");
+  });
+  it("não inventa o autor quando o contato é N/A", () => {
+    const item = { id: "vazio", fields: { ...itens[0]?.fields, field_11: "N/A" } };
+    expect(elogiosVisiveis([item], "ana@cronos.com", usuarios)[0]?.elogiador).toBeNull();
+  });
   it("a pessoa vê só os próprios elogios", () => {
     expect(elogiosVisiveis(itens, "ANA@cronos.com", usuarios).map((e) => e.id)).toEqual(["1"]);
     expect(elogiosVisiveis(itens, "bia@cronos.com", usuarios).map((e) => e.id)).toEqual(["2"]);

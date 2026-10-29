@@ -14,6 +14,7 @@ export type Elogio = {
   status: string;
   envolvidos: string[];
   gestor: string | null;
+  elogiador: string | null;
   /** "meu" = sou envolvida; "equipe" = sou o gestor indicado na linha. */
   vinculo: "meu" | "equipe";
 };
@@ -58,6 +59,7 @@ export function elogiosVisiveis(
       status: texto(f["field_20"]),
       envolvidos: envolvidos.map(nome).filter(Boolean),
       gestor: gestor?.nome ?? null,
+      elogiador: texto(f["field_11"]) || null,
       vinculo: souEnvolvida ? "meu" : "equipe",
     });
   }

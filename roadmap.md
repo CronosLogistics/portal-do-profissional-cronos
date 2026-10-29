@@ -18,3 +18,10 @@
 - [x] Apresentar plano para editor do RH e preparação mensal automática.
 - [x] Implementar editor do RH, fotos, prévia e publicação integrada aos avisos.
 - [x] Agendar preparação no primeiro dia de segunda a sexta e validar regras e fluxo real.
+
+## Ajustes de comemorações e Insider
+- [x] Reset automático das comemorações no primeiro dia útil do mês seguinte.
+- [x] Exibir quem deu o elogio no Feedback (contato do cliente; sem inventar quando ausente).
+- [x] Comentários e reações no Insider como no compilado.
+- [x] Identificar escritório pela lista de profissionais.
+- [x] Corrigir tela branca ao retornar da seleção de foto.

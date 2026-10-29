@@ -95,7 +95,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
   const signOut = useSignOut();
   const naoLidos = useNaoLidos().data ?? 0;
   useAvisosAoVivo(me.data?.id, naoLidos);
-  const { office, openPicker } = useOffice();
+  const { office } = useOffice();
   const { pathname } = useLocation();
   const roles = me.data?.roles ?? [];
   const modules = visibleModules(roles);
@@ -220,7 +220,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
         <header className="portal-topbar">
           <div className="flex min-w-0 items-center gap-3"><Button variant="ghost" size="icon" className="portal-mobile-toggle" onClick={() => setMobileOpen(true)} aria-label="Abrir menu"><Menu /></Button><span className="text-sm text-muted-foreground">{title}</span></div>
           <div className="flex min-w-0 items-center gap-4">
-            <Button variant="ghost" size="sm" onClick={openPicker} title="Trocar escritório" className="hidden text-muted-foreground sm:flex"><Building2 /><span>{office?.name || "Escritório"}</span></Button>
+            <span className="hidden items-center gap-2 text-sm text-muted-foreground sm:flex"><Building2 className="size-4" /><span>{office?.name || "Escritório não identificado"}</span></span>
             <AvisosBell naoLidos={naoLidos} />
             <div className="portal-user"><span className="portal-avatar">{initials}</span><div className="min-w-0"><p className="truncate text-sm font-bold">{name}</p><p className="max-w-48 truncate text-xs text-muted-foreground">{me.data?.email}</p></div></div>
           </div>
