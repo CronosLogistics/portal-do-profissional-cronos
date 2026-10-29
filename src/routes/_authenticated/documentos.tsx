@@ -88,9 +88,11 @@ function DocForm({ doc, onClose }: { doc?: Documento | undefined; onClose: () =>
   const qc = useQueryClient();
   const [titulo, setTitulo] = useState(doc?.titulo ?? "");
   const [url, setUrl] = useState(doc?.url ?? "");
+  const [departamento, setDepartamento] = useState(doc?.departamento ?? "");
+  const [cargo, setCargo] = useState(doc?.cargo ?? "");
   const salvar = useMutation({
     mutationFn: async () => {
-      const dados = { titulo: titulo.trim(), url: url.trim() };
+      const dados = { titulo: titulo.trim(), url: url.trim(), departamento: departamento.trim() || null, cargo: cargo.trim() || null };
       const { error } = doc
         ? await supabase.from("documentos").update(dados).eq("id", doc.id)
         : await supabase.from("documentos").insert(dados);
