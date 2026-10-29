@@ -311,24 +311,30 @@ export type Database = {
       documentos: {
         Row: {
           atualizado_em: string
+          cargo: string | null
           criado_em: string
           criado_por: string | null
+          departamento: string | null
           id: string
           titulo: string
           url: string
         }
         Insert: {
           atualizado_em?: string
+          cargo?: string | null
           criado_em?: string
           criado_por?: string | null
+          departamento?: string | null
           id?: string
           titulo: string
           url: string
         }
         Update: {
           atualizado_em?: string
+          cargo?: string | null
           criado_em?: string
           criado_por?: string | null
+          departamento?: string | null
           id?: string
           titulo?: string
           url?: string
