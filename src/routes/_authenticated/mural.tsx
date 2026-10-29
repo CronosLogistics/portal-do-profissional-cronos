@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { useCurrentUser } from "@/hooks/useAuth";
 import {
   apagarComentario, comentar, editarComentario, excluirPost, listarMural, muralKey, salvarPost, urlImagem,
-  type ComentarioMural, type PostMural,
+  type ComentarioMural, type PostMural, type TipoMural,
 } from "@/lib/mural-client";
 
 export const Route = createFileRoute("/_authenticated/mural")({
@@ -143,8 +143,10 @@ function PostForm({ post, onClose }: { post: PostMural | null; onClose: () => vo
   const [data, setData] = useState(post?.data_post ?? hojeBrasil());
   const [ate, setAte] = useState(post?.visivel_ate ?? "");
   const [arquivo, setArquivo] = useState<File | null>(null);
+  const [tipo, setTipo] = useState<TipoMural>(post?.tipo ?? "geral");
+  const [anos, setAnos] = useState(post?.anos_casa ? String(post.anos_casa) : "");
   const salvar = useMutation({
-    mutationFn: () => salvarPost(post?.id ?? null, { titulo, texto, data_post: data, visivel_ate: ate || null, arquivo, imagem_path: post?.imagem_path ?? null }),
+    mutationFn: () => salvarPost(post?.id ?? null, { titulo, texto, data_post: data, visivel_ate: ate || null, tipo, anos_casa: anos ? Number(anos) : null, arquivo, imagem_path: post?.imagem_path ?? null }),
     onSuccess: () => { toast.success("Post publicado."); qc.invalidateQueries({ queryKey: muralKey }); onClose(); },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -153,6 +155,13 @@ function PostForm({ post, onClose }: { post: PostMural | null; onClose: () => vo
       <DialogContent>
         <DialogHeader><DialogTitle>{post ? "Editar post" : "Novo post no mural"}</DialogTitle></DialogHeader>
         <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            <div><Label htmlFor="mtp">Tipo de comemoração</Label>
+              <select id="mtp" className="flex h-9 w-full rounded-md border border-input bg-background px-3 text-sm" value={tipo} onChange={(e) => setTipo(e.target.value as TipoMural)}>
+                <option value="geral">Geral</option><option value="aniversario">Aniversário</option><option value="tempo_casa">Tempo de casa</option>
+              </select></div>
+            {tipo === "tempo_casa" && <div><Label htmlFor="man">Anos de casa</Label><Input id="man" type="number" min={1} max={80} value={anos} onChange={(e) => setAnos(e.target.value)} /></div>}
+          </div>
           <div><Label htmlFor="mt">Título</Label><Input id="mt" maxLength={120} value={titulo} onChange={(e) => setTitulo(e.target.value)} placeholder="Feliz aniversário, Maria!" /></div>
           <div><Label htmlFor="mx">Texto</Label><Textarea id="mx" rows={4} value={texto} onChange={(e) => setTexto(e.target.value)} /></div>
           <div><Label htmlFor="mi">Imagem (ex.: arte de parabéns)</Label><Input id="mi" type="file" accept="image/*" onChange={(e) => setArquivo(e.target.files?.[0] ?? null)} /></div>
