@@ -206,6 +206,41 @@ export type Database = {
         }
         Relationships: []
       }
+      compilados_elogios: {
+        Row: {
+          atualizado_em: string
+          aviso_id: string | null
+          html: string
+          id: string
+          mes_ano: string
+          recebido_em: string
+        }
+        Insert: {
+          atualizado_em?: string
+          aviso_id?: string | null
+          html: string
+          id?: string
+          mes_ano: string
+          recebido_em?: string
+        }
+        Update: {
+          atualizado_em?: string
+          aviso_id?: string | null
+          html?: string
+          id?: string
+          mes_ano?: string
+          recebido_em?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compilados_elogios_aviso_id_fkey"
+            columns: ["aviso_id"]
+            isOneToOne: false
+            referencedRelation: "avisos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       documentos: {
         Row: {
           atualizado_em: string
@@ -867,6 +902,18 @@ export type Database = {
           id: string
         }[]
       }
+      compilado_vigente: {
+        Args: never
+        Returns: {
+          editado_em: string
+          id: string
+          mensagem: string
+          mes_ano: string
+          perfil_nome: string
+          publicar_em: string
+          titulo: string
+        }[]
+      }
       contar_nao_lidos: { Args: never; Returns: number }
       gere_aviso: {
         Args: { _autor: string; _perfil: string }
@@ -953,6 +1000,10 @@ export type Database = {
         }[]
       }
       pode_enviar_como: { Args: { _perfil_id: string }; Returns: boolean }
+      receber_compilado: {
+        Args: { _html: string; _mes_ano: string; _titulo: string }
+        Returns: string
+      }
       reservar_sincronizacao: { Args: never; Returns: boolean }
       tem_permissao: { Args: { _permissao: string }; Returns: boolean }
       usuario_tem_permissao: {
