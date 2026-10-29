@@ -12,3 +12,8 @@
 
 ## Tour (F1)
 - [x] Tour de boas-vindas na primeira entrada.
+
+## Montagem mensal do Cronos Insider
+- [ ] Validar modelo, campos do SharePoint e decisões de calendário e saída.
+- [ ] Apresentar plano para editor do RH e preparação mensal automática.
+- [ ] Implementar após definição do fluxo e aprovação do plano.
