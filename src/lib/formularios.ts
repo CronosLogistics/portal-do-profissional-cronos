@@ -4,7 +4,6 @@ export type Formulario = { setor: string; titulo: string; codigo?: string; descr
 export const FORMULARIOS: Formulario[] = [
   { setor: "Controladoria", titulo: "Solicitação de ajuste de custo", descricao: "Exclusão, edição e inserção de custos nos processos", acao: "Ajuste de custo", url: "https://forms.office.com/r/K2w0DWH241" },
   { setor: "Controladoria", titulo: "Cancelamento de processo", acao: "Solicitação de cancelamento de processos", url: "https://forms.office.com/r/eJZpMGrXzk" },
-  { setor: "Gestão de Pessoas", titulo: "Portal de Cadastro & Gestão de Treinamentos", acao: "Plataforma - Cadastro & Gestão de Treinamentos", url: "https://cadastrodetreinamento.lovable.app/#processo" },
   { setor: "Marketing", codigo: "RQ-09-02", titulo: "Briefing de Marketing", acao: "Solicitação de Demandas para o Marketing", url: "https://forms.cloud.microsoft/r/Etb0Rijz25" },
   { setor: "Marketing", titulo: "Brindes comerciais", acao: "Solicitação de Brindes", url: "https://cronoslogisticscombr.sharepoint.com/:l:/s/administrationteamgroup/JAAdjcGan5s7T6OTdrpF2TsxASAnQFQwfnpGcjNGjRHVemo?nav=NzBiYzgxZmEtNDE2Ny00ZjFiLWE5NmItNzViNDk2N2NiNzUw" },
   { setor: "Ouvidoria", titulo: "Formulário de Ouvidoria Cronos", acao: "Formulário de Ouvidoria", url: "https://forms.office.com/r/cgLkeNFZ1f" },

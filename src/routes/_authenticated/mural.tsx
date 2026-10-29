@@ -3,6 +3,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { MessageCircle, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
+  AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,8 +14,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useCurrentUser } from "@/hooks/useAuth";
 import {
-  apagarComentario, comentar, editarComentario, excluirPost, listarMural, muralKey, salvarPost, urlImagem,
-  type ComentarioMural, type PostMural, type TipoMural,
+  apagarComentario, comentar, editarComentario, EMOJIS_MURAL, excluirPost, listarMural, muralKey, reagirPost, salvarPost, urlImagem,
+  type ComentarioMural, type EmojiMural, type PostMural, type TipoMural,
 } from "@/lib/mural-client";
 
 export const Route = createFileRoute("/_authenticated/mural")({
@@ -66,6 +70,7 @@ function PostCard({ post, emFoco, meuId, podeEditar, onEditar }: { post: PostMur
   const campo = useRef<HTMLTextAreaElement>(null);
   const [img, setImg] = useState<string | null>(null);
   const [texto, setTexto] = useState("");
+  const [confirmExcluir, setConfirmExcluir] = useState(false);
   useEffect(() => { urlImagem(post.imagem_path).then(setImg); }, [post.imagem_path]);
   useEffect(() => {
     if (!emFoco) return;
@@ -78,7 +83,16 @@ function PostCard({ post, emFoco, meuId, podeEditar, onEditar }: { post: PostMur
     onSuccess: () => { setTexto(""); atualizar(); },
     onError: () => toast.error("Não foi possível comentar."),
   });
-  const excluir = useMutation({ mutationFn: () => excluirPost(post.id), onSuccess: () => { toast.success("Post removido."); atualizar(); } });
+  const excluir = useMutation({
+    mutationFn: () => excluirPost(post.id),
+    onSuccess: () => { toast.success("Post removido."); setConfirmExcluir(false); atualizar(); },
+    onError: () => toast.error("Não foi possível excluir o post."),
+  });
+  const reagir = useMutation({
+    mutationFn: (emoji: EmojiMural) => reagirPost(post.id, emoji, post.minha_reacao),
+    onSuccess: () => atualizar(),
+    onError: () => toast.error("Não foi possível registrar a reação."),
+  });
 
   return (
     <li ref={ref} className={`mural-post ${emFoco ? "is-focus" : ""}`} id={`post-${post.id}`}>
@@ -89,12 +103,31 @@ function PostCard({ post, emFoco, meuId, podeEditar, onEditar }: { post: PostMur
           {podeEditar && (
             <div className="flex gap-1">
               <Button size="icon" variant="ghost" aria-label="Editar post" onClick={onEditar}><Pencil /></Button>
-              <Button size="icon" variant="ghost" aria-label="Excluir post" onClick={() => confirm("Excluir este post e seus comentários?") && excluir.mutate()}><Trash2 /></Button>
+              <Button size="icon" variant="ghost" aria-label="Excluir post" onClick={() => setConfirmExcluir(true)}><Trash2 /></Button>
             </div>
           )}
         </div>
         {post.texto && <p className="mt-2 whitespace-pre-line text-sm text-foreground">{post.texto}</p>}
         {img && <img src={img} alt={post.titulo} className="mt-4 w-full rounded-md border object-cover" loading="lazy" />}
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          {EMOJIS_MURAL.map((e) => {
+            const r = post.reacoes.find((x) => x.emoji === e);
+            return (
+              <button
+                key={e}
+                type="button"
+                className={`compilado-reacao-chip${r?.meu ? " is-ativo" : ""}`}
+                aria-pressed={Boolean(r?.meu)}
+                aria-label={`Reagir com ${e}`}
+                disabled={reagir.isPending}
+                onClick={() => reagir.mutate(e)}
+              >
+                <span>{e}</span>
+                {r ? <span className="text-xs font-semibold">{r.total}</span> : null}
+              </button>
+            );
+          })}
+        </div>
         <div className="mt-5 border-t pt-4">
           <p className="mb-3 flex items-center gap-2 text-sm font-semibold text-primary"><MessageCircle className="size-4" /> {post.comentarios.length} {post.comentarios.length === 1 ? "comentário" : "comentários"}</p>
           <ul className="space-y-3">
@@ -106,6 +139,18 @@ function PostCard({ post, emFoco, meuId, podeEditar, onEditar }: { post: PostMur
           </form>
         </div>
       </article>
+      <AlertDialog open={confirmExcluir} onOpenChange={setConfirmExcluir}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir este post?</AlertDialogTitle>
+            <AlertDialogDescription>O post e todos os comentários serão removidos. Esta ação não pode ser desfeita.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={() => excluir.mutate()} disabled={excluir.isPending}>Excluir</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </li>
   );
 }
@@ -113,8 +158,13 @@ function PostCard({ post, emFoco, meuId, podeEditar, onEditar }: { post: PostMur
 function Comentario({ c, meu, podeRemover, onMudou }: { c: ComentarioMural; meu: boolean; podeRemover: boolean; onMudou: () => void }) {
   const [editando, setEditando] = useState(false);
   const [texto, setTexto] = useState(c.texto);
+  const [confirmApagar, setConfirmApagar] = useState(false);
   const salvar = async () => { try { await editarComentario(c.id, texto); setEditando(false); onMudou(); } catch { toast.error("Não foi possível editar."); } };
-  const apagar = async () => { if (!confirm("Apagar este comentário?")) return; try { await apagarComentario(c.id); onMudou(); } catch { toast.error("Não foi possível apagar."); } };
+  const apagar = useMutation({
+    mutationFn: () => apagarComentario(c.id),
+    onSuccess: () => { setConfirmApagar(false); onMudou(); },
+    onError: () => toast.error("Não foi possível apagar."),
+  });
   return (
     <li className="rounded-md bg-muted/50 p-3">
       <div className="flex items-center justify-between gap-2">
@@ -123,7 +173,7 @@ function Comentario({ c, meu, podeRemover, onMudou }: { c: ComentarioMural; meu:
           {new Date(c.criado_em).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", dateStyle: "short", timeStyle: "short" })}
           {c.editado_em && " · editado"}
           {meu && !editando && <Button size="icon" variant="ghost" className="size-7" aria-label="Editar comentário" onClick={() => setEditando(true)}><Pencil /></Button>}
-          {(meu || podeRemover) && <Button size="icon" variant="ghost" className="size-7" aria-label="Apagar comentário" onClick={apagar}><Trash2 /></Button>}
+          {(meu || podeRemover) && <Button size="icon" variant="ghost" className="size-7" aria-label="Apagar comentário" onClick={() => setConfirmApagar(true)}><Trash2 /></Button>}
         </div>
       </div>
       {editando ? (
@@ -132,6 +182,18 @@ function Comentario({ c, meu, podeRemover, onMudou }: { c: ComentarioMural; meu:
           <div className="flex gap-2"><Button size="sm" onClick={salvar} disabled={!texto.trim()}>Salvar</Button><Button size="sm" variant="ghost" onClick={() => { setTexto(c.texto); setEditando(false); }}>Cancelar</Button></div>
         </div>
       ) : <p className="mt-1 whitespace-pre-line text-sm text-foreground">{c.texto}</p>}
+      <AlertDialog open={confirmApagar} onOpenChange={setConfirmApagar}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Apagar este comentário?</AlertDialogTitle>
+            <AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={() => apagar.mutate()} disabled={apagar.isPending}>Apagar</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </li>
   );
 }

@@ -268,6 +268,73 @@ export type Database = {
         }
         Relationships: []
       }
+      avisos_comentarios: {
+        Row: {
+          aviso_id: string
+          criado_em: string
+          editado_em: string | null
+          id: string
+          texto: string
+          usuario_id: string
+        }
+        Insert: {
+          aviso_id: string
+          criado_em?: string
+          editado_em?: string | null
+          id?: string
+          texto: string
+          usuario_id?: string
+        }
+        Update: {
+          aviso_id?: string
+          criado_em?: string
+          editado_em?: string | null
+          id?: string
+          texto?: string
+          usuario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "avisos_comentarios_aviso_id_fkey"
+            columns: ["aviso_id"]
+            isOneToOne: false
+            referencedRelation: "avisos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      avisos_reacoes: {
+        Row: {
+          aviso_id: string
+          criado_em: string
+          emoji: string
+          id: string
+          usuario_id: string
+        }
+        Insert: {
+          aviso_id: string
+          criado_em?: string
+          emoji: string
+          id?: string
+          usuario_id?: string
+        }
+        Update: {
+          aviso_id?: string
+          criado_em?: string
+          emoji?: string
+          id?: string
+          usuario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "avisos_reacoes_aviso_id_fkey"
+            columns: ["aviso_id"]
+            isOneToOne: false
+            referencedRelation: "avisos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mural_comentarios: {
         Row: {
           criado_em: string
@@ -296,6 +363,38 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "mural_comentarios_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "mural_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mural_reacoes: {
+        Row: {
+          criado_em: string
+          emoji: string
+          id: string
+          post_id: string
+          usuario_id: string
+        }
+        Insert: {
+          criado_em?: string
+          emoji: string
+          id?: string
+          post_id: string
+          usuario_id?: string
+        }
+        Update: {
+          criado_em?: string
+          emoji?: string
+          id?: string
+          post_id?: string
+          usuario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mural_reacoes_post_id_fkey"
             columns: ["post_id"]
             isOneToOne: false
             referencedRelation: "mural_posts"
@@ -932,6 +1031,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      interacoes_compilado: { Args: { _aviso_id: string }; Returns: Json }
       insider_vigente: {
         Args: never
         Returns: {
@@ -973,6 +1073,8 @@ export type Database = {
           data_post: string
           id: string
           imagem_path: string
+          minha_reacao: string
+          reacoes: Json
           texto: string
           tipo: string
           titulo: string

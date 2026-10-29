@@ -126,3 +126,61 @@ export async function htmlCompilado(avisoId: string): Promise<string | null> {
   if (error) throw amigavel(error.message);
   return data?.html ?? null;
 }
+
+export const EMOJIS_COMPILADO = ["👍", "❤️", "👏", "🎉", "😮"] as const;
+export type EmojiCompilado = (typeof EMOJIS_COMPILADO)[number];
+
+export type ComentarioCompilado = {
+  id: string;
+  texto: string;
+  criado_em: string;
+  editado_em: string | null;
+  usuario_id: string;
+  nome: string;
+};
+
+export type ReacaoResumo = { emoji: string; total: number; meu: boolean };
+
+export type InteracoesCompilado = {
+  comentarios: ComentarioCompilado[];
+  reacoes: ReacaoResumo[];
+  minha_reacao: string | null;
+};
+
+export async function interacoesCompilado(avisoId: string): Promise<InteracoesCompilado> {
+  const { data, error } = await supabase.rpc("interacoes_compilado", { _aviso_id: avisoId });
+  if (error) throw amigavel(error.message);
+  const raw = (data ?? {}) as Partial<InteracoesCompilado>;
+  return {
+    comentarios: (raw.comentarios as ComentarioCompilado[] | undefined) ?? [],
+    reacoes: (raw.reacoes as ReacaoResumo[] | undefined) ?? [],
+    minha_reacao: raw.minha_reacao ?? null,
+  };
+}
+
+export async function comentarCompilado(avisoId: string, texto: string) {
+  const { error } = await supabase.from("avisos_comentarios").insert({ aviso_id: avisoId, texto: texto.trim() });
+  if (error) throw amigavel(error.message);
+}
+
+export async function apagarComentarioCompilado(id: string) {
+  const { error } = await supabase.from("avisos_comentarios").delete().eq("id", id);
+  if (error) throw amigavel(error.message);
+}
+
+/** Uma reação por pessoa: troca o emoji ou remove se clicar de novo no mesmo. */
+export async function reagirCompilado(avisoId: string, emoji: EmojiCompilado, atual: string | null) {
+  const { data: auth } = await supabase.auth.getUser();
+  const uid = auth.user?.id;
+  if (!uid) throw new Error("Sessão expirada.");
+  if (atual === emoji) {
+    const { error } = await supabase.from("avisos_reacoes").delete().eq("aviso_id", avisoId).eq("usuario_id", uid);
+    if (error) throw amigavel(error.message);
+    return;
+  }
+  const { error } = await supabase.from("avisos_reacoes").upsert(
+    { aviso_id: avisoId, usuario_id: uid, emoji },
+    { onConflict: "aviso_id,usuario_id" },
+  );
+  if (error) throw amigavel(error.message);
+}
