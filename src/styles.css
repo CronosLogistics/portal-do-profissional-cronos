@@ -391,3 +391,8 @@
 .mural-post::before { content: ""; position: absolute; left: calc(-1.5rem - 7px); top: .35rem; width: 12px; height: 12px; border-radius: 999px; background: var(--primary); }
 .mural-data { display: block; margin-bottom: .4rem; font-size: .75rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--primary); }
 .mural-post.is-focus article { box-shadow: 0 0 0 2px var(--primary); }
+
+/* Tour de boas-vindas */
+.tour-raiz { position: fixed; inset: 0; z-index: 60; }
+.tour-foco { position: fixed; border-radius: 10px; box-shadow: 0 0 0 9999px color-mix(in oklab, var(--foreground) 55%, transparent); outline: 2px solid var(--accent); transition: all .25s ease; pointer-events: none; }
+.tour-caixa { position: fixed; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; box-shadow: 0 12px 32px rgb(0 0 0 / .25); }

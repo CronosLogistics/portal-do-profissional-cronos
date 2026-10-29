@@ -9,3 +9,6 @@
 - [x] Validar permissões, troca de reação e leitura no portal.
 ## Feedback (D1)
 - [x] Menu Feedback com elogios próprios e da equipe (SharePoint RQ0013).
+
+## Tour (F1)
+- [x] Tour de boas-vindas na primeira entrada.

@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Award, MessageSquareHeart, Building2, ClipboardList, FolderOpen, PartyPopper, ChevronLeft, ChevronRight, Gift, GraduationCap, Home, LogOut, Megaphone, Menu, Settings, Tag, X } from "lucide-react";
+import { TourBoasVindas } from "@/components/portal/TourBoasVindas";
 import { AvisosBell } from "@/components/avisos/AvisosBell";
 import { useAvisosAoVivo, useNaoLidos } from "@/hooks/useAvisos";
 import type { LucideIcon } from "lucide-react";
@@ -225,6 +226,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
           </div>
         </header>
         <div className="portal-canvas">{children}</div>
+        <TourBoasVindas userId={me.data?.id} />
       </div>
     </div>
   );
