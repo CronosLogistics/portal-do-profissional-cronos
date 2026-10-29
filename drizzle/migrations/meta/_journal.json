@@ -92,6 +92,13 @@
       "when": 1793285598752,
       "tag": "0012_mural_tipo_slide",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1793285621965,
+      "tag": "0013_listar_mural_tipo",
+      "breakpoints": true
     }
   ]
 }

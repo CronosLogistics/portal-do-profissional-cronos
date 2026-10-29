@@ -967,12 +967,14 @@ export type Database = {
       listar_mural: {
         Args: never
         Returns: {
+          anos_casa: number
           comentarios: Json
           criado_em: string
           data_post: string
           id: string
           imagem_path: string
           texto: string
+          tipo: string
           titulo: string
           visivel_ate: string
         }[]
