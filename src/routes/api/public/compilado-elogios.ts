@@ -13,7 +13,7 @@ async function iguais(a: string, b: string) {
   const [x, y] = await Promise.all([crypto.subtle.digest("SHA-256", enc.encode(a)), crypto.subtle.digest("SHA-256", enc.encode(b))]);
   const ax = new Uint8Array(x), by = new Uint8Array(y);
   let d = 0;
-  for (let i = 0; i < ax.length; i++) d |= ax[i] ^ by[i];
+  for (let i = 0; i < ax.length; i++) d |= (ax[i] ?? 0) ^ (by[i] ?? 0);
   return d === 0;
 }
 
