@@ -10,7 +10,10 @@ export type AvisoRecebido = {
   expira_em: string | null;
   editado_em: string | null;
   lido: boolean;
+  tipo: TipoAviso;
 };
+
+export type TipoAviso = "comum" | "insider" | "compilado";
 
 export type AvisoEnviado = {
   id: string;
@@ -26,6 +29,7 @@ export type AvisoEnviado = {
   arquivado_em: string | null;
   lidos: number;
   ativos: number;
+  tipo: TipoAviso;
 };
 
 export const avisosKey = ["avisos"] as const;
@@ -72,14 +76,16 @@ export async function perfisRemetentes(): Promise<{ id: string; nome: string }[]
   return data ?? [];
 }
 
-export type DadosAviso = { perfil_id: string; titulo: string; mensagem: string; publicar_em: string; expira_em: string | null };
+export type DadosAviso = { perfil_id: string; titulo: string; mensagem: string; publicar_em: string; expira_em: string | null; tipo?: TipoAviso };
 
 export async function salvarAviso(dados: DadosAviso, id?: string) {
   const titulo = dados.titulo.trim();
   if (!titulo) throw new Error("Informe o título.");
   if (titulo.length > 120) throw new Error("O título deve ter no máximo 120 caracteres.");
   if (!dados.perfil_id) throw new Error("Escolha o perfil remetente.");
-  const row = { ...dados, titulo };
+  // Tipo só vale na criação; o banco trava depois e confere a permissão do Insider.
+  const { tipo, ...resto } = dados;
+  const row = id ? { ...resto, titulo } : { ...resto, titulo, tipo: tipo ?? "comum" };
   const { error } = id
     ? await supabase.from("avisos").update(row).eq("id", id)
     : await supabase.from("avisos").insert(row);
@@ -94,4 +100,13 @@ export async function arquivarAviso(id: string) {
 export async function cancelarAviso(id: string) {
   const { error } = await supabase.from("avisos").delete().eq("id", id);
   if (error) throw amigavel(error.message);
+}
+
+export type InsiderVigente = { id: string; titulo: string; mensagem: string; perfil_nome: string; publicar_em: string; editado_em: string | null };
+
+/** Edição do Cronos Insider que está no slide 3 (3 dias, horário de Brasília). */
+export async function insiderVigente(): Promise<InsiderVigente | null> {
+  const { data, error } = await supabase.rpc("insider_vigente");
+  if (error) throw amigavel(error.message);
+  return (data?.[0] as InsiderVigente | undefined) ?? null;
 }

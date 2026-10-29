@@ -43,6 +43,20 @@
       "when": 1792769932424,
       "tag": "0005_avisos_limpeza_html_fix",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793276878871,
+      "tag": "0006_avisos_insider",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1793277100019,
+      "tag": "0007_minhas_permissoes_insider",
+      "breakpoints": true
     }
   ]
 }

@@ -3,6 +3,7 @@ import { ArrowRight, Award, Megaphone, CalendarCheck, ClipboardList, Gift, Gradu
 import { Button } from "@/components/ui/button";
 import { useCurrentUser } from "@/hooks/useAuth";
 import { useNaoLidos } from "@/hooks/useAvisos";
+import { HomeCarrossel } from "@/components/portal/HomeCarrossel";
 import { LINKS } from "@/components/treinamentos/content";
 
 export const Route = createFileRoute("/_authenticated/")({
@@ -39,6 +40,7 @@ function Home() {
       <h1>{firstName ? `Olá, ${firstName}!` : "Olá!"}</h1>
       <p>O que deseja fazer agora?</p>
     </header>
+    <HomeCarrossel />
     <div className="portal-action-grid">
       {actions.map(action => {
         const content = <><span className="portal-action-icon"><action.icon /></span><h2>{action.title}</h2><div className="portal-action-bottom"><span>{action.category}</span><ArrowRight /></div></>;

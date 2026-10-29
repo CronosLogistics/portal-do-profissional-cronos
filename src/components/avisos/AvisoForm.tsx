@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useCurrentUser } from "@/hooks/useAuth";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { avisosKey, perfisRemetentes, salvarAviso, type AvisoEnviado } from "@/lib/avisos-client";
@@ -72,10 +74,14 @@ export function AvisoForm({ open, onClose, aviso }: { open: boolean; onClose: ()
   const [agendarEm, setAgendarEm] = useState("");
   const [expiraEm, setExpiraEm] = useState("");
   const [preview, setPreview] = useState(false);
+  const [insider, setInsider] = useState(false);
+  const me = useCurrentUser();
+  const podeInsider = Boolean(me.data?.can("avisos.insider"));
 
   useEffect(() => {
     if (!open) return;
     setPreview(false);
+    setInsider(aviso?.tipo === "insider");
     setPerfilId(aviso?.perfil_id ?? "");
     setTitulo(aviso?.titulo ?? "");
     setMensagem(aviso?.mensagem ?? "");
@@ -93,7 +99,7 @@ export function AvisoForm({ open, onClose, aviso }: { open: boolean; onClose: ()
     mutationFn: () => {
       if (quando === "agendar" && !agendarEm && !publicado) throw new Error("Informe a data e hora do agendamento.");
       const publicarEm = publicado ? aviso!.publicar_em : quando === "agora" ? new Date().toISOString() : brasiliaParaUtc(agendarEm);
-      return salvarAviso({ perfil_id: perfilId, titulo, mensagem, publicar_em: publicarEm, expira_em: expiraEm ? brasiliaParaUtc(expiraEm) : null }, aviso?.id);
+      return salvarAviso({ perfil_id: perfilId, titulo, mensagem, publicar_em: publicarEm, expira_em: expiraEm ? brasiliaParaUtc(expiraEm) : null, tipo: insider ? "insider" : "comum" }, aviso?.id);
     },
     onSuccess: async () => {
       toast.success(aviso ? "Aviso atualizado." : quando === "agora" ? "Aviso publicado." : "Aviso agendado.");
@@ -137,6 +143,13 @@ export function AvisoForm({ open, onClose, aviso }: { open: boolean; onClose: ()
               )}
               {!perfis.isLoading && !remetentes.length && !aviso && <p className="text-xs text-destructive">Você não faz parte de nenhum perfil que pode publicar avisos.</p>}
             </div>
+            {!aviso && podeInsider && (
+              <label className="flex items-start gap-3 rounded-md border p-3 text-sm">
+                <Checkbox checked={insider} onCheckedChange={(v) => setInsider(v === true)} className="mt-0.5" />
+                <span><strong>Cronos Insider</strong><span className="block text-muted-foreground">Publica esta edição do jornal: ela fica 3 dias no carrossel da página Início e abre em tela de leitura.</span></span>
+              </label>
+            )}
+            {aviso?.tipo === "insider" && <p className="rounded-md bg-muted p-3 text-sm">Edição do <strong>Cronos Insider</strong>. Corrigir o texto atualiza a mesma edição no carrossel.</p>}
             <div className="grid gap-2">
               <div className="flex justify-between"><Label htmlFor="aviso-titulo">Título</Label><span className="text-xs text-muted-foreground">{titulo.length}/{TITULO_MAX}</span></div>
               <Input id="aviso-titulo" value={titulo} maxLength={TITULO_MAX} onChange={(e) => setTitulo(e.target.value)} />

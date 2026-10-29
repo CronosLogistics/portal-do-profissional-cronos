@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { avisosKey, marcarLido } from "@/lib/avisos-client";
 import { formatarDataBrasilia } from "@/lib/avisos-rules";
 
-export type AvisoExibido = { id?: string; titulo: string; mensagem: string; perfil_nome: string; publicar_em: string; editado_em?: string | null; lido?: boolean };
+export type AvisoExibido = { id?: string; titulo: string; mensagem: string; perfil_nome: string; publicar_em: string; editado_em?: string | null; lido?: boolean; tipo?: string };
 
 /** Mensagem já limpa pelo banco (só negrito, itálico, listas e links). */
 export function AvisoHtml({ html }: { html: string }) {
@@ -48,7 +48,12 @@ export function AvisoLeitura({ aviso, onClose }: { aviso: AvisoExibido | null; o
   }, [aviso?.id, aviso?.lido, qc]);
   return (
     <Dialog open={Boolean(aviso)} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-h-[85dvh] max-w-2xl overflow-y-auto">{aviso && <AvisoCorpo aviso={aviso} />}</DialogContent>
+      <DialogContent className={leituraGrande(aviso) ? "leitor-modal" : "max-h-[85dvh] max-w-2xl overflow-y-auto"}>{aviso && <AvisoCorpo aviso={aviso} />}</DialogContent>
     </Dialog>
   );
+}
+
+/** Insider e compilado abrem no modal central grande (B1), em formato de página de leitura. */
+export function leituraGrande(aviso: AvisoExibido | null) {
+  return aviso?.tipo === "insider" || aviso?.tipo === "compilado";
 }

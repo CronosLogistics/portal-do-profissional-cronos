@@ -7,6 +7,7 @@ export const PERMISSOES = [
   { codigo: "admin.perfis", nome: "Gerenciar perfis", descricao: "Criar, renomear e desativar perfis e marcar as permissões de cada um." },
   { codigo: "avisos.publicar", nome: "Publicar avisos", descricao: "Criar avisos em nome dos perfis de que a pessoa faz parte." },
   { codigo: "avisos.gerenciar", nome: "Gerenciar avisos", descricao: "Editar e arquivar avisos de qualquer perfil." },
+  { codigo: "avisos.insider", nome: "Publicar o Cronos Insider", descricao: "Ver a opção Cronos Insider em Novo aviso; a edição fica 3 dias no carrossel da página Início." },
   { codigo: "conteudo.editar", nome: "Editar conteúdos", descricao: "Cadastrar benefícios, parceiros, recompensas e textos do portal." },
 ] as const;
 
