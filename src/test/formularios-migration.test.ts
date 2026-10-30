@@ -10,7 +10,6 @@ beforeAll(async () => {
     GRANT USAGE ON SCHEMA auth TO authenticated;
     CREATE TABLE perfis(id uuid PRIMARY KEY, sistema boolean);
     CREATE TABLE perfil_permissoes(perfil_id uuid,permissao text CHECK(permissao IN ('admin.usuarios')), UNIQUE(perfil_id,permissao));
-    ALTER TABLE perfil_permissoes RENAME CONSTRAINT perfil_permissoes_permissao_check TO perfil_permissoes_permissao_check;
     INSERT INTO perfis VALUES('4e26aa42-d294-4e12-babe-48e0a1605f93',false),('20000000-0000-0000-0000-000000000001',true);
     CREATE FUNCTION public.is_active_user(uuid) RETURNS boolean LANGUAGE sql AS $$ SELECT current_setting('test.active',true)='true' $$;
     CREATE FUNCTION public.usuario_tem_permissao(uuid,text) RETURNS boolean LANGUAGE sql AS $$ SELECT current_setting('test.profile',true) IN ('Administrador','Qualidade') AND current_setting('test.active',true)='true' $$;

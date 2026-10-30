@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import type { Formulario } from "@/lib/formularios";
 import { formulariosKey, salvarFormulario } from "@/lib/formularios-client";
 
-export function FormularioEditor({ formulario, setores, onClose }: { formulario?: Formulario; setores: string[]; onClose: () => void }) {
+export function FormularioEditor({ formulario, setores, onClose }: { formulario?: Formulario | undefined; setores: string[]; onClose: () => void }) {
   const qc = useQueryClient();
   const [dados, setDados] = useState({ setor: formulario?.setor ?? "", titulo: formulario?.titulo ?? "", codigo: formulario?.codigo ?? "", descricao: formulario?.descricao ?? "", acao: formulario?.acao ?? "", url: formulario?.url ?? "" });
   const valido = dados.setor.trim() && dados.titulo.trim() && dados.acao.trim() && /^https:\/\/\S+$/i.test(dados.url.trim());
