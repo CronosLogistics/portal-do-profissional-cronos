@@ -54,3 +54,20 @@ describe("plano de ação", () => {
     expect(statusPlanoAcao("2026-11-10T07:00:00Z", agora).status).toBe("No prazo");
   });
 });
+
+import { npsDoUsuario as _nps, planosDoUsuario as _planos } from "@/lib/pendencias.rules";
+describe("NPS e Plano de ação SM", () => {
+  const u = new Map([["1", { email: "g@c.com", nome: "G" }], ["2", { email: "r@c.com", nome: "R" }]]);
+  it("NPS só aparece para o gestor responsável e some quando finalizado", () => {
+    const itens = [
+      { id: "a", fields: { Title: "X", Status: "Aguardando Resposta Evidência", Respons_x00e1_velpeloNPS_x0028_gLookupId: "1", Respons_x00e1_velOperacional_LookupId: "2" } },
+      { id: "b", fields: { Title: "Y", Status: "Finalizado", Respons_x00e1_velpeloNPS_x0028_gLookupId: "1" } },
+    ];
+    expect(_nps(itens, "g@c.com", u).map((p) => p.id)).toEqual(["a"]);
+    expect(_nps(itens, "r@c.com", u)).toEqual([]);
+  });
+  it("Plano SM marcado como concluído não aparece", () => {
+    const itens = [{ id: "p", fields: { Respons_x00e1_velLookupId: "2", GestorRespons_x00e1_velLookupId: "1", Status: "Não concluído", Conclu_x00ed_do_x003f_: true } }];
+    expect(_planos(itens, "g@c.com", u, new Map(), new Date())).toEqual([]);
+  });
+});

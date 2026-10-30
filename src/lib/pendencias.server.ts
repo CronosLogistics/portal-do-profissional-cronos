@@ -6,6 +6,10 @@ const LISTA_ANALISE_NC = "6939ea15-cf95-4870-894d-833b7b77cea5";
 const LISTA_ANALISE_NC_MAIOR = "92eedf3a-6d16-4d73-b7c0-132b571ced67";
 const LISTA_PLANO_ACAO = "34afa699-bcd4-4a7a-a5f2-c083fd9ca2e2";
 const LISTA_CONTROLE_NC = "5e86ef58-5d4f-4441-8f00-63ebeeedc744";
+const LISTA_ANALISE_SM = "909379e8-f01d-4332-9194-c2ba9a6abfc6";
+const LISTA_PLANO_SM = "d39939ba-91a8-4bc7-8ba1-0b2036e79544";
+const LISTA_NPS = "895f8afb-e289-4c27-87d0-444a9eaa7bec";
+const LISTA_CONTROLE_SM = "c14d869d-23e8-4cf1-b800-617a03141db3";
 const LISTA_USUARIOS = "dcbf95ce-8b48-451e-b14f-eab5d8fa098f";
 const CACHE_MS = 5 * 60 * 1000;
 
@@ -37,37 +41,43 @@ async function lerTudo<T>(caminho: string): Promise<T[]> {
   return all;
 }
 
-type Cache = { em: number; itens: ItemAnaliseNC[]; itensMaior: ItemAnaliseNC[]; itensPlano: ItemAnaliseNC[]; usuarios: Map<string, { email: string; nome: string }> };
+type Cache = { em: number; itens: ItemAnaliseNC[]; itensMaior: ItemAnaliseNC[]; itensPlano: ItemAnaliseNC[]; itensSM: ItemAnaliseNC[]; itensPlanoSM: ItemAnaliseNC[]; itensNPS: ItemAnaliseNC[]; usuarios: Map<string, { email: string; nome: string }> };
 let cache: Cache | null = null;
 const ncTitulos = new Map<string, string>();
+const smTitulos = new Map<string, string>();
 
 /** Análises de NC e usuários do site da Qualidade (cache curto, só no servidor). */
 export async function dadosAnaliseNC(): Promise<Cache> {
   if (cache && Date.now() - cache.em < CACHE_MS) return cache;
-  const [itens, itensMaior, itensPlano, users] = await Promise.all([
+  const [itens, itensMaior, itensPlano, itensSM, itensPlanoSM, itensNPS, users] = await Promise.all([
     lerTudo<ItemAnaliseNC>(`/sites/${SITE}/lists/${LISTA_ANALISE_NC}/items?$expand=fields($select=NCLookupId,Respons_x00e1_velLookupId,Created,Data_Fechamento,Situa_x00e7__x00e3_odaAn_x00e1_l)&$top=999`),
     lerTudo<ItemAnaliseNC>(`/sites/${SITE}/lists/${LISTA_ANALISE_NC_MAIOR}/items?$expand=fields($select=NCLookupId,Respons_x00e1_velLookupId,Created,Data_Fechamento,StatusAn_x00e1_liseMaior)&$top=999`),
     lerTudo<ItemAnaliseNC>(`/sites/${SITE}/lists/${LISTA_PLANO_ACAO}/items?$expand=fields($select=NCLookupId,Respons_x00e1_velLookupId,GestorRespons_x00e1_velLookupId,Prazo,Status,Essaa_x00e7__x00e3_oest_x00e1_fi)&$top=999`),
+    lerTudo<ItemAnaliseNC>(`/sites/${SITE}/lists/${LISTA_ANALISE_SM}/items?$expand=fields($select=NCLookupId,Respons_x00e1_velLookupId,Created,Data_Fechamento,Etapa)&$top=999`),
+    lerTudo<ItemAnaliseNC>(`/sites/${SITE}/lists/${LISTA_PLANO_SM}/items?$expand=fields($select=NCLookupId,Respons_x00e1_velLookupId,GestorRespons_x00e1_velLookupId,Prazo,Status,Conclu_x00ed_do_x003f_)&$top=999`),
+    lerTudo<ItemAnaliseNC>(`/sites/${SITE}/lists/${LISTA_NPS}/items?$expand=fields($select=Title,Processo,Nota,Status,Respons_x00e1_velpeloNPS_x0028_gLookupId)&$top=999`),
     lerTudo<{ id: string; fields: { EMail?: string; Title?: string } }>(`/sites/${SITE}/lists/${LISTA_USUARIOS}/items?$expand=fields($select=EMail,Title)&$top=999`),
   ]);
   const usuarios = new Map<string, { email: string; nome: string }>();
   for (const u of users) {
     if (u.fields.EMail || u.fields.Title) usuarios.set(u.id, { email: u.fields.EMail ?? "", nome: (u.fields.Title ?? "").replace(/\s*-\s*Cronos Logistics$/i, "").trim() });
   }
-  cache = { em: Date.now(), itens, itensMaior, itensPlano, usuarios };
+  cache = { em: Date.now(), itens, itensMaior, itensPlano, itensSM, itensPlanoSM, itensNPS, usuarios };
   return cache;
 }
 
 /** Número da NC (Título no Controle de NC) para os IDs pedidos. */
-export async function titulosNC(ids: string[]): Promise<Map<string, string>> {
-  const faltam = [...new Set(ids)].filter((id) => id && !ncTitulos.has(id));
+export async function titulosNC(ids: string[], sm = false): Promise<Map<string, string>> {
+  const mapa = sm ? smTitulos : ncTitulos;
+  const lista = sm ? LISTA_CONTROLE_SM : LISTA_CONTROLE_NC;
+  const faltam = [...new Set(ids)].filter((id) => id && !mapa.has(id));
   await Promise.all(
     faltam.map(async (id) => {
-      const res = await fetch(`${GATEWAY_URL}/azure_graph/v1.0/sites/${SITE}/lists/${LISTA_CONTROLE_NC}/items/${encodeURIComponent(id)}?$expand=fields($select=Title)`, { headers: headers() });
+      const res = await fetch(`${GATEWAY_URL}/azure_graph/v1.0/sites/${SITE}/lists/${lista}/items/${encodeURIComponent(id)}?$expand=fields($select=Title)`, { headers: headers() });
       if (!res.ok) { console.error(`SharePoint NC título [${res.status}]: ${(await res.text()).slice(0, 200)}`); return; }
       const body = (await res.json()) as { fields?: { Title?: string } };
-      if (body.fields?.Title) ncTitulos.set(id, body.fields.Title);
+      if (body.fields?.Title) mapa.set(id, body.fields.Title);
     }),
   );
-  return ncTitulos;
+  return mapa;
 }
