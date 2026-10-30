@@ -31,7 +31,7 @@ export const PORTAL_MODULES: PortalModule[] = [
   { to: "/treinamentos", label: "Treinamentos" },
   { to: "/formularios", label: "Formulários" },
   { to: "/documentos", label: "Documentos" },
-  { to: "/feedback", label: "Feedback" },
+  { to: "/feedback", label: "Elogios" },
 ];
 
 export type PrincipalNavLink = {

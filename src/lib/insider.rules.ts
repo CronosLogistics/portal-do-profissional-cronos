@@ -1,4 +1,17 @@
 import { z } from "zod";
+import { format, isValid, parse } from "date-fns";
+
+/** Accept older Brazilian date strings without changing saved editorial text. */
+export function dataEventoInput(valor: string): string {
+  const padrao = /^\d{4}-\d{2}-\d{2}$/.test(valor) ? "yyyy-MM-dd" : /^\d{2}\/\d{2}\/\d{4}$/.test(valor) ? "dd/MM/yyyy" : null;
+  if (!padrao) return "";
+  const data = parse(valor, padrao, new Date(2000, 0, 1));
+  return isValid(data) && format(data, padrao) === valor ? format(data, "yyyy-MM-dd") : "";
+}
+export function formatarDataEvento(valor: string): string {
+  const iso = dataEventoInput(valor);
+  return iso ? iso.split("-").reverse().join("/") : valor;
+}
 
 export const mesSchema = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/);
 const caminho = z.string().max(250).regex(/^(|[a-f0-9-]{36}\/[a-f0-9-]{36}\.(jpg|jpeg|png|webp))$/);

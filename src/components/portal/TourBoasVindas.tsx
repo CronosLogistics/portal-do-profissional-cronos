@@ -10,7 +10,7 @@ const PASSOS: Passo[] = [
   { alvo: "section.hc", titulo: "Destaques", texto: "No carrossel aparecem o Cronos Day, aniversariantes, o Cronos Insider e o compilado de elogios." },
   { alvo: ".portal-bell", titulo: "Avisos", texto: "O sino mostra os comunicados novos. O número indica quantos você ainda não leu." },
   { alvo: '.portal-nav a[href="/mural"]', titulo: "Mural de comemorações", texto: "Celebre aniversários e conquistas dos colegas, com comentários e reações." },
-  { alvo: '.portal-nav a[href="/feedback"]', titulo: "Feedback", texto: "Veja os elogios em que você está envolvido(a)." },
+  { alvo: '.portal-nav a[href="/feedback"]', titulo: "Elogios", texto: "Veja os elogios em que você está envolvido(a)." },
   { alvo: '.portal-nav a[href="/formularios"]', titulo: "Formulários", texto: "Todos os formulários da Cronos em um só lugar." },
   { alvo: '.portal-nav a[href="/documentos"]', titulo: "Documentos", texto: "Links para os documentos oficiais mantidos pela Qualidade." },
 ];

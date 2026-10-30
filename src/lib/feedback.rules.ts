@@ -1,8 +1,8 @@
-/** Regras puras do menu Feedback (elogios da lista RQ0013 do SharePoint). */
+/** Regras puras do menu Elogios (lista RQ0013 do SharePoint). */
 
 export type Pessoa = { LookupId?: number | string; LookupValue?: string; Email?: string };
 
-export type ItemLista = { id: string; fields: Record<string, unknown> };
+export type ItemLista = { id: string; fields: Record<string, unknown>; createdBy?: { user?: { displayName?: string } } };
 
 export type Elogio = {
   id: string;
@@ -23,6 +23,7 @@ export const CAMPO_TIPO = "field_4";
 export const TIPO_ELOGIO = "Elogio - EL";
 export const CAMPO_ENVOLVIDOS = "PROFISSIONALRESPONS_x00c1_VEL_NE";
 export const CAMPO_GESTOR = "GESTOR_CONSIDERACOESLookupId";
+export const CAMPO_AUTOR = "AuthorLookupId";
 
 const norm = (e: string | undefined | null) => (e ?? "").trim().toLowerCase();
 const texto = (v: unknown) => {
@@ -59,7 +60,7 @@ export function elogiosVisiveis(
       status: texto(f["field_20"]),
       envolvidos: envolvidos.map(nome).filter(Boolean),
       gestor: gestor?.nome ?? null,
-      elogiador: texto(f["field_11"]) || null,
+      elogiador: (f[CAMPO_AUTOR] != null ? usuariosSite.get(String(f[CAMPO_AUTOR]))?.nome : null) || texto(it.createdBy?.user?.displayName).replace(/\s*-\s*Cronos Logistics$/i, "") || null,
       vinculo: souEnvolvida ? "meu" : "equipe",
     });
   }
