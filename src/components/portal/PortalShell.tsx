@@ -168,7 +168,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
             );
           })}
         </nav>
-        {me.data?.isEditor && <div className="portal-admin-nav">
+        {me.data?.isAdmin && <div className="portal-admin-nav">
           <div className="portal-nav-heading sidebar-label">GESTÃO</div>
           {me.data.isAdmin ? (
             <SidebarBranch
