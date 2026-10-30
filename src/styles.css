@@ -409,13 +409,13 @@
   transform: translateX(0) translateY(0);
 }
 .treino-step > [aria-hidden] {
-  transform: translateX(-50%) scale(.55);
+  transform: translate(-50%, -50%) scale(.55);
   opacity: 0;
   transition: opacity .45s ease .08s, transform .45s cubic-bezier(.22, 1, .36, 1) .08s;
 }
 .treino-step.is-visible > [aria-hidden] {
   opacity: 1;
-  transform: translateX(-50%) scale(1);
+  transform: translate(-50%, -50%) scale(1);
 }
 @media (prefers-reduced-motion: reduce) {
   .treino-step,
