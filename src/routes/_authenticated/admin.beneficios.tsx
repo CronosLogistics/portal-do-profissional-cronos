@@ -82,13 +82,8 @@ function AdminBenefits() {
             <h1 className="font-display text-xl font-bold">Gestão de benefícios</h1>
           </div>
           <div className="flex items-center gap-2">
-            <Link to="/beneficios" className="text-sm text-muted-foreground hover:text-foreground">
-              Ver no site
-            </Link>
-            <Button variant="ghost" size="sm" onClick={signOut}>
-              <LogOut className="mr-1.5 h-4 w-4" />
-              Sair
-            </Button>
+            <Button variant="outline" size="sm" asChild><Link to="/beneficios">Voltar ao portal</Link></Button>
+            <Button size="sm" onClick={() => toast.success("Informações salvas.")}>Salvar</Button>
           </div>
         </div>
       </header>
