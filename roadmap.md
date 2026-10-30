@@ -21,7 +21,12 @@
 
 ## Ajustes de comemorações e Insider
 - [x] Reset automático das comemorações no primeiro dia útil do mês seguinte.
-- [x] Exibir quem deu o elogio no Feedback (contato do cliente; sem inventar quando ausente).
+- [x] Exibir quem deu o elogio no Feedback.
 - [x] Comentários e reações no Insider como no compilado.
 - [x] Identificar escritório pela lista de profissionais.
 - [x] Corrigir tela branca ao retornar da seleção de foto.
+
+## Ajustes de datas e Elogios
+- [ ] Usar campo de data nos eventos do Insider.
+- [ ] Renomear o menu e a página Feedback para Elogios.
+- [ ] Buscar o autor na coluna Criado por do SharePoint e validar.
