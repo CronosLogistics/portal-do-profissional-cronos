@@ -1,3 +1,4 @@
+import { criarIdCliente } from "@/lib/client-id";
 import { supabase } from "@/integrations/supabase/client";
 import { conteudoInsiderSchema, type ConteudoInsider } from "./insider.rules";
 
@@ -24,7 +25,7 @@ export async function enviarImagemInsider(id: string, file: File) {
   const tipos: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
   const ext = tipos[file.type];
   if (!ext || file.size > 10 * 1024 * 1024) throw new Error("Use JPG, PNG ou WebP de até 10 MB.");
-  const path = `${id}/${crypto.randomUUID()}.${ext}`;
+  const path = `${id}/${criarIdCliente()}.${ext}`;
   const { error } = await supabase.storage.from("insider").upload(path, file, { contentType: file.type });
   if (error) throw new Error(error.message);
   return path;

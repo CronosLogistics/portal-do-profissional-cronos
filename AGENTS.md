@@ -10,7 +10,8 @@
 <!-- LOVABLE:END -->
 
 ## Architecture rules
-- Every portal page lives under `src/routes/_authenticated/` (whole portal requires login); only `/auth` and `/definir-senha` are public. Why: internal employee portal.
+- Browser IDs use `criarIdCliente` (UUID secure-random fallback). Why: support browsers without `crypto.randomUUID`.
+- Portal pages live under `src/routes/_authenticated/`; only `/auth` and `/definir-senha` are public. Why: internal access.
 - Main menu modules are declared once in `src/lib/portal-modules.ts`; add a route + one entry there to add a module. Why: new modules without rebuilding navigation or auth.
 - Access is profile-based: `perfis` + `perfil_permissoes` (fixed catalog in `src/lib/permissions.ts`, mirrored by a DB CHECK) + `usuario_perfis`; RLS and server checks use `tem_permissao`/`usuario_tem_permissao` (legacy `has_role`/`is_editor` now delegate to it; `user_roles` is deprecated). DB triggers protect the system Administrador profile and its last active member. Why: admins grant access from the panel without code changes, enforced in the database.
 - User administration (invite, edit, activate/deactivate) runs only in `src/lib/users.functions.ts` server functions that call `requireAdmin` before using the admin client; deactivation also bans the auth user. Why: no client can grant itself access.

@@ -1,3 +1,4 @@
+import { criarIdCliente } from "@/lib/client-id";
 import { supabase } from "@/integrations/supabase/client";
 
 export const muralKey = ["mural"] as const;
@@ -46,7 +47,7 @@ export async function salvarPost(id: string | null, d: DadosPost) {
   let imagem_path = d.imagem_path ?? null;
   if (d.arquivo) {
     const ext = d.arquivo.name.split(".").pop()?.toLowerCase() || "jpg";
-    const path = `${crypto.randomUUID()}.${ext}`;
+    const path = `${criarIdCliente()}.${ext}`;
     const { error } = await supabase.storage.from("mural").upload(path, d.arquivo, { contentType: d.arquivo.type });
     if (error) throw new Error("Não foi possível enviar a imagem.");
     imagem_path = path;
