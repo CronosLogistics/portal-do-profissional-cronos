@@ -155,6 +155,13 @@
       "when": 1793361942696,
       "tag": "0021_formularios_catalogo_permissoes",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1793362098817,
+      "tag": "0022_formularios_atualizacao_data",
+      "breakpoints": true
     }
   ]
 }
