@@ -202,7 +202,11 @@
 /* Application shell: one persistent navigation surface for every portal module. */
 .portal-shell { --portal-sidebar-width: 250px; --portal-topbar-height: 82px; min-height: 100dvh; }
 .portal-shell.is-collapsed { --portal-sidebar-width: 76px; }
-.portal-sidebar { position: fixed; inset: 0 auto 0 0; width: var(--portal-sidebar-width); z-index: 40; display: flex; flex-direction: column; padding: 30px 16px 18px; background: var(--sidebar); color: var(--sidebar-foreground); transition: width .2s ease; overflow-x: hidden; overflow-y: auto; }
+.portal-sidebar { position: fixed; inset: 0 auto 0 0; width: var(--portal-sidebar-width); z-index: 40; display: flex; flex-direction: column; padding: 30px 16px 18px; background: var(--sidebar); color: var(--sidebar-foreground); transition: width .2s ease; overflow-x: hidden; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #fff transparent; }
+.portal-sidebar::-webkit-scrollbar { width: 6px; }
+.portal-sidebar::-webkit-scrollbar-track { background: transparent; }
+.portal-sidebar::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+.portal-sidebar::-webkit-scrollbar-thumb { background: #fff; border-radius: 999px; }
 .portal-brand { display: flex; flex-direction: column; align-items: flex-start; gap: 18px; padding: 0 12px 30px; }
 .portal-logo { width: 170px; height: 38px; object-fit: contain; object-position: left center; }
 .portal-brand .sidebar-label { font-size: 14px; line-height: 1.4; color: var(--sidebar-foreground); }
@@ -391,6 +395,36 @@
 .mural-post::before { content: ""; position: absolute; left: calc(-1.5rem - 7px); top: .35rem; width: 12px; height: 12px; border-radius: 999px; background: var(--primary); }
 .mural-data { display: block; margin-bottom: .4rem; font-size: .75rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--primary); }
 .mural-post.is-focus article { box-shadow: 0 0 0 2px var(--primary); }
+
+/* Passo a passo de treinamentos: revelação suave ao rolar */
+.treino-step {
+  opacity: 0;
+  transform: translateY(1.25rem);
+  transition: opacity .65s ease, transform .65s ease;
+}
+.treino-step.is-from-left { transform: translateX(-1.25rem) translateY(.5rem); }
+.treino-step.is-from-right { transform: translateX(1.25rem) translateY(.5rem); }
+.treino-step.is-visible {
+  opacity: 1;
+  transform: translateX(0) translateY(0);
+}
+.treino-step > [aria-hidden] {
+  transform: translateX(-50%) scale(.55);
+  opacity: 0;
+  transition: opacity .45s ease .08s, transform .45s cubic-bezier(.22, 1, .36, 1) .08s;
+}
+.treino-step.is-visible > [aria-hidden] {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .treino-step,
+  .treino-step > [aria-hidden] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
 
 /* Tour de boas-vindas */
 .tour-raiz { position: fixed; inset: 0; z-index: 60; }

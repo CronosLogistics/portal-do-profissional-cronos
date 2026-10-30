@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { CalendarCheck, CheckCircle2, ExternalLink, GanttChartSquare, GraduationCap, Trophy } from "lucide-react";
+import { useEffect, useRef } from "react";
 
 import { Navbar } from "@/components/clube/Navbar";
 import { Footer } from "@/components/clube/Footer";
@@ -32,7 +33,40 @@ function External({ href, children, ...props }: React.ComponentPropsWithoutRef<"
   );
 }
 
+function useRevealOnScroll<T extends HTMLElement>() {
+  const ref = useRef<T>(null);
+
+  useEffect(() => {
+    const root = ref.current;
+    if (!root) return;
+
+    const steps = root.querySelectorAll<HTMLElement>(".treino-step");
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      steps.forEach((el) => el.classList.add("is-visible"));
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          entry.target.classList.add("is-visible");
+          observer.unobserve(entry.target);
+        }
+      },
+      { threshold: 0.18, rootMargin: "0px 0px -8% 0px" },
+    );
+
+    steps.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
+
+  return ref;
+}
+
 function TreinamentosPage() {
+  const processoRef = useRevealOnScroll<HTMLOListElement>();
+
   return (
     <div className="min-h-screen">
       <Navbar />
@@ -133,13 +167,16 @@ function TreinamentosPage() {
             </p>
           </div>
 
-          <ol className="relative space-y-12 md:space-y-20">
+          <ol ref={processoRef} className="relative space-y-12 md:space-y-20">
             <div aria-hidden className="dotted-line absolute bottom-0 left-6 top-0 w-px opacity-60 md:left-1/2" />
             {STEPS.map((step, idx) => {
               const Icon = step.icon;
               const right = idx % 2 === 1;
               return (
-                <li key={step.num} className="relative grid items-center gap-6 md:grid-cols-2 md:gap-12">
+                <li
+                  key={step.num}
+                  className={`treino-step relative grid items-center gap-6 md:grid-cols-2 md:gap-12 ${right ? "is-from-right" : "is-from-left"}`}
+                >
                   <span aria-hidden className="absolute left-6 top-8 z-10 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-primary ring-4 ring-background md:left-1/2 md:top-1/2" />
                   <div className={`pl-14 md:pl-0 ${right ? "md:order-2 md:pl-12" : "md:pr-12"}`}>
                     <div className="glass-card rounded-2xl p-6 md:p-8">
