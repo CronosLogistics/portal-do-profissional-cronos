@@ -1,12 +1,23 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { CalendarCheck, CheckCircle2, ExternalLink, GanttChartSquare, GraduationCap, Trophy } from "lucide-react";
-import { useEffect, useRef } from "react";
+import {
+  Award, CalendarCheck, CheckCircle2, ClipboardList, ClipboardSignature, ExternalLink, GanttChartSquare,
+  GraduationCap, MailCheck, Pencil, Trophy, Users, type LucideIcon,
+} from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { Navbar } from "@/components/clube/Navbar";
 import { Footer } from "@/components/clube/Footer";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { CERTIFICADOS, LINKS, PONTUACAO, STEPS } from "@/components/treinamentos/content";
+import { TreinamentosEditor } from "@/components/treinamentos/TreinamentosEditor";
+import { useCurrentUser } from "@/hooks/useAuth";
+import { CONTEUDO_PADRAO, carregarTreinamentos, resolverImagens, type IconeEtapa } from "@/lib/treinamentos-client";
+
+const ICONES: Record<IconeEtapa, LucideIcon> = {
+  cadastro: ClipboardList, agenda: CalendarCheck, email: MailCheck, pessoas: Users, assinatura: ClipboardSignature, trofeu: Trophy,
+};
+const ICONES_CERT = [GraduationCap, Award];
 
 export const Route = createFileRoute("/_authenticated/treinamentos")({
   head: () => ({
@@ -33,7 +44,7 @@ function External({ href, children, ...props }: React.ComponentPropsWithoutRef<"
   );
 }
 
-function useRevealOnScroll<T extends HTMLElement>() {
+function useRevealOnScroll<T extends HTMLElement>(chave: unknown) {
   const ref = useRef<T>(null);
 
   useEffect(() => {
@@ -59,20 +70,37 @@ function useRevealOnScroll<T extends HTMLElement>() {
 
     steps.forEach((el) => observer.observe(el));
     return () => observer.disconnect();
-  }, []);
+  }, [chave]);
 
   return ref;
 }
 
 function TreinamentosPage() {
-  const processoRef = useRevealOnScroll<HTMLOListElement>();
+  const qc = useQueryClient();
+  const me = useCurrentUser();
+  const podeEditar = !!me.data?.can("conteudo.editar");
+  const [editando, setEditando] = useState(false);
+  const { data: conteudo = CONTEUDO_PADRAO } = useQuery({ queryKey: ["treinamentos-conteudo"], queryFn: carregarTreinamentos });
+  const refs = conteudo.etapas.map((e) => e.image).filter(Boolean);
+  const { data: imagens = {} } = useQuery({
+    queryKey: ["treinamentos-imagens", refs],
+    queryFn: () => resolverImagens(refs),
+    staleTime: 30 * 60 * 1000,
+  });
+  const LINKS = conteudo.links;
+  const processoRef = useRevealOnScroll<HTMLOListElement>(conteudo);
 
   return (
     <div className="min-h-screen">
       <Navbar />
 
       <section className="mx-auto max-w-6xl px-4 py-10">
-        <h1 className="font-display font-bold">Treinamentos</h1>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h1 className="font-display font-bold">Treinamentos</h1>
+          {podeEditar ? (
+            <Button variant="outline" onClick={() => setEditando(true)}><Pencil className="h-4 w-4" /> Editar página</Button>
+          ) : null}
+        </div>
         <p className="mt-2 text-sm text-muted-foreground">Diplomas, certificados e solicitações de treinamento.</p>
         <div className="mt-6 flex flex-wrap gap-3">
           <Button asChild><External href={LINKS.diplomasCertificados}><GraduationCap /> Cadastrar diploma ou certificado</External></Button>
@@ -90,15 +118,18 @@ function TreinamentosPage() {
           </h2>
           <p className="mb-6 text-sm text-muted-foreground">Registre pós-graduação, certificações e/ou cursos concluídos.</p>
           <div className="mb-10 grid gap-5 md:grid-cols-2">
-            {CERTIFICADOS.map(({ icon: Icon, title, description }) => (
-              <div key={title} className="glass-card rounded-2xl p-6 md:p-8">
+            {conteudo.certificados.map(({ title, description }, ci) => {
+              const Icon = ICONES_CERT[ci] ?? Award;
+              return (
+              <div key={ci} className="glass-card rounded-2xl p-6 md:p-8">
                 <span className="mb-5 flex h-12 w-12 items-center justify-center rounded-lg border border-primary/30 bg-primary/15">
                   <Icon className="h-6 w-6 text-primary" />
                 </span>
                 <h3 className="mb-2 font-display text-xl font-bold">{title}</h3>
                 <p className="text-muted-foreground">{description}</p>
               </div>
-            ))}
+              );
+            })}
           </div>
           <Button asChild size="lg">
             <External href={LINKS.diplomasCertificados}>
@@ -127,8 +158,8 @@ function TreinamentosPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {PONTUACAO.map((row) => (
-                  <TableRow key={row.categoria}>
+                {conteudo.pontuacao.map((row, ri) => (
+                  <TableRow key={ri}>
                     <TableCell className="px-6 py-4 text-base font-medium">{row.categoria}</TableCell>
                     <TableCell className="px-6 py-4 text-right">
                       <span className="gradient-primary inline-flex min-w-[72px] justify-center rounded-full px-4 py-1.5 text-sm font-bold text-primary-foreground">
@@ -141,7 +172,7 @@ function TreinamentosPage() {
             </Table>
           </div>
           <p className="mt-4 text-xs text-muted-foreground">
-            *Demais categorias de treinamento, como Mudança de Função, Onboarding, Intradepartamental, Campanhas e outras capacitações obrigatórias, não geram pontuação na gamificação.
+            {conteudo.notaPontuacao}
           </p>
         </div>
       </section>
@@ -169,12 +200,13 @@ function TreinamentosPage() {
 
           <ol ref={processoRef} className="relative space-y-12 md:space-y-20">
             <div aria-hidden className="dotted-line absolute bottom-0 left-6 top-0 w-px opacity-60 md:left-1/2" />
-            {STEPS.map((step, idx) => {
-              const Icon = step.icon;
+            {conteudo.etapas.map((step, idx) => {
+              const Icon = ICONES[step.icone] ?? ClipboardList;
+              const imagem = step.image ? imagens[step.image] : undefined;
               const right = idx % 2 === 1;
               return (
                 <li
-                  key={step.num}
+                  key={`${idx}-${step.num}`}
                   className={`treino-step relative grid items-center gap-6 md:grid-cols-2 md:gap-12 ${right ? "is-from-right" : "is-from-left"}`}
                 >
                   <span aria-hidden className="absolute left-6 top-8 z-10 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-primary ring-4 ring-background md:left-1/2 md:top-1/2" />
@@ -190,7 +222,7 @@ function TreinamentosPage() {
                         </div>
                       </div>
                       <p className="mb-4 text-muted-foreground">{step.description}</p>
-                      {step.bullets ? (
+                      {step.bullets.length ? (
                         <ul className="mb-4 space-y-2">
                           {step.bullets.map((b) => (
                             <li key={b} className="flex items-center gap-2 text-sm">
@@ -200,10 +232,10 @@ function TreinamentosPage() {
                         </ul>
                       ) : null}
                       <div className="flex flex-wrap items-center gap-3">
-                        {step.cta ? (
+                        {step.ctaLabel && step.ctaHref ? (
                           <Button asChild size="sm">
-                            <External href={step.cta.href}>
-                              {step.cta.label} <ExternalLink className="ml-1 h-3.5 w-3.5" />
+                            <External href={step.ctaHref}>
+                              {step.ctaLabel} <ExternalLink className="ml-1 h-3.5 w-3.5" />
                             </External>
                           </Button>
                         ) : null}
@@ -214,9 +246,9 @@ function TreinamentosPage() {
                     </div>
                   </div>
                   <div className={`pl-14 md:pl-0 ${right ? "md:pr-12" : "md:pl-12"}`}>
-                    {step.image ? (
+                    {imagem ? (
                       <figure className="glass-card rounded-2xl p-2">
-                        <img src={step.image} alt={step.imageAlt ?? ""} loading="lazy" className="h-auto w-full rounded-xl" />
+                        <img src={imagem} alt={step.imageAlt ?? ""} loading="lazy" className="h-auto w-full rounded-xl" />
                         <figcaption className="uppercase-tracked py-2 text-center text-muted-foreground">
                           Pré-visualização do e-mail
                         </figcaption>
@@ -231,6 +263,15 @@ function TreinamentosPage() {
       </section>
 
       <Footer />
+      {podeEditar ? (
+        <TreinamentosEditor
+          open={editando}
+          onOpenChange={setEditando}
+          conteudo={conteudo}
+          imagens={imagens}
+          onSalvo={() => void qc.invalidateQueries({ queryKey: ["treinamentos-conteudo"] })}
+        />
+      ) : null}
     </div>
   );
 }
