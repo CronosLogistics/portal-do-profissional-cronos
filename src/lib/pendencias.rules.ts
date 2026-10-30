@@ -29,6 +29,7 @@ export const LINK_ANALISE_NC_MAIOR = "https://cronoslogisticscombr.sharepoint.co
 export const LISTA_NC = {
   analise: { situacao: "Situa_x00e7__x00e3_odaAn_x00e1_l", link: LINK_ANALISE_NC, status: (d: number): PendenciaNC["status"] => (d >= 1 ? "Vencido" : "No prazo") },
   maior: { situacao: "StatusAn_x00e1_liseMaior", link: LINK_ANALISE_NC_MAIOR, status: (d: number): PendenciaNC["status"] => (d >= 8 ? "Vencido" : d === 7 ? "A vencer" : "No prazo") },
+  sm: { situacao: "Etapa", link: "https://cronoslogisticscombr.sharepoint.com/sites/qualityteamgroup/Lists/ANLISE%20DE%20SM/EditForm.aspx?ID=", status: (d: number): PendenciaNC["status"] => (d >= 1 ? "Vencido" : "No prazo") },
 } as const;
 export type TipoListaNC = keyof typeof LISTA_NC;
 
@@ -90,6 +91,7 @@ export function planosDoUsuario(
   usuarios: Map<string, { email: string; nome: string }>,
   ncs: Map<string, string>,
   agora: Date,
+  link: string = LINK_PLANO_ACAO,
 ): PendenciaNC[] {
   const alvo = email.trim().toLowerCase();
   const eh = (id: unknown) => !!id && usuarios.get(String(id))?.email.trim().toLowerCase() === alvo;
@@ -97,6 +99,7 @@ export function planosDoUsuario(
     .filter((i) => {
       const f = i.fields;
       if (String(f["Essaa_x00e7__x00e3_oest_x00e1_fi"] ?? "") === "Sim") return false;
+      if (f["Conclu_x00ed_do_x003f_"] === true) return false;
       if (/^(conclu|cancel)/i.test(String(f["Status"] ?? ""))) return false;
       return eh(f.Respons_x00e1_velLookupId) || eh(f["GestorRespons_x00e1_velLookupId"]);
     })
@@ -109,8 +112,33 @@ export function planosDoUsuario(
         status: s.status,
         diasSemResposta: s.diasAtraso,
         responsavel: usuarios.get(String(i.fields.Respons_x00e1_velLookupId))?.nome ?? "",
-        link: LINK_PLANO_ACAO + encodeURIComponent(i.id),
+        link: link + encodeURIComponent(i.id),
       };
     })
     .sort((a, b) => b.diasSemResposta - a.diasSemResposta);
+}
+
+export const LINK_PLANO_ACAO_SM = "https://cronoslogisticscombr.sharepoint.com/sites/qualityteamgroup/Lists/PLANO%20DE%20AO%20SM/EditForm.aspx?ID=";
+export const LINK_NPS = "https://cronoslogisticscombr.sharepoint.com/sites/qualityteamgroup/Lists/Indicador%20de%20Satisfao%20de%20Clientes%20NPS/EditForm.aspx?ID=";
+
+export type PendenciaNPS = { id: string; cliente: string; processo: string; nota: number | null; status: string; link: string };
+
+/** NPS não finalizados em que o e-mail do perfil é o Responsável pelo NPS (gestor). */
+export function npsDoUsuario(itens: ItemAnaliseNC[], email: string, usuarios: Map<string, { email: string; nome: string }>): PendenciaNPS[] {
+  const alvo = email.trim().toLowerCase();
+  return itens
+    .filter((i) => {
+      const f = i.fields;
+      if (String(f["Status"] ?? "") === "Finalizado") return false;
+      const g = f["Respons_x00e1_velpeloNPS_x0028_gLookupId"];
+      return !!g && usuarios.get(String(g))?.email.trim().toLowerCase() === alvo;
+    })
+    .map((i) => ({
+      id: i.id,
+      cliente: String(i.fields["Title"] ?? ""),
+      processo: String(i.fields["Processo"] ?? ""),
+      nota: typeof i.fields["Nota"] === "number" ? (i.fields["Nota"] as number) : null,
+      status: String(i.fields["Status"] ?? ""),
+      link: LINK_NPS + encodeURIComponent(i.id),
+    }));
 }
