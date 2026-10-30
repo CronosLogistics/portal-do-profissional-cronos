@@ -20,6 +20,7 @@ import { Route as AuthenticatedFeedbackRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedFormulariosRouteImport } from './routes/_authenticated/formularios'
 import { Route as AuthenticatedMuralRouteImport } from './routes/_authenticated/mural'
 import { Route as AuthenticatedParceirosRouteImport } from './routes/_authenticated/parceiros'
+import { Route as AuthenticatedPendenciasRouteImport } from './routes/_authenticated/pendencias'
 import { Route as AuthenticatedTreinamentosRouteImport } from './routes/_authenticated/treinamentos'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedAdminBeneficiosRouteImport } from './routes/_authenticated/admin.beneficios'
@@ -96,6 +97,11 @@ const AuthenticatedMuralRoute = AuthenticatedMuralRouteImport.update({
 const AuthenticatedParceirosRoute = AuthenticatedParceirosRouteImport.update({
   id: '/parceiros',
   path: '/parceiros',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPendenciasRoute = AuthenticatedPendenciasRouteImport.update({
+  id: '/pendencias',
+  path: '/pendencias',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedTreinamentosRoute =
@@ -238,6 +244,7 @@ export interface FileRoutesByFullPath {
   '/formularios': typeof AuthenticatedFormulariosRoute
   '/mural': typeof AuthenticatedMuralRoute
   '/parceiros': typeof AuthenticatedParceirosRoute
+  '/pendencias': typeof AuthenticatedPendenciasRoute
   '/treinamentos': typeof AuthenticatedTreinamentosRoute
   '/admin/beneficios': typeof AuthenticatedAdminBeneficiosRoute
   '/admin/pagina-inicial': typeof AuthenticatedAdminPaginaInicialRoute
@@ -270,6 +277,7 @@ export interface FileRoutesByTo {
   '/formularios': typeof AuthenticatedFormulariosRoute
   '/mural': typeof AuthenticatedMuralRoute
   '/parceiros': typeof AuthenticatedParceirosRoute
+  '/pendencias': typeof AuthenticatedPendenciasRoute
   '/treinamentos': typeof AuthenticatedTreinamentosRoute
   '/': typeof AuthenticatedIndexRoute
   '/admin/beneficios': typeof AuthenticatedAdminBeneficiosRoute
@@ -306,6 +314,7 @@ export interface FileRoutesById {
   '/_authenticated/formularios': typeof AuthenticatedFormulariosRoute
   '/_authenticated/mural': typeof AuthenticatedMuralRoute
   '/_authenticated/parceiros': typeof AuthenticatedParceirosRoute
+  '/_authenticated/pendencias': typeof AuthenticatedPendenciasRoute
   '/_authenticated/treinamentos': typeof AuthenticatedTreinamentosRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/admin/beneficios': typeof AuthenticatedAdminBeneficiosRoute
@@ -343,6 +352,7 @@ export interface FileRouteTypes {
     | '/formularios'
     | '/mural'
     | '/parceiros'
+    | '/pendencias'
     | '/treinamentos'
     | '/admin/beneficios'
     | '/admin/pagina-inicial'
@@ -375,6 +385,7 @@ export interface FileRouteTypes {
     | '/formularios'
     | '/mural'
     | '/parceiros'
+    | '/pendencias'
     | '/treinamentos'
     | '/'
     | '/admin/beneficios'
@@ -410,6 +421,7 @@ export interface FileRouteTypes {
     | '/_authenticated/formularios'
     | '/_authenticated/mural'
     | '/_authenticated/parceiros'
+    | '/_authenticated/pendencias'
     | '/_authenticated/treinamentos'
     | '/_authenticated/'
     | '/_authenticated/admin/beneficios'
@@ -522,6 +534,13 @@ declare module '@tanstack/react-router' {
       path: '/parceiros'
       fullPath: '/parceiros'
       preLoaderRoute: typeof AuthenticatedParceirosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/pendencias': {
+      id: '/_authenticated/pendencias'
+      path: '/pendencias'
+      fullPath: '/pendencias'
+      preLoaderRoute: typeof AuthenticatedPendenciasRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/treinamentos': {
@@ -721,6 +740,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFormulariosRoute: typeof AuthenticatedFormulariosRoute
   AuthenticatedMuralRoute: typeof AuthenticatedMuralRoute
   AuthenticatedParceirosRoute: typeof AuthenticatedParceirosRoute
+  AuthenticatedPendenciasRoute: typeof AuthenticatedPendenciasRoute
   AuthenticatedTreinamentosRoute: typeof AuthenticatedTreinamentosRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedBeneficiosSlugRoute: typeof AuthenticatedBeneficiosSlugRoute
@@ -739,6 +759,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFormulariosRoute: AuthenticatedFormulariosRoute,
   AuthenticatedMuralRoute: AuthenticatedMuralRoute,
   AuthenticatedParceirosRoute: AuthenticatedParceirosRoute,
+  AuthenticatedPendenciasRoute: AuthenticatedPendenciasRoute,
   AuthenticatedTreinamentosRoute: AuthenticatedTreinamentosRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedBeneficiosSlugRoute: AuthenticatedBeneficiosSlugRoute,
