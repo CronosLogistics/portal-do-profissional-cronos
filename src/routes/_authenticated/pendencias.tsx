@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useCurrentUser } from "@/hooks/useAuth";
 import { minhasPendencias } from "@/lib/pendencias.functions";
-import type { PendenciaNC } from "@/lib/pendencias.rules";
+import type { PendenciaNC, PendenciaNPS } from "@/lib/pendencias.rules";
 
 export const Route = createFileRoute("/_authenticated/pendencias")({
   head: () => ({
@@ -34,6 +34,9 @@ function PendenciasPage() {
   const analise = q.data?.analiseNC ?? [];
   const maior = q.data?.analiseNCMaior ?? [];
   const plano = q.data?.planoAcao ?? [];
+  const sm = q.data?.analiseSM ?? [];
+  const planoSM = q.data?.planoAcaoSM ?? [];
+  const nps = q.data?.nps ?? [];
 
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-8">
@@ -63,12 +66,15 @@ function PendenciasPage() {
                 </AccordionTrigger>
                 <AccordionContent className="px-5"><ListaNC itens={maior} vazio="Nenhuma análise de NC maior pendente para você." /></AccordionContent>
               </AccordionItem>
-              <AccordionItem value="plano-acao" className="border-b-0">
+              <AccordionItem value="plano-acao">
                 <AccordionTrigger className="px-5 text-base font-semibold text-foreground hover:no-underline">
                   <span className="flex items-center gap-2">Plano de ação <span className="rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground">{plano.length}</span></span>
                 </AccordionTrigger>
                 <AccordionContent className="px-5"><ListaNC itens={plano} vazio="Nenhum plano de ação pendente para você." colunaDias="Dias em atraso" /></AccordionContent>
               </AccordionItem>
+              <Secao valor="analise-sm" titulo="Análise de SM" total={sm.length}><ListaNC itens={sm} rotulo="SM" vazio="Nenhuma análise de SM pendente para você." /></Secao>
+              <Secao valor="plano-acao-sm" titulo="Plano de ação SM" total={planoSM.length}><ListaNC itens={planoSM} rotulo="SM" vazio="Nenhum plano de ação de SM pendente para você." colunaDias="Dias em atraso" /></Secao>
+              <Secao valor="nps" titulo="NPS" total={nps.length} ultimo><ListaNPS itens={nps} /></Secao>
             </Accordion>
           )}
         </TabsContent>
@@ -77,13 +83,50 @@ function PendenciasPage() {
   );
 }
 
-function ListaNC({ itens, vazio = "Nenhuma análise de NC pendente para você.", colunaDias = "Nº de dias sem responder" }: { itens: PendenciaNC[]; vazio?: string; colunaDias?: string }) {
+function Secao({ valor, titulo, total, ultimo, children }: { valor: string; titulo: string; total: number; ultimo?: boolean; children: React.ReactNode }) {
+  return (
+    <AccordionItem value={valor} className={ultimo ? "border-b-0" : undefined}>
+      <AccordionTrigger className="px-5 text-base font-semibold text-foreground hover:no-underline">
+        <span className="flex items-center gap-2">{titulo} <span className="rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground">{total}</span></span>
+      </AccordionTrigger>
+      <AccordionContent className="px-5">{children}</AccordionContent>
+    </AccordionItem>
+  );
+}
+
+function ListaNPS({ itens }: { itens: PendenciaNPS[] }) {
+  if (itens.length === 0) return <p className="py-4 text-center text-sm text-muted-foreground">Nenhum NPS pendente para você.</p>;
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-sm">
+        <thead className="text-left text-xs uppercase text-muted-foreground">
+          <tr><th className="py-2 pr-4">Cliente</th><th className="py-2 pr-4">Processo</th><th className="py-2 pr-4">Nota</th><th className="py-2 pr-4">Status</th><th className="py-2" /></tr>
+        </thead>
+        <tbody>
+          {itens.map((p) => (
+            <tr key={p.id} className="border-t">
+              <td className="py-2 pr-4 font-semibold text-foreground">{p.cliente}</td>
+              <td className="py-2 pr-4">{p.processo}</td>
+              <td className="py-2 pr-4">{p.nota ?? "—"}</td>
+              <td className="py-2 pr-4"><span className="rounded-full bg-secondary px-2 py-0.5 text-xs font-semibold text-secondary-foreground">{p.status}</span></td>
+              <td className="py-2 text-right">
+                <a href={p.link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 font-semibold text-primary hover:underline">Link para o item <ExternalLink className="h-3.5 w-3.5" /></a>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function ListaNC({ itens, vazio = "Nenhuma análise de NC pendente para você.", colunaDias = "Nº de dias sem responder", rotulo = "NC" }: { itens: PendenciaNC[]; vazio?: string; colunaDias?: string; rotulo?: string }) {
   if (itens.length === 0) return <p className="py-4 text-center text-sm text-muted-foreground">{vazio}</p>;
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead className="text-left text-xs uppercase text-muted-foreground">
-          <tr><th className="py-2 pr-4">NC</th><th className="py-2 pr-4">Status por tempo de resposta</th><th className="py-2 pr-4">{colunaDias}</th><th className="py-2 pr-4">Responsável</th><th className="py-2" /></tr>
+          <tr><th className="py-2 pr-4">{rotulo}</th><th className="py-2 pr-4">Status por tempo de resposta</th><th className="py-2 pr-4">{colunaDias}</th><th className="py-2 pr-4">Responsável</th><th className="py-2" /></tr>
         </thead>
         <tbody>
           {itens.map((p) => (

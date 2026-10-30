@@ -1,33 +1,57 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import type { PendenciaNC } from "@/lib/pendencias.rules";
+import type { PendenciaNC, PendenciaNPS } from "@/lib/pendencias.rules";
 
-/** Pendências de Análise de NC da pessoa logada. Por enquanto, só administradores. */
+type Resultado = {
+  analiseNC: PendenciaNC[];
+  analiseNCMaior: PendenciaNC[];
+  planoAcao: PendenciaNC[];
+  analiseSM: PendenciaNC[];
+  planoAcaoSM: PendenciaNC[];
+  nps: PendenciaNPS[];
+  erro: string | null;
+};
+const vazio = (erro: string | null): Resultado => ({ analiseNC: [], analiseNCMaior: [], planoAcao: [], analiseSM: [], planoAcaoSM: [], nps: [], erro });
+
+/** Pendências da Qualidade da pessoa logada. Por enquanto, só administradores. */
 export const minhasPendencias = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }): Promise<{ analiseNC: PendenciaNC[]; analiseNCMaior: PendenciaNC[]; planoAcao: PendenciaNC[]; erro: string | null }> => {
+  .handler(async ({ context }): Promise<Resultado> => {
     const { data: admin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
     if (admin !== true) throw new Error("Acesso restrito a administradores.");
     const { data: perfil } = await context.supabase.from("profiles").select("email,is_active").eq("id", context.userId).maybeSingle();
-    if (!perfil?.email || perfil.is_active === false) return { analiseNC: [], analiseNCMaior: [], planoAcao: [], erro: null };
+    if (!perfil?.email || perfil.is_active === false) return vazio(null);
+    const email = perfil.email;
     try {
       const { dadosAnaliseNC, titulosNC } = await import("@/lib/pendencias.server");
-      const { pendenciasDoUsuario, planosDoUsuario } = await import("@/lib/pendencias.rules");
-      const { itens, itensMaior, itensPlano, usuarios } = await dadosAnaliseNC();
+      const { pendenciasDoUsuario, planosDoUsuario, npsDoUsuario, LINK_PLANO_ACAO, LINK_PLANO_ACAO_SM } = await import("@/lib/pendencias.rules");
+      const d = await dadosAnaliseNC();
       const agora = new Date();
-      const idsDe = (lista: typeof itens, tipo: "analise" | "maior") => {
-        const sem = new Set(pendenciasDoUsuario(lista, perfil.email!, usuarios, new Map(), agora, tipo).map((p) => p.id));
-        return lista.filter((i) => sem.has(i.id)).map((i) => String(i.fields.NCLookupId ?? ""));
-      };
-      const ncs = await titulosNC([...idsDe(itens, "analise"), ...idsDe(itensMaior, "maior"), ...planosDoUsuario(itensPlano, perfil.email, usuarios, new Map(), agora).map((p) => String(itensPlano.find((i) => i.id === p.id)?.fields.NCLookupId ?? ""))]);
+      const vaz = new Map<string, string>();
+      const ncDe = (lista: typeof d.itens, ids: string[]) => lista.filter((i) => ids.includes(i.id)).map((i) => String(i.fields.NCLookupId ?? ""));
+      const ids = (ps: PendenciaNC[]) => ps.map((p) => p.id);
+      const [ncs, sms] = await Promise.all([
+        titulosNC([
+          ...ncDe(d.itens, ids(pendenciasDoUsuario(d.itens, email, d.usuarios, vaz, agora, "analise"))),
+          ...ncDe(d.itensMaior, ids(pendenciasDoUsuario(d.itensMaior, email, d.usuarios, vaz, agora, "maior"))),
+          ...ncDe(d.itensPlano, ids(planosDoUsuario(d.itensPlano, email, d.usuarios, vaz, agora))),
+        ]),
+        titulosNC([
+          ...ncDe(d.itensSM, ids(pendenciasDoUsuario(d.itensSM, email, d.usuarios, vaz, agora, "sm"))),
+          ...ncDe(d.itensPlanoSM, ids(planosDoUsuario(d.itensPlanoSM, email, d.usuarios, vaz, agora))),
+        ], true),
+      ]);
       return {
-        analiseNC: pendenciasDoUsuario(itens, perfil.email, usuarios, ncs, agora, "analise"),
-        analiseNCMaior: pendenciasDoUsuario(itensMaior, perfil.email, usuarios, ncs, agora, "maior"),
-        planoAcao: planosDoUsuario(itensPlano, perfil.email, usuarios, ncs, agora),
+        analiseNC: pendenciasDoUsuario(d.itens, email, d.usuarios, ncs, agora, "analise"),
+        analiseNCMaior: pendenciasDoUsuario(d.itensMaior, email, d.usuarios, ncs, agora, "maior"),
+        planoAcao: planosDoUsuario(d.itensPlano, email, d.usuarios, ncs, agora, LINK_PLANO_ACAO),
+        analiseSM: pendenciasDoUsuario(d.itensSM, email, d.usuarios, sms, agora, "sm"),
+        planoAcaoSM: planosDoUsuario(d.itensPlanoSM, email, d.usuarios, sms, agora, LINK_PLANO_ACAO_SM),
+        nps: npsDoUsuario(d.itensNPS, email, d.usuarios),
         erro: null,
       };
     } catch (e) {
       console.error(e);
-      return { analiseNC: [], analiseNCMaior: [], planoAcao: [], erro: e instanceof Error ? e.message : "Falha ao carregar as pendências." };
+      return vazio(e instanceof Error ? e.message : "Falha ao carregar as pendências.");
     }
   });
