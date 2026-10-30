@@ -33,6 +33,7 @@ function PendenciasPage() {
   }
   const analise = q.data?.analiseNC ?? [];
   const maior = q.data?.analiseNCMaior ?? [];
+  const plano = q.data?.planoAcao ?? [];
 
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-8">
@@ -56,11 +57,17 @@ function PendenciasPage() {
                 </AccordionTrigger>
                 <AccordionContent className="px-5"><ListaNC itens={analise} /></AccordionContent>
               </AccordionItem>
-              <AccordionItem value="analise-nc-maior" className="border-b-0">
+              <AccordionItem value="analise-nc-maior">
                 <AccordionTrigger className="px-5 text-base font-semibold text-foreground hover:no-underline">
                   <span className="flex items-center gap-2">Análise de NC maior <span className="rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground">{maior.length}</span></span>
                 </AccordionTrigger>
                 <AccordionContent className="px-5"><ListaNC itens={maior} vazio="Nenhuma análise de NC maior pendente para você." /></AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="plano-acao" className="border-b-0">
+                <AccordionTrigger className="px-5 text-base font-semibold text-foreground hover:no-underline">
+                  <span className="flex items-center gap-2">Plano de ação <span className="rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground">{plano.length}</span></span>
+                </AccordionTrigger>
+                <AccordionContent className="px-5"><ListaNC itens={plano} vazio="Nenhum plano de ação pendente para você." colunaDias="Dias em atraso" /></AccordionContent>
               </AccordionItem>
             </Accordion>
           )}
@@ -70,13 +77,13 @@ function PendenciasPage() {
   );
 }
 
-function ListaNC({ itens, vazio = "Nenhuma análise de NC pendente para você." }: { itens: PendenciaNC[]; vazio?: string }) {
+function ListaNC({ itens, vazio = "Nenhuma análise de NC pendente para você.", colunaDias = "Nº de dias sem responder" }: { itens: PendenciaNC[]; vazio?: string; colunaDias?: string }) {
   if (itens.length === 0) return <p className="py-4 text-center text-sm text-muted-foreground">{vazio}</p>;
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead className="text-left text-xs uppercase text-muted-foreground">
-          <tr><th className="py-2 pr-4">NC</th><th className="py-2 pr-4">Status por tempo de resposta</th><th className="py-2 pr-4">Nº de dias sem responder</th><th className="py-2 pr-4">Responsável</th><th className="py-2" /></tr>
+          <tr><th className="py-2 pr-4">NC</th><th className="py-2 pr-4">Status por tempo de resposta</th><th className="py-2 pr-4">{colunaDias}</th><th className="py-2 pr-4">Responsável</th><th className="py-2" /></tr>
         </thead>
         <tbody>
           {itens.map((p) => (

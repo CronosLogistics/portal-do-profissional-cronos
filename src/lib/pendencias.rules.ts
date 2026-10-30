@@ -73,3 +73,44 @@ export function pendenciasDoUsuario(
     })
     .sort((a, b) => b.diasSemResposta - a.diasSemResposta);
 }
+
+export const LINK_PLANO_ACAO = "https://cronoslogisticscombr.sharepoint.com/sites/qualityteamgroup/Lists/PLANO%20DE%20AO2/EditForm.aspx?ID=";
+
+/** Status do plano de ação pelo Prazo: Vencido após o prazo, A vencer faltando ≤ 2 dias, senão No prazo. */
+export function statusPlanoAcao(prazo: string, agora: Date): { status: PendenciaNC["status"]; diasAtraso: number } {
+  const dif = Math.floor((agora.getTime() - new Date(prazo).getTime()) / 86_400_000);
+  if (agora.getTime() > new Date(prazo).getTime()) return { status: "Vencido", diasAtraso: Math.max(0, dif) };
+  return { status: -dif - 1 <= 2 ? "A vencer" : "No prazo", diasAtraso: 0 };
+}
+
+/** Ações abertas em que o e-mail do perfil é o Responsável ou o Gestor responsável. */
+export function planosDoUsuario(
+  itens: ItemAnaliseNC[],
+  email: string,
+  usuarios: Map<string, { email: string; nome: string }>,
+  ncs: Map<string, string>,
+  agora: Date,
+): PendenciaNC[] {
+  const alvo = email.trim().toLowerCase();
+  const eh = (id: unknown) => !!id && usuarios.get(String(id))?.email.trim().toLowerCase() === alvo;
+  return itens
+    .filter((i) => {
+      const f = i.fields;
+      if (String(f["Essaa_x00e7__x00e3_oest_x00e1_fi"] ?? "") === "Sim") return false;
+      if (/^(conclu|cancel)/i.test(String(f["Status"] ?? ""))) return false;
+      return eh(f.Respons_x00e1_velLookupId) || eh(f["GestorRespons_x00e1_velLookupId"]);
+    })
+    .map((i) => {
+      const prazo = i.fields["Prazo"] ? String(i.fields["Prazo"]) : null;
+      const s = prazo ? statusPlanoAcao(prazo, agora) : { status: "No prazo" as const, diasAtraso: 0 };
+      return {
+        id: i.id,
+        nc: ncs.get(String(i.fields.NCLookupId ?? "")) ?? "—",
+        status: s.status,
+        diasSemResposta: s.diasAtraso,
+        responsavel: usuarios.get(String(i.fields.Respons_x00e1_velLookupId))?.nome ?? "",
+        link: LINK_PLANO_ACAO + encodeURIComponent(i.id),
+      };
+    })
+    .sort((a, b) => b.diasSemResposta - a.diasSemResposta);
+}
