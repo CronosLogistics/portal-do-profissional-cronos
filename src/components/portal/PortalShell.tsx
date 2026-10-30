@@ -212,7 +212,6 @@ export function PortalShell({ children }: { children: ReactNode }) {
           )}
         </div>}
         <div className="portal-sidebar-bottom">
-          <Button variant="ghost" className="portal-nav-item" onClick={() => void signOut()} title="Sair"><LogOut /><span className="sidebar-label">Sair</span></Button>
           <Button variant="ghost" className="portal-collapse" onClick={() => setCollapsed(v => !v)} title={collapsed ? "Expandir menu" : "Recolher menu"} aria-label={collapsed ? "Expandir menu" : "Recolher menu"}>{collapsed ? <ChevronRight /> : <ChevronLeft />}<span className="sidebar-label">Recolher menu</span></Button>
         </div>
       </aside>
@@ -223,6 +222,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
             <span className="hidden items-center gap-2 text-sm text-muted-foreground sm:flex"><Building2 className="size-4" /><span>{office?.name || "Escritório não identificado"}</span></span>
             <AvisosBell naoLidos={naoLidos} />
             <div className="portal-user"><span className="portal-avatar">{initials}</span><div className="min-w-0"><p className="truncate text-sm font-bold">{name}</p><p className="max-w-48 truncate text-xs text-muted-foreground">{me.data?.email}</p></div></div>
+            <Button variant="ghost" size="sm" onClick={() => void signOut()} title="Sair do portal"><LogOut className="size-4" /><span className="hidden sm:inline">Sair</span></Button>
           </div>
         </header>
         <div className="portal-canvas">{children}</div>
