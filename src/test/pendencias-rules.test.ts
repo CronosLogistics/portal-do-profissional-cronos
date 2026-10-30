@@ -9,7 +9,7 @@ describe("pendências de análise de NC", () => {
   it("mostra só as NCs em que a pessoa é a responsável", () => {
     const r = pendenciasDoUsuario([item("1", "1", "2026-10-30T10:00:00Z"), item("2", "2", "2026-10-30T10:00:00Z")], "ANA@cronos.com", usuarios, new Map([["9", "561/26"]]), agora);
     expect(r.map((p) => p.id)).toEqual(["1"]);
-    expect(r[0].nc).toBe("561/26");
+    expect(r[0]?.nc).toBe("561/26");
     expect(r[0]?.link).toContain("EditForm.aspx?ID=1");
   });
   it("ignora análises fechadas", () => {
@@ -19,8 +19,8 @@ describe("pendências de análise de NC", () => {
     expect(statusPorTempo(0)).toBe("No prazo");
     expect(statusPorTempo(1)).toBe("Vencido");
     const [p] = pendenciasDoUsuario([item("1", "1", "2026-10-28T10:00:00Z")], "ana@cronos.com", usuarios, new Map(), agora);
-    expect(p.diasSemResposta).toBe(2);
-    expect(p.status).toBe("Vencido");
+    expect(p?.diasSemResposta).toBe(2);
+    expect(p?.status).toBe("Vencido");
   });
 });
 
