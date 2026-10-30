@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { Award, MessageSquareHeart, Building2, ClipboardList, FolderOpen, PartyPopper, ChevronLeft, ChevronRight, Gift, GraduationCap, Home, LogOut, Megaphone, Menu, Settings, Tag, X } from "lucide-react";
+import { Award, ListChecks, MessageSquareHeart, Building2, ClipboardList, FolderOpen, PartyPopper, ChevronLeft, ChevronRight, Gift, GraduationCap, Home, LogOut, Megaphone, Menu, Settings, Tag, X } from "lucide-react";
 import { TourBoasVindas } from "@/components/portal/TourBoasVindas";
 import { AvisosBell } from "@/components/avisos/AvisosBell";
 import { useAvisosAoVivo, useNaoLidos } from "@/hooks/useAvisos";
@@ -22,6 +22,7 @@ const moduleIcons: Record<PortalModule["to"], LucideIcon> = {
   "/formularios": ClipboardList,
   "/documentos": FolderOpen,
   "/feedback": MessageSquareHeart,
+  "/pendencias": ListChecks,
 };
 
 const groupIcons: Record<PortalNavGroup, LucideIcon> = { beneficios: Gift };
