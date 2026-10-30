@@ -1,0 +1,3 @@
+CREATE POLICY "Treinamentos: ativos leem" ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'treinamentos' AND public.is_active_user(auth.uid()));
+CREATE POLICY "Treinamentos: editores enviam" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'treinamentos' AND public.usuario_tem_permissao(auth.uid(), 'conteudo.editar'));
+CREATE POLICY "Treinamentos: editores removem" ON storage.objects FOR DELETE TO authenticated USING (bucket_id = 'treinamentos' AND public.usuario_tem_permissao(auth.uid(), 'conteudo.editar'));

@@ -162,6 +162,13 @@
       "when": 1793362098817,
       "tag": "0022_formularios_atualizacao_data",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1793364550496,
+      "tag": "0023_treinamentos_storage",
+      "breakpoints": true
     }
   ]
 }
