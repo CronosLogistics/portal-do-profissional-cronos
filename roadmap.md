@@ -27,6 +27,6 @@
 - [x] Corrigir tela branca ao retornar da seleção de foto.
 
 ## Ajustes de datas e Elogios
-- [ ] Usar campo de data nos eventos do Insider.
-- [ ] Renomear o menu e a página Feedback para Elogios.
-- [ ] Buscar o autor na coluna Criado por do SharePoint e validar.
+- [x] Usar campo de data nos eventos do Insider.
+- [x] Renomear o menu e a página Feedback para Elogios.
+- [x] Buscar o autor na coluna Criado por do SharePoint e validar.
