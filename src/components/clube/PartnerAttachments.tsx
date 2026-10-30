@@ -1,3 +1,4 @@
+import { criarIdCliente } from "@/lib/client-id";
 import { attachmentUrl } from "@/lib/partners.functions";
 import { useEffect, useRef, useState } from "react";
 import { ArrowDown, ArrowUp, FileText, Paperclip, Trash2 } from "lucide-react";
@@ -48,7 +49,7 @@ export function PartnerAttachments({ partnerId }: { partnerId: string }) {
         continue;
       }
       const ext = file.name.split(".").pop() ?? "bin";
-      const path = `attachments/${partnerId}/${crypto.randomUUID()}.${ext}`;
+      const path = `attachments/${partnerId}/${criarIdCliente()}.${ext}`;
       const { error } = await supabase.storage
         .from("partner-logos")
         .upload(path, file, file.type ? { contentType: file.type } : {});

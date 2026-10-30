@@ -1,3 +1,4 @@
+import { criarIdCliente } from "@/lib/client-id";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, Trash2, Upload } from "lucide-react";
@@ -138,7 +139,7 @@ function PartnerForm() {
   async function handleUpload(file: File) {
     setUploading(true);
     const ext = file.name.split(".").pop() ?? "png";
-    const path = `${form.slug || slugify(form.name) || crypto.randomUUID()}-${Date.now()}.${ext}`;
+    const path = `${form.slug || slugify(form.name) || criarIdCliente()}-${Date.now()}.${ext}`;
     const { error } = await supabase.storage.from("partner-logos").upload(path, file, {
       upsert: true,
       contentType: file.type,
