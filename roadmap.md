@@ -32,5 +32,5 @@
 - [x] Buscar o autor na coluna Criado por do SharePoint e validar.
 
 ## Edição de formulários
-- [ ] Migrar os links atuais para cadastro editável e proteger acesso por perfil.
-- [ ] Permitir adicionar e editar formulários e validar salvamento e permissões.
+- [x] Migrar os links atuais para cadastro editável e proteger acesso por perfil.
+- [x] Permitir adicionar e editar formulários e validar salvamento e permissões.
