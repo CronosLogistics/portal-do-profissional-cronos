@@ -17,6 +17,7 @@ beforeAll(async () => {
     CREATE FUNCTION public.set_updated_at() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN NEW.atualizado_em=now(); RETURN NEW; END $$;`);
   await db.exec(readFileSync(new URL('../../drizzle/migrations/0020_formularios_editaveis.sql',import.meta.url),'utf8'));
   await db.exec(readFileSync(new URL('../../drizzle/migrations/0021_formularios_catalogo_permissoes.sql',import.meta.url),'utf8'));
+  await db.exec(readFileSync(new URL('../../drizzle/migrations/0022_formularios_atualizacao_data.sql',import.meta.url),'utf8'));
 },30000);
 afterAll(async () => { await db.close(); });
 async function viewer(profile: string, active=true) {
