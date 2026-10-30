@@ -39,7 +39,7 @@ export async function dadosElogios(): Promise<Cache> {
   if (cache && Date.now() - cache.em < CACHE_MS) return cache;
   const filtro = encodeURIComponent("fields/field_4 eq 'Elogio - EL'");
   const [itens, users] = await Promise.all([
-    lerTudo<ItemLista>(`/sites/${SITE}/lists/${LISTA}/items?$expand=fields&$top=999&$filter=${filtro}`, {
+    lerTudo<ItemLista>(`/sites/${SITE}/lists/${LISTA}/items?$select=id,createdBy,fields&$expand=fields&$top=999&$filter=${filtro}`, {
       Prefer: "HonorNonIndexedQueriesWarningMayFailRandomly",
     }),
     lerTudo<{ id: string; fields: { EMail?: string; Title?: string } }>(
@@ -48,7 +48,7 @@ export async function dadosElogios(): Promise<Cache> {
   ]);
   const usuarios = new Map<string, { email: string; nome: string }>();
   for (const u of users) {
-    if (u.fields.EMail) usuarios.set(u.id, { email: u.fields.EMail, nome: (u.fields.Title ?? "").replace(/\s*-\s*Cronos Logistics$/i, "") });
+    if (u.fields.EMail || u.fields.Title) usuarios.set(u.id, { email: u.fields.EMail ?? "", nome: (u.fields.Title ?? "").replace(/\s*-\s*Cronos Logistics$/i, "").trim() });
   }
   cache = { em: Date.now(), itens, usuarios };
   return cache;

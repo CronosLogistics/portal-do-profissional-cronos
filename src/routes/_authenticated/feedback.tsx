@@ -9,9 +9,9 @@ import type { Elogio } from "@/lib/feedback.rules";
 export const Route = createFileRoute("/_authenticated/feedback")({
   head: () => ({
     meta: [
-      { title: "Feedback | Portal do Profissional Cronos" },
+      { title: "Elogios | Portal do Profissional Cronos" },
       { name: "description", content: "Elogios recebidos em que você está envolvida(o) na Cronos Logistics." },
-      { property: "og:title", content: "Feedback | Portal do Profissional Cronos" },
+      { property: "og:title", content: "Elogios | Portal do Profissional Cronos" },
       { property: "og:description", content: "Seus elogios e os da sua equipe em um só lugar." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -34,7 +34,7 @@ function FeedbackPage() {
   return (
     <main className="mx-auto w-full max-w-4xl px-4 py-8 sm:px-8">
       <header className="mb-6">
-        <h1 className="text-3xl font-bold text-foreground">Feedback</h1>
+        <h1 className="text-3xl font-bold text-foreground">Elogios</h1>
         <p className="mt-1 text-sm text-muted-foreground">Elogios registrados pela Qualidade em que você está envolvida(o).</p>
       </header>
       {equipe.length > 0 && (

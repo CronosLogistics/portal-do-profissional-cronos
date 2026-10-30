@@ -1,7 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { devePrepararHoje, montarConteudoInsider, primeiroDiaUtil, type ProfissionalInsider } from "@/lib/insider.rules";
+import { dataEventoInput, formatarDataEvento, devePrepararHoje, montarConteudoInsider, primeiroDiaUtil, type ProfissionalInsider } from "@/lib/insider.rules";
 const pessoa = (id: string, status: string, nasc: string, adm: string): ProfissionalInsider => ({ id, fields: { Title: id, field_1: status, DATADENASC_x002e_: nasc, field_4: adm } });
 describe("Cronos Insider mensal", () => {
+  it("converte datas dos eventos sem deslocar o dia e preserva textos antigos", () => {
+    expect(dataEventoInput("02/11/2026")).toBe("2026-11-02");
+    expect(dataEventoInput("2026-11-02")).toBe("2026-11-02");
+    expect(formatarDataEvento("2026-11-02")).toBe("02/11/2026");
+    expect(dataEventoInput("2026-02-30")).toBe("");
+    expect(formatarDataEvento("De 2 a 5 de novembro")).toBe("De 2 a 5 de novembro");
+  });
   it("prepara no primeiro dia de segunda a sexta, sem considerar feriados", () => {
     expect(primeiroDiaUtil("2026-11")).toBe(2);
     expect(primeiroDiaUtil("2026-08")).toBe(3);

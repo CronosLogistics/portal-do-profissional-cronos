@@ -10,12 +10,16 @@ const itens: ItemLista[] = [
 ];
 
 describe("elogiosVisiveis", () => {
-  it("mostra o contato que deu o elogio, sem confundir com quem preencheu", () => {
-    const item = { ...itens[0], id: "nome", fields: { ...itens[0]?.fields, field_11: "Cliente Ana", field_3: "Qualidade", field_6: "Identificador" } };
-    expect(elogiosVisiveis([item], "ana@cronos.com", usuarios)[0]?.elogiador).toBe("Cliente Ana");
+  it("obtém o autor da coluna Criado por, não do contato do cliente", () => {
+    const item = { id: "nome", fields: { ...itens[0]?.fields, AuthorLookupId: "40", field_11: "Cliente Ana", EditorLookupId: "99" } };
+    expect(elogiosVisiveis([item], "ana@cronos.com", usuarios)[0]?.elogiador).toBe("Gestora");
   });
-  it("não inventa o autor quando o contato é N/A", () => {
-    const item = { id: "vazio", fields: { ...itens[0]?.fields, field_11: "N/A" } };
+  it("usa a identidade createdBy quando o autor não está no diretório do site", () => {
+    const item = { id: "autor", createdBy: { user: { displayName: "Qualidade - Cronos Logistics" } }, fields: { ...itens[0]?.fields, AuthorLookupId: "20", field_11: "Cliente Ana" } };
+    expect(elogiosVisiveis([item], "ana@cronos.com", usuarios)[0]?.elogiador).toBe("Qualidade");
+  });
+  it("não inventa o autor quando Criado por está ausente", () => {
+    const item = { id: "vazio", fields: { ...itens[0]?.fields, field_11: "Cliente Ana" } };
     expect(elogiosVisiveis([item], "ana@cronos.com", usuarios)[0]?.elogiador).toBeNull();
   });
   it("a pessoa vê só os próprios elogios", () => {
