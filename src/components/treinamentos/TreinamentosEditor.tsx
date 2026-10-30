@@ -47,7 +47,7 @@ export function TreinamentosEditor({ open, onOpenChange, conteudo, imagens, onSa
 
   async function trocarImagem(i: number, file: File | undefined) {
     if (!file) return;
-    if (!file.type.startsWith("image/")) return toast.error("Escolha um arquivo de imagem.");
+    if (!file.type.startsWith("image/")) { toast.error("Escolha um arquivo de imagem."); return; }
     setEnviando(i);
     try {
       const ref = await enviarImagemTreino(file);

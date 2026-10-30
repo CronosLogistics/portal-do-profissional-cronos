@@ -61,7 +61,7 @@ export function mesclarConteudo(salvo: unknown): ConteudoTreinamentos {
     pontuacao: Array.isArray(s.pontuacao) ? s.pontuacao : CONTEUDO_PADRAO.pontuacao,
     notaPontuacao: typeof s.notaPontuacao === "string" ? s.notaPontuacao : CONTEUDO_PADRAO.notaPontuacao,
     etapas: Array.isArray(s.etapas)
-      ? s.etapas.map((e) => ({ ...CONTEUDO_PADRAO.etapas[0]!, image: "", ctaLabel: "", ctaHref: "", badge: "", bullets: [], ...e }))
+      ? s.etapas.map((e) => ({ ...CONTEUDO_PADRAO.etapas[0]!, ...{ image: "", ctaLabel: "", ctaHref: "", badge: "", bullets: [] as string[] }, ...e }))
       : CONTEUDO_PADRAO.etapas,
   };
 }
