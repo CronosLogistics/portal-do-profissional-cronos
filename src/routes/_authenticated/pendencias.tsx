@@ -32,6 +32,7 @@ function PendenciasPage() {
     return <main className="mx-auto w-full max-w-4xl px-4 py-8 sm:px-8"><p className="text-sm text-muted-foreground">Esta área ainda não está disponível.</p></main>;
   }
   const analise = q.data?.analiseNC ?? [];
+  const maior = q.data?.analiseNCMaior ?? [];
 
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-8">
@@ -49,11 +50,17 @@ function PendenciasPage() {
           {q.data?.erro && <p className="rounded-lg border border-destructive/40 bg-card p-4 text-sm text-destructive">{q.data.erro}</p>}
           {q.data && (
             <Accordion type="multiple" className="rounded-lg border bg-card">
-              <AccordionItem value="analise-nc" className="border-b-0">
+              <AccordionItem value="analise-nc">
                 <AccordionTrigger className="px-5 text-base font-semibold text-foreground hover:no-underline">
                   <span className="flex items-center gap-2">Análise de NC <span className="rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground">{analise.length}</span></span>
                 </AccordionTrigger>
                 <AccordionContent className="px-5"><ListaNC itens={analise} /></AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="analise-nc-maior" className="border-b-0">
+                <AccordionTrigger className="px-5 text-base font-semibold text-foreground hover:no-underline">
+                  <span className="flex items-center gap-2">Análise de NC maior <span className="rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground">{maior.length}</span></span>
+                </AccordionTrigger>
+                <AccordionContent className="px-5"><ListaNC itens={maior} vazio="Nenhuma análise de NC maior pendente para você." /></AccordionContent>
               </AccordionItem>
             </Accordion>
           )}
@@ -63,8 +70,8 @@ function PendenciasPage() {
   );
 }
 
-function ListaNC({ itens }: { itens: PendenciaNC[] }) {
-  if (itens.length === 0) return <p className="py-4 text-center text-sm text-muted-foreground">Nenhuma análise de NC pendente para você.</p>;
+function ListaNC({ itens, vazio = "Nenhuma análise de NC pendente para você." }: { itens: PendenciaNC[]; vazio?: string }) {
+  if (itens.length === 0) return <p className="py-4 text-center text-sm text-muted-foreground">{vazio}</p>;
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
@@ -76,7 +83,7 @@ function ListaNC({ itens }: { itens: PendenciaNC[] }) {
             <tr key={p.id} className="border-t">
               <td className="py-2 pr-4 font-semibold text-foreground">{p.nc}</td>
               <td className="py-2 pr-4">
-                <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${p.status === "Vencido" ? "bg-destructive/10 text-destructive" : "bg-secondary text-secondary-foreground"}`}>{p.status}</span>
+                <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${p.status === "Vencido" ? "bg-destructive/10 text-destructive" : p.status === "A vencer" ? "bg-accent text-accent-foreground" : "bg-secondary text-secondary-foreground"}`}>{p.status}</span>
               </td>
               <td className="py-2 pr-4">{p.diasSemResposta}</td>
               <td className="py-2 pr-4">{p.responsavel}</td>
