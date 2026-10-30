@@ -312,8 +312,8 @@
 .aviso-html a { color: var(--accent); text-decoration: underline; }
 .aviso-html p + p { margin-top: .6em; }
 
-/* Carrossel da Início (vidro claro, slides em duas colunas; sticky sob a topbar) */
-.hc { position: sticky; top: var(--portal-topbar-height); z-index: 20; margin: 0; border-radius: 1.5rem; overflow: hidden; color: var(--foreground);
+/* Carrossel da Início (vidro claro, slides em duas colunas; rola com a página) */
+.hc { position: relative; z-index: 1; margin: 0; border-radius: 1.5rem; overflow: hidden; color: var(--foreground);
   background: linear-gradient(135deg, color-mix(in oklab, var(--card) 96%, transparent), color-mix(in oklab, var(--muted) 85%, transparent));
   border: 1px solid color-mix(in oklab, var(--primary) 18%, transparent);
   box-shadow: 0 20px 40px -15px color-mix(in oklab, var(--sidebar) 14%, transparent); backdrop-filter: blur(16px); }
@@ -409,13 +409,13 @@
   transform: translateX(0) translateY(0);
 }
 .treino-step > [aria-hidden] {
-  transform: translateX(-50%) scale(.55);
+  transform: translate(-50%, -50%) scale(.55);
   opacity: 0;
   transition: opacity .45s ease .08s, transform .45s cubic-bezier(.22, 1, .36, 1) .08s;
 }
 .treino-step.is-visible > [aria-hidden] {
   opacity: 1;
-  transform: translateX(-50%) scale(1);
+  transform: translate(-50%, -50%) scale(1);
 }
 @media (prefers-reduced-motion: reduce) {
   .treino-step,

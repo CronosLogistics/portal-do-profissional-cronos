@@ -209,7 +209,7 @@ function TreinamentosPage() {
                   key={`${idx}-${step.num}`}
                   className={`treino-step relative grid items-center gap-6 md:grid-cols-2 md:gap-12 ${right ? "is-from-right" : "is-from-left"}`}
                 >
-                  <span aria-hidden className="absolute left-6 top-8 z-10 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-primary ring-4 ring-background md:left-1/2 md:top-1/2" />
+                  <span aria-hidden className="absolute left-6 top-8 z-10 h-3.5 w-3.5 rounded-full bg-primary ring-4 ring-background md:left-1/2 md:top-1/2" />
                   <div className={`pl-14 md:pl-0 ${right ? "md:order-2 md:pl-12" : "md:pr-12"}`}>
                     <div className="glass-card rounded-2xl p-6 md:p-8">
                       <div className="mb-4 flex items-start gap-4">
