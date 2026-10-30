@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 
 
+import { GerenciarConteudo } from "@/components/clube/GerenciarConteudo";
 import { Navbar } from "@/components/clube/Navbar";
 import { Footer } from "@/components/clube/Footer";
 import { PartnerCard } from "@/components/clube/PartnerCard";
@@ -66,6 +67,7 @@ function PartnersPage() {
           <p className="mt-3 max-w-2xl text-muted-foreground">
             {resolveText(siteRows, "parceiros.text")}
           </p>
+          <GerenciarConteudo to="/admin" label="Gerenciar parceiros" />
         </header>
 
         {categories.map((category) => {

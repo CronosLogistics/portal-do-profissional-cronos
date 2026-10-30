@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowUpRight } from "lucide-react";
 
+import { GerenciarConteudo } from "@/components/clube/GerenciarConteudo";
 import { Navbar } from "@/components/clube/Navbar";
 import { Footer } from "@/components/clube/Footer";
 import { ContentIcon } from "@/components/clube/ContentIcon";
@@ -64,6 +65,7 @@ function BenefitsPage() {
           <p className="mt-3 max-w-2xl text-muted-foreground">
             {resolveText(siteRows, "beneficios.text")}
           </p>
+          <GerenciarConteudo to="/admin/beneficios" label="Gerenciar benefícios" />
         </header>
 
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

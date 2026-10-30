@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowUpRight } from "lucide-react";
 
+import { GerenciarConteudo } from "@/components/clube/GerenciarConteudo";
 import { Navbar } from "@/components/clube/Navbar";
 import { Footer } from "@/components/clube/Footer";
 import { ContentIcon } from "@/components/clube/ContentIcon";
@@ -62,6 +63,7 @@ function ProgramsPage() {
           <p className="mt-3 max-w-2xl text-muted-foreground">
             {resolveText(siteRows, "recompensas.text")}
           </p>
+          <GerenciarConteudo to="/admin/recompensas" label="Gerenciar programas" />
         </header>
 
         <div className="mt-10 grid gap-4 sm:grid-cols-2">
