@@ -10,7 +10,7 @@
 <!-- LOVABLE:END -->
 
 ## Architecture rules
-- Browser IDs use `criarIdCliente` (UUID secure-random fallback). Why: support browsers without `crypto.randomUUID`.
+- Browser IDs use `criarIdCliente` (UUID secure-random fallback). Why: browsers lacking `crypto.randomUUID`.
 - Portal pages live under `src/routes/_authenticated/`; only `/auth` and `/definir-senha` are public. Why: internal access.
 - Main menu modules are declared once in `src/lib/portal-modules.ts`; add a route + one entry there to add a module. Why: new modules without rebuilding navigation or auth.
 - Access is profile-based: `perfis` + `perfil_permissoes` (fixed catalog in `src/lib/permissions.ts`, mirrored by a DB CHECK) + `usuario_perfis`; RLS and server checks use `tem_permissao`/`usuario_tem_permissao` (legacy `has_role`/`is_editor` now delegate to it; `user_roles` is deprecated). DB triggers protect the system Administrador profile and its last active member. Why: admins grant access from the panel without code changes, enforced in the database.
@@ -31,4 +31,4 @@
 - Welcome tour (F1) is `TourBoasVindas`, mounted once in PortalShell; steps are CSS-anchored and dropped when their element isn't visible, it waits while any `[role=dialog]` is open, and the "seen" state is `profiles.tour_visto_em` read/written only via RPCs `tour_pendente`/`marcar_tour_visto`. Why: once per person across devices, and users can't edit other profile fields.
 - Monthly Insider uses structured `insider_edicoes`, permission-checked editing and atomic linking to one aviso, a typed reader and private image paths. Generation reads projected SharePoint fields server-side with a monthly lease. Why: preserve drafts and layout without relaxing sanitization or overwriting RH edits.
 - OfficeContext resolves the caller's verified profile email through projected SharePoint corporate-person lookup and active status server-side, never localStorage. Why: display only the professional's actual office.
-- Pendências (Pendências prioritárias) read SharePoint lists server-side only (`src/lib/pendencias.server.ts`, rules in `pendencias.rules.ts`), filter by the caller's profile email as Responsável, recompute days/status at request time (SharePoint calculated columns using HOJE() are stale), and are admin-only until v2. Why: no token or other people's rows reach the browser.
+- Pendências read SharePoint server-side (`pendencias.server.ts`/`.rules.ts`), filter by caller's profile email as Responsável, recompute days/status per request (HOJE() columns are stale); admin-only until v2. Why: no token or others' rows reach the browser.
