@@ -35,3 +35,22 @@ describe("Análise de NC maior", async () => {
     expect(r[0]?.link).toContain("PLANO%20DE%20AO1/EditForm.aspx?ID=1");
   });
 });
+
+import { planosDoUsuario, statusPlanoAcao } from "@/lib/pendencias.rules";
+describe("plano de ação", () => {
+  const agora = new Date("2026-10-30T12:00:00Z");
+  const us = new Map([["1", { email: "resp@x.com", nome: "Resp" }], ["2", { email: "gestor@x.com", nome: "Gestor" }]]);
+  const itens = [
+    { id: "a", fields: { NCLookupId: "9", Respons_x00e1_velLookupId: "1", GestorRespons_x00e1_velLookupId: "2", Prazo: "2026-10-20T07:00:00Z", Status: "Em andamento" } },
+    { id: "b", fields: { Respons_x00e1_velLookupId: "1", GestorRespons_x00e1_velLookupId: "2", Prazo: "2026-10-20T07:00:00Z", Essaa_x00e7__x00e3_oest_x00e1_fi: "Sim" } },
+  ];
+  it("gestor responsável também vê; finalizadas somem", () => {
+    expect(planosDoUsuario(itens, "gestor@x.com", us, new Map(), agora).map((p) => p.id)).toEqual(["a"]);
+    expect(planosDoUsuario(itens, "outro@x.com", us, new Map(), agora)).toEqual([]);
+  });
+  it("status pelo prazo", () => {
+    expect(statusPlanoAcao("2026-10-20T07:00:00Z", agora)).toEqual({ status: "Vencido", diasAtraso: 10 });
+    expect(statusPlanoAcao("2026-11-01T07:00:00Z", agora).status).toBe("A vencer");
+    expect(statusPlanoAcao("2026-11-10T07:00:00Z", agora).status).toBe("No prazo");
+  });
+});
