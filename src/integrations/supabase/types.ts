@@ -341,6 +341,45 @@ export type Database = {
         }
         Relationships: []
       }
+      formularios: {
+        Row: {
+          acao: string
+          atualizado_em: string
+          codigo: string
+          criado_em: string
+          descricao: string
+          id: string
+          ordem: number
+          setor: string
+          titulo: string
+          url: string
+        }
+        Insert: {
+          acao: string
+          atualizado_em?: string
+          codigo?: string
+          criado_em?: string
+          descricao?: string
+          id?: string
+          ordem?: number
+          setor: string
+          titulo: string
+          url: string
+        }
+        Update: {
+          acao?: string
+          atualizado_em?: string
+          codigo?: string
+          criado_em?: string
+          descricao?: string
+          id?: string
+          ordem?: number
+          setor?: string
+          titulo?: string
+          url?: string
+        }
+        Relationships: []
+      }
       insider_edicoes: {
         Row: {
           atualizado_em: string

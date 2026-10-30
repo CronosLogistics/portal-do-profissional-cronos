@@ -141,6 +141,27 @@
       "when": 1793305740408,
       "tag": "0019_mural_primeiro_util_insider_interacoes",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1793361895813,
+      "tag": "0020_formularios_editaveis",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1793361942696,
+      "tag": "0021_formularios_catalogo_permissoes",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1793362098817,
+      "tag": "0022_formularios_atualizacao_data",
+      "breakpoints": true
     }
   ]
 }

@@ -12,7 +12,8 @@ describe("perfis de acesso", () => {
   });
   it("perfil Administrador tem todas as permissões", () => {
     expect(permissoesEfetivas(true, [adm])).toContain("admin.perfis");
-    expect(permissoesEfetivas(true, [adm])).toHaveLength(7);
+    expect(permissoesEfetivas(true, [adm])).toHaveLength(8);
+    expect(permissoesEfetivas(true, [adm])).toContain("formularios.gerenciar");
   });
   it("profissional inativo perde o efeito de todos os perfis", () => {
     expect(permissoesEfetivas(false, [adm, gp])).toEqual([]);
