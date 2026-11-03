@@ -9,6 +9,7 @@ const LISTA_CONTROLE_NC = "5e86ef58-5d4f-4441-8f00-63ebeeedc744";
 const LISTA_ANALISE_SM = "909379e8-f01d-4332-9194-c2ba9a6abfc6";
 const LISTA_PLANO_SM = "d39939ba-91a8-4bc7-8ba1-0b2036e79544";
 const LISTA_NPS = "895f8afb-e289-4c27-87d0-444a9eaa7bec";
+const LISTA_REVISOES = "2b30dd28-7788-4021-b92a-e704a9ccbf8f";
 const LISTA_CONTROLE_SM = "c14d869d-23e8-4cf1-b800-617a03141db3";
 const LISTA_USUARIOS = "dcbf95ce-8b48-451e-b14f-eab5d8fa098f";
 const CACHE_MS = 5 * 60 * 1000;
@@ -41,7 +42,7 @@ async function lerTudo<T>(caminho: string): Promise<T[]> {
   return all;
 }
 
-type Cache = { em: number; itens: ItemAnaliseNC[]; itensMaior: ItemAnaliseNC[]; itensPlano: ItemAnaliseNC[]; itensSM: ItemAnaliseNC[]; itensPlanoSM: ItemAnaliseNC[]; itensNPS: ItemAnaliseNC[]; usuarios: Map<string, { email: string; nome: string }> };
+type Cache = { em: number; itens: ItemAnaliseNC[]; itensMaior: ItemAnaliseNC[]; itensPlano: ItemAnaliseNC[]; itensSM: ItemAnaliseNC[]; itensPlanoSM: ItemAnaliseNC[]; itensNPS: ItemAnaliseNC[]; itensRevisoes: ItemAnaliseNC[]; usuarios: Map<string, { email: string; nome: string }> };
 let cache: Cache | null = null;
 const ncTitulos = new Map<string, string>();
 const smTitulos = new Map<string, string>();
@@ -49,20 +50,21 @@ const smTitulos = new Map<string, string>();
 /** Análises de NC e usuários do site da Qualidade (cache curto, só no servidor). */
 export async function dadosAnaliseNC(): Promise<Cache> {
   if (cache && Date.now() - cache.em < CACHE_MS) return cache;
-  const [itens, itensMaior, itensPlano, itensSM, itensPlanoSM, itensNPS, users] = await Promise.all([
+  const [itens, itensMaior, itensPlano, itensSM, itensPlanoSM, itensNPS, itensRevisoes, users] = await Promise.all([
     lerTudo<ItemAnaliseNC>(`/sites/${SITE}/lists/${LISTA_ANALISE_NC}/items?$expand=fields($select=NCLookupId,Respons_x00e1_velLookupId,Created,Data_Fechamento,Situa_x00e7__x00e3_odaAn_x00e1_l)&$top=999`),
     lerTudo<ItemAnaliseNC>(`/sites/${SITE}/lists/${LISTA_ANALISE_NC_MAIOR}/items?$expand=fields($select=NCLookupId,Respons_x00e1_velLookupId,Created,Data_Fechamento,StatusAn_x00e1_liseMaior)&$top=999`),
     lerTudo<ItemAnaliseNC>(`/sites/${SITE}/lists/${LISTA_PLANO_ACAO}/items?$expand=fields($select=NCLookupId,Respons_x00e1_velLookupId,GestorRespons_x00e1_velLookupId,Prazo,Status,Essaa_x00e7__x00e3_oest_x00e1_fi)&$top=999`),
     lerTudo<ItemAnaliseNC>(`/sites/${SITE}/lists/${LISTA_ANALISE_SM}/items?$expand=fields($select=NCLookupId,Respons_x00e1_velLookupId,Created,Data_Fechamento,Etapa)&$top=999`),
     lerTudo<ItemAnaliseNC>(`/sites/${SITE}/lists/${LISTA_PLANO_SM}/items?$expand=fields($select=NCLookupId,Respons_x00e1_velLookupId,GestorRespons_x00e1_velLookupId,Prazo,Status,Conclu_x00ed_do_x003f_)&$top=999`),
     lerTudo<ItemAnaliseNC>(`/sites/${SITE}/lists/${LISTA_NPS}/items?$expand=fields($select=Title,Processo,Nota,Status,Respons_x00e1_velpeloNPS_x0028_gLookupId)&$top=999`),
+    lerTudo<ItemAnaliseNC>(`/sites/${SITE}/lists/${LISTA_REVISOES}/items?$expand=fields($select=Title,NdaRevis_x00e3_o,Respons_x00e1_velpelaRevis_x00e3LookupId,Created,Status_x0020_Envio_x0020_da_x002,StatusparaRevisarDocumento,DataRespostadaAn_x00e1_lise,DatadeConclus_x00e3_o,Odocumentonecessitarevis_x00e3_o)&$top=999`),
     lerTudo<{ id: string; fields: { EMail?: string; Title?: string } }>(`/sites/${SITE}/lists/${LISTA_USUARIOS}/items?$expand=fields($select=EMail,Title)&$top=999`),
   ]);
   const usuarios = new Map<string, { email: string; nome: string }>();
   for (const u of users) {
     if (u.fields.EMail || u.fields.Title) usuarios.set(u.id, { email: u.fields.EMail ?? "", nome: (u.fields.Title ?? "").replace(/\s*-\s*Cronos Logistics$/i, "").trim() });
   }
-  cache = { em: Date.now(), itens, itensMaior, itensPlano, itensSM, itensPlanoSM, itensNPS, usuarios };
+  cache = { em: Date.now(), itens, itensMaior, itensPlano, itensSM, itensPlanoSM, itensNPS, itensRevisoes, usuarios };
   return cache;
 }
 

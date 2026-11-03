@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useCurrentUser } from "@/hooks/useAuth";
 import { minhasPendencias } from "@/lib/pendencias.functions";
-import type { PendenciaNC, PendenciaNPS } from "@/lib/pendencias.rules";
+import type { PendenciaNC, PendenciaNPS, PendenciaRevisao } from "@/lib/pendencias.rules";
 
 export const Route = createFileRoute("/_authenticated/pendencias")({
   head: () => ({
@@ -37,6 +37,7 @@ function PendenciasPage() {
   const sm = q.data?.analiseSM ?? [];
   const planoSM = q.data?.planoAcaoSM ?? [];
   const nps = q.data?.nps ?? [];
+  const revisoes = q.data?.revisoes ?? [];
 
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-8">
@@ -60,7 +61,13 @@ function PendenciasPage() {
                 </Accordion>
               </Grupo>
 
-              <Grupo titulo="RQ-00-01 — Controle de informação documentada" />
+              <Grupo titulo="RQ-00-01 — Controle de informação documentada">
+                <Accordion type="multiple" className="rounded-lg border bg-card">
+                  <Secao valor="revisao-documentos" titulo="Revisão de documentos" total={revisoes.length} ultimo>
+                    <ListaRevisoes itens={revisoes} />
+                  </Secao>
+                </Accordion>
+              </Grupo>
 
               <Grupo titulo="RQ-00-02 — NC">
                 <Accordion type="multiple" className="rounded-lg border bg-card">
@@ -111,6 +118,31 @@ function Secao({ valor, titulo, total, ultimo, children }: { valor: string; titu
       </AccordionTrigger>
       <AccordionContent className="px-5">{children}</AccordionContent>
     </AccordionItem>
+  );
+}
+
+function ListaRevisoes({ itens }: { itens: PendenciaRevisao[] }) {
+  if (!itens.length) return <p className="py-4 text-center text-sm text-muted-foreground">Nenhuma revisão de documento pendente para você.</p>;
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-sm">
+        <thead className="text-left text-xs uppercase text-muted-foreground">
+          <tr><th className="py-2 pr-4">Documento</th><th className="py-2 pr-4">Nº da revisão</th><th className="py-2 pr-4">Status da análise</th><th className="py-2 pr-4">Dias em atraso</th><th className="py-2 pr-4">Status da revisão</th><th className="py-2 pr-4">Dias em atraso do documento</th><th className="py-2 pr-4">Responsável</th><th className="py-2" /></tr>
+        </thead>
+        <tbody>{itens.map((p) => (
+          <tr key={p.id} className="border-t">
+            <td className="py-2 pr-4 font-semibold text-foreground">{p.documento}</td>
+            <td className="py-2 pr-4">{p.revisao}</td>
+            <td className="py-2 pr-4"><span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${p.statusAnalise === "Vencido" ? "bg-destructive/10 text-destructive" : p.statusAnalise === "A vencer" ? "bg-accent text-accent-foreground" : "bg-secondary text-secondary-foreground"}`}>{p.statusAnalise}</span></td>
+            <td className="py-2 pr-4">{p.diasAtrasoAnalise}</td>
+            <td className="py-2 pr-4">{p.statusRevisao}</td>
+            <td className="py-2 pr-4">{p.diasAtrasoDocumento}</td>
+            <td className="py-2 pr-4">{p.responsavel}</td>
+            <td className="py-2 text-right"><a href={p.link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 font-semibold text-primary hover:underline">Link para o item <ExternalLink className="h-3.5 w-3.5" /></a></td>
+          </tr>
+        ))}</tbody>
+      </table>
+    </div>
   );
 }
 

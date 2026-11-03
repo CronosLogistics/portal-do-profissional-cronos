@@ -123,6 +123,52 @@ export const LINK_NPS = "https://cronoslogisticscombr.sharepoint.com/sites/quali
 
 export type PendenciaNPS = { id: string; cliente: string; processo: string; nota: number | null; status: string; link: string };
 
+export type PendenciaRevisao = {
+  id: string;
+  documento: string;
+  revisao: string;
+  statusAnalise: string;
+  statusRevisao: string;
+  diasAtrasoAnalise: number;
+  diasAtrasoDocumento: number;
+  responsavel: string;
+  link: string;
+};
+
+/** Revisões abertas do responsável; mesmos limites das fórmulas do SharePoint. */
+export function revisoesDoUsuario(itens: ItemAnaliseNC[], email: string, usuarios: Map<string, { email: string; nome: string }>, agora: Date): PendenciaRevisao[] {
+  const alvo = email.trim().toLowerCase();
+  if (!alvo) return [];
+  return itens.flatMap((i): PendenciaRevisao[] => {
+    const f = i.fields;
+    const responsavel = usuarios.get(String(f["Respons_x00e1_velpelaRevis_x00e3LookupId"] ?? ""));
+    if (!responsavel?.email || responsavel.email.trim().toLowerCase() !== alvo) return [];
+    const statusRevisao = String(f["StatusparaRevisarDocumento"] ?? "");
+    if (/^(finalizad|cancelad)/i.test(statusRevisao) || f["DatadeConclus_x00e3_o"]) return [];
+    const resposta = String(f["DataRespostadaAn_x00e1_lise"] ?? "");
+    const statusSalvo = String(f["Status_x0020_Envio_x0020_da_x002"] ?? "");
+    const respondida = /^conclu/i.test(statusSalvo);
+    const necessitaRevisao = String(f["Odocumentonecessitarevis_x00e3_o"] ?? "").toLowerCase() === "sim";
+    if (respondida && !(necessitaRevisao && /^pendente$/i.test(statusRevisao))) return [];
+    const criado = new Date(String(f.Created ?? "")).getTime();
+    const decorrido = (agora.getTime() - criado) / 86_400_000;
+    const statusAnalise = respondida ? statusSalvo : Number.isFinite(decorrido) ? (decorrido < 1 ? "A vencer" : decorrido <= 2 ? "No prazo" : "Vencido") : statusSalvo || "—";
+    const hoje = new Date(agora.toLocaleDateString("en-CA", { timeZone: "America/Sao_Paulo" }) + "T00:00:00-03:00").getTime();
+    const dias = (inicio: number, limite: number) => Number.isFinite(inicio) ? Math.max(0, Math.trunc((hoje - inicio) / 86_400_000 - limite)) : 0;
+    return [{
+      id: i.id,
+      documento: String(f["Title"] ?? "—"),
+      revisao: String(f["NdaRevis_x00e3_o"] ?? "—"),
+      statusAnalise,
+      statusRevisao: statusRevisao || "—",
+      diasAtrasoAnalise: respondida ? 0 : dias(criado, 2),
+      diasAtrasoDocumento: respondida && necessitaRevisao && /^pendente$/i.test(statusRevisao) ? dias(new Date(resposta).getTime(), 7) : 0,
+      responsavel: responsavel.nome,
+      link: "https://cronoslogisticscombr.sharepoint.com/sites/qualityteamgroup/Lists/Reviso%20de%20Documentos/EditForm.aspx?ID=" + encodeURIComponent(i.id),
+    }];
+  }).sort((a, b) => Math.max(b.diasAtrasoAnalise, b.diasAtrasoDocumento) - Math.max(a.diasAtrasoAnalise, a.diasAtrasoDocumento));
+}
+
 /** NPS não finalizados em que o e-mail do perfil é o Responsável pelo NPS (gestor). */
 export function npsDoUsuario(itens: ItemAnaliseNC[], email: string, usuarios: Map<string, { email: string; nome: string }>): PendenciaNPS[] {
   const alvo = email.trim().toLowerCase();
