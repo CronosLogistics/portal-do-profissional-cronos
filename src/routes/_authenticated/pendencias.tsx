@@ -6,6 +6,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useCurrentUser } from "@/hooks/useAuth";
 import { minhasPendencias } from "@/lib/pendencias.functions";
+import { minhasPendenciasPessoas } from "@/lib/pendencias-pessoas.functions";
+import { LISTAS_PESSOAS, type TipoPendenciaPessoas, type PendenciaPessoas } from "@/lib/pendencias-pessoas.rules";
 import type { PendenciaNC, PendenciaNPS, PendenciaRevisao } from "@/lib/pendencias.rules";
 
 export const Route = createFileRoute("/_authenticated/pendencias")({
@@ -48,6 +50,7 @@ function PendenciasPage() {
       <Tabs defaultValue="qualidade">
         <TabsList>
           <TabsTrigger value="qualidade">Qualidade</TabsTrigger>
+          <TabsTrigger value="pessoas">Gestão de Pessoas</TabsTrigger>
         </TabsList>
         <TabsContent value="qualidade" className="mt-4">
           {q.isLoading && <p className="text-sm text-muted-foreground">Carregando…</p>}
@@ -96,9 +99,54 @@ function PendenciasPage() {
             </div>
           )}
         </TabsContent>
+        <TabsContent value="pessoas" className="mt-4">
+          <PendenciasGestaoPessoas />
+        </TabsContent>
       </Tabs>
     </main>
   );
+}
+
+function PendenciasGestaoPessoas() {
+  const buscar = useServerFn(minhasPendenciasPessoas);
+  const me = useCurrentUser();
+  const q = useQuery({ queryKey: ["pendencias-pessoas", me.data?.id], queryFn: () => buscar(), enabled: !!me.data?.isAdmin, staleTime: 60_000 });
+  if (q.isLoading) return <p className="text-sm text-muted-foreground">Carregando…</p>;
+  if (q.error) return <p className="rounded-lg border border-destructive/40 bg-card p-4 text-sm text-destructive">{q.error.message}</p>;
+  return <Accordion type="multiple" className="rounded-lg border bg-card">
+    {(Object.keys(LISTAS_PESSOAS) as TipoPendenciaPessoas[]).map((tipo, indice, tipos) => <Secao key={tipo} valor={tipo} titulo={LISTAS_PESSOAS[tipo].titulo} total={q.data?.listas[tipo]?.length ?? 0} ultimo={indice === tipos.length - 1}>
+      {q.data?.erros[tipo] ? <p className="py-4 text-sm text-destructive">{q.data.erros[tipo]}</p> : <ListaPessoas tipo={tipo} itens={q.data?.listas[tipo] ?? []} />}
+    </Secao>)}
+  </Accordion>;
+}
+
+function ListaPessoas({ tipo, itens }: { tipo: TipoPendenciaPessoas; itens: PendenciaPessoas[] }) {
+  if (!itens.length) return <p className="py-4 text-center text-sm text-muted-foreground">Nenhuma pendência para você.</p>;
+  const rq = tipo === "rq0244" || tipo === "rq0216";
+  const data = (valor: string) => {
+    const d = new Date(valor);
+    return Number.isFinite(d.getTime()) ? d.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" }) : "—";
+  };
+  const detalhe = tipo === "experiencia" ? "Ciclo Experiência" : tipo === "anexos" ? "Turma" : tipo === "rq0244" ? "Treinamento para" : tipo === "feedback" ? "Classificação" : "Status da aprovação";
+  return <div className="overflow-x-auto"><table className="w-full text-sm">
+    <thead className="text-left text-xs uppercase text-muted-foreground"><tr>
+      <th className="py-2 pr-4">{tipo === "agendamento" || tipo === "anexos" ? "Treinamento" : "Profissional"}</th>
+      {tipo !== "rq0216" && <th className="py-2 pr-4">{detalhe}</th>}
+      <th className="py-2 pr-4">Status</th><th className="py-2 pr-4">{rq ? "Admissão" : tipo === "experiencia" ? "Data do agendamento" : tipo === "feedback" ? "Data do feedback" : "Data do treinamento"}</th>
+      {rq && <><th className="py-2 pr-4">Prazo</th><th className="py-2 pr-4">Dias para finalizar</th></>}
+      {tipo === "experiencia" && <th className="py-2 pr-4">Gestor Responsável</th>}
+      {tipo !== "rq0216" && <th className="py-2 pr-4">{tipo === "feedback" ? "Autor" : "Responsável"}</th>}
+      <th className="py-2"><span className="sr-only">Link para o item</span></th>
+    </tr></thead><tbody>{itens.map(p => <tr key={p.id} className="border-t">
+      <td className="py-2 pr-4 font-semibold text-foreground">{p.nome}</td>
+      {tipo !== "rq0216" && <td className="py-2 pr-4">{p.detalhe}</td>}
+      <td className="py-2 pr-4">{p.status}</td><td className="py-2 pr-4 whitespace-nowrap">{data(p.data)}</td>
+      {rq && <><td className="py-2 pr-4 whitespace-nowrap">{data(p.prazo)}</td><td className={`py-2 pr-4 ${p.dias !== null && p.dias < 0 ? "font-semibold text-destructive" : "text-foreground"}`}>{p.dias ?? "—"}</td></>}
+      {tipo === "experiencia" && <td className="py-2 pr-4">{p.gestor}</td>}
+      {tipo !== "rq0216" && <td className="py-2 pr-4">{p.responsavel}</td>}
+      <td className="py-2 text-right"><a href={p.link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 font-semibold text-primary hover:underline">Link para o item <ExternalLink className="h-3.5 w-3.5 shrink-0" /></a></td>
+    </tr>)}</tbody>
+  </table></div>;
 }
 
 function Grupo({ titulo, children }: { titulo: string; children?: React.ReactNode }) {
