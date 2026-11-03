@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import type { PendenciaNC, PendenciaNPS } from "@/lib/pendencias.rules";
+import type { PendenciaNC, PendenciaNPS, PendenciaRevisao } from "@/lib/pendencias.rules";
 
 type Resultado = {
   analiseNC: PendenciaNC[];
@@ -9,9 +9,10 @@ type Resultado = {
   analiseSM: PendenciaNC[];
   planoAcaoSM: PendenciaNC[];
   nps: PendenciaNPS[];
+  revisoes: PendenciaRevisao[];
   erro: string | null;
 };
-const vazio = (erro: string | null): Resultado => ({ analiseNC: [], analiseNCMaior: [], planoAcao: [], analiseSM: [], planoAcaoSM: [], nps: [], erro });
+const vazio = (erro: string | null): Resultado => ({ analiseNC: [], analiseNCMaior: [], planoAcao: [], analiseSM: [], planoAcaoSM: [], nps: [], revisoes: [], erro });
 
 /** Pendências da Qualidade da pessoa logada. Por enquanto, só administradores. */
 export const minhasPendencias = createServerFn({ method: "GET" })
@@ -24,7 +25,7 @@ export const minhasPendencias = createServerFn({ method: "GET" })
     const email = perfil.email;
     try {
       const { dadosAnaliseNC, titulosNC } = await import("@/lib/pendencias.server");
-      const { pendenciasDoUsuario, planosDoUsuario, npsDoUsuario, LINK_PLANO_ACAO, LINK_PLANO_ACAO_SM } = await import("@/lib/pendencias.rules");
+      const { pendenciasDoUsuario, planosDoUsuario, npsDoUsuario, revisoesDoUsuario, LINK_PLANO_ACAO, LINK_PLANO_ACAO_SM } = await import("@/lib/pendencias.rules");
       const d = await dadosAnaliseNC();
       const agora = new Date();
       const vaz = new Map<string, string>();
@@ -48,6 +49,7 @@ export const minhasPendencias = createServerFn({ method: "GET" })
         analiseSM: pendenciasDoUsuario(d.itensSM, email, d.usuarios, sms, agora, "sm"),
         planoAcaoSM: planosDoUsuario(d.itensPlanoSM, email, d.usuarios, sms, agora, LINK_PLANO_ACAO_SM),
         nps: npsDoUsuario(d.itensNPS, email, d.usuarios),
+        revisoes: revisoesDoUsuario(d.itensRevisoes, email, d.usuarios, agora),
         erro: null,
       };
     } catch (e) {

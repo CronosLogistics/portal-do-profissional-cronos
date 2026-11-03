@@ -1,9 +1,38 @@
 import { describe, expect, it } from "vitest";
-import { pendenciasDoUsuario, statusPorTempo } from "@/lib/pendencias.rules";
+import { pendenciasDoUsuario, statusPorTempo, revisoesDoUsuario } from "@/lib/pendencias.rules";
 
 const usuarios = new Map([["1", { email: "ana@cronos.com", nome: "Ana" }], ["2", { email: "bia@cronos.com", nome: "Bia" }]]);
 const agora = new Date("2026-10-30T12:00:00Z");
 const item = (id: string, resp: string, criado: string, extra = {}) => ({ id, fields: { NCLookupId: "9", Respons_x00e1_velLookupId: resp, Created: criado, Situa_x00e7__x00e3_odaAn_x00e1_l: "Aguardando Resposta", ...extra } });
+
+describe("Revisão de documentos", () => {
+  const data = new Date("2026-11-03T12:00:00Z");
+  const revisao = (id: string, extra = {}) => ({ id, fields: { Title: "MR-02-01", NdaRevis_x00e3_o: "1", Respons_x00e1_velpelaRevis_x00e3LookupId: "1", Created: "2026-10-30T12:00:00Z", StatusparaRevisarDocumento: "AGUARDANDO ANÁLISE", ...extra } });
+  it("mostra somente as revisões do responsável", () => {
+    const r = revisoesDoUsuario([revisao("6"), revisao("7", { Respons_x00e1_velpelaRevis_x00e3LookupId: "2" })], "ANA@cronos.com", usuarios, data);
+    expect(r.map(p => p.id)).toEqual(["6"]);
+    expect(r[0]?.documento).toBe("MR-02-01");
+    expect(r[0]?.link).toBe("https://cronoslogisticscombr.sharepoint.com/sites/qualityteamgroup/Lists/Reviso%20de%20Documentos/EditForm.aspx?ID=6");
+    expect(revisoesDoUsuario([revisao("6")], "", usuarios, data)).toEqual([]);
+  });
+  it("remove finalizadas e análises concluídas sem revisão pendente", () => {
+    expect(revisoesDoUsuario([
+      revisao("1", { StatusparaRevisarDocumento: "FINALIZADO" }),
+      revisao("2", { Status_x0020_Envio_x0020_da_x002: "Concluído dentro do prazo", Odocumentonecessitarevis_x00e3_o: "NÃO" }),
+      revisao("3", { DatadeConclus_x00e3_o: "2026-11-01T00:00:00Z" }),
+    ], "ana@cronos.com", usuarios, data)).toEqual([]);
+  });
+  it("mantém entrega pendente após análise concluída e calcula atraso além de sete dias", () => {
+    const [r] = revisoesDoUsuario([revisao("6", { Status_x0020_Envio_x0020_da_x002: "Concluído fora do prazo", Odocumentonecessitarevis_x00e3_o: "SIM", StatusparaRevisarDocumento: "PENDENTE", DataRespostadaAn_x00e1_lise: "2026-10-23T03:00:00Z" })], "ana@cronos.com", usuarios, data);
+    expect(r?.diasAtrasoDocumento).toBe(4);
+    expect(r?.diasAtrasoAnalise).toBe(0);
+  });
+  it("recalcula os limites de um e dois dias sem depender do status salvo", () => {
+    const itens = [0.5, 1, 2, 2.01].map((dias, n) => revisao(String(n), { Created: new Date(data.getTime() - dias * 86_400_000).toISOString(), Status_x0020_Envio_x0020_da_x002: "No prazo" }));
+    const r = revisoesDoUsuario(itens, "ana@cronos.com", usuarios, data);
+    expect(itens.map(i => r.find(p => p.id === i.id)?.statusAnalise)).toEqual(["A vencer", "No prazo", "No prazo", "Vencido"]);
+  });
+});
 
 describe("pendências de análise de NC", () => {
   it("mostra só as NCs em que a pessoa é a responsável", () => {

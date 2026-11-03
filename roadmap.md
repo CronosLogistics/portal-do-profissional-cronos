@@ -34,3 +34,7 @@
 ## Edição de formulários
 - [x] Migrar os links atuais para cadastro editável e proteger acesso por perfil.
 - [x] Permitir adicionar e editar formulários e validar salvamento e permissões.
+
+## Pendências de informação documentada
+- [x] Mapear a lista Revisão de Documentos e integrar as pendências do responsável.
+- [x] Adicionar a seção sanfonada e validar regras e leitura autenticada (conta atual sem revisões pendentes).
