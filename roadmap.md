@@ -46,4 +46,4 @@
 
 ## Liberação das pendências prioritárias
 - [x] Liberar menu e consultas para todos os profissionais ativos, preservando os filtros por responsável e perfil.
-- [ ] Validar testes de acesso e leitura autenticada das duas abas.
+- [x] Validar testes de acesso para funcionário, RH e administrador e leitura autenticada das duas abas (sessão disponível de administrador; filtros individuais preservados).
