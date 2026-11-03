@@ -45,3 +45,13 @@ export async function dadosPendenciasPessoas() {
   }
   return { listas, usuarios, erros };
 }
+
+export async function dadosFeedbacksGestor() {
+  const [itens, profissionais, users] = await Promise.all([
+    ler<ItemAnaliseNC>(`/v1.0/sites/${SITE}/lists/${LISTAS_PESSOAS.feedback.id}/items?$select=id&$expand=fields($select=Title,Profissional_IDLookupId,Coment_x00e1_rio,Classifica_x00e7__x00e3_o,DatadoFeedback,AutorLookupId,AuthorLookupId,Status)&$top=999`),
+    ler<ItemAnaliseNC>(`/v1.0/sites/${SITE}/lists/0e37d734-d94f-4832-9802-d3c2e7daf395/items?$select=id&$expand=fields($select=Title,E_x002d_MAILCORPORATIVOLookupId)&$top=999`),
+    ler<{ id: string; fields: { EMail?: string; Title?: string } }>(`/v1.0/sites/${SITE}/lists/dcbf95ce-8b48-451e-b14f-eab5d8fa098f/items?$select=id&$expand=fields($select=EMail,Title)&$top=999`),
+  ]);
+  const usuarios = new Map<string, PessoaSharePoint>(users.map(u => [u.id, { email: u.fields.EMail ?? "", nome: (u.fields.Title ?? "").replace(/\s*-\s*Cronos Logistics$/i, "").trim() }]));
+  return { itens, profissionais, usuarios };
+}

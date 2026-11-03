@@ -1,4 +1,8 @@
 # Atualização visual do Portal do Profissional
+## Feedback do gestor via SharePoint
+- [x] Mapear destinatário e conteúdo da lista Feedbacks Gestores.
+- [x] Integrar mensagens recebidas por profissional; 13 testes passam e leitura autenticada sem erros (conta atual sem feedbacks recebidos; abertura de mensagem real não verificada pela tela).
+
 - [x] Aplicar a paleta branca/vinho e o menu lateral recolhível.
 - [x] Substituir a página inicial por saudação e atalhos para as ações existentes.
 - [x] Criar login dividido com imagem e acesso Microsoft.
