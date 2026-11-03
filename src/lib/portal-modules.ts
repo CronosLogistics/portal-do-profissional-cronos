@@ -32,8 +32,7 @@ export const PORTAL_MODULES: PortalModule[] = [
   { to: "/formularios", label: "Formulários" },
   { to: "/documentos", label: "Documentos" },
   { to: "/feedback", label: "Elogios" },
-  // Segunda versão: por enquanto só administradores.
-  { to: "/pendencias", label: "Pendências prioritárias", roles: ["admin"] },
+  { to: "/pendencias", label: "Pendências prioritárias" },
 ];
 
 export type PrincipalNavLink = {
