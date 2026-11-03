@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { ExternalLink } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useCurrentUser } from "@/hooks/useAuth";
 import { minhasPendencias } from "@/lib/pendencias.functions";
@@ -13,9 +12,9 @@ import type { PendenciaNC, PendenciaNPS, PendenciaRevisao } from "@/lib/pendenci
 export const Route = createFileRoute("/_authenticated/pendencias")({
   head: () => ({
     meta: [
-      { title: "Pendências prioritárias | Portal do Profissional Cronos" },
-      { name: "description", content: "Suas pendências prioritárias por setor da Cronos Logistics." },
-      { property: "og:title", content: "Pendências prioritárias | Portal do Profissional Cronos" },
+      { title: "Pendências | Portal do Profissional Cronos" },
+      { name: "description", content: "Suas pendências na Cronos Logistics." },
+      { property: "og:title", content: "Pendências | Portal do Profissional Cronos" },
       { property: "og:description", content: "Análises de NC e outras pendências sob sua responsabilidade." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -40,64 +39,56 @@ function PendenciasPage() {
     <main className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-8">
       <header className="mb-6">
         <h1 className="text-3xl font-bold text-foreground">Pendências</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Itens que aguardam sua resposta, separados por setor.</p>
+        <p className="mt-1 text-sm text-muted-foreground">Itens que aguardam sua resposta.</p>
       </header>
-      <Tabs defaultValue="qualidade">
-        <TabsList>
-          <TabsTrigger value="qualidade">Qualidade</TabsTrigger>
-          <TabsTrigger value="pessoas">Gestão de Pessoas</TabsTrigger>
-        </TabsList>
-        <TabsContent value="qualidade" className="mt-4">
-          {q.isLoading && <p className="text-sm text-muted-foreground">Carregando…</p>}
-          {q.error && <p className="rounded-lg border border-destructive/40 bg-card p-4 text-sm text-destructive">{q.error.message}</p>}
-          {q.data?.erro && <p className="rounded-lg border border-destructive/40 bg-card p-4 text-sm text-destructive">{q.data.erro}</p>}
-          {q.data && (
-            <div className="space-y-6">
-              <Grupo titulo="NPS">
-                <Accordion type="multiple" className="rounded-lg border bg-card">
-                  <Secao valor="nps" titulo="NPS" total={nps.length} ultimo><ListaNPS itens={nps} /></Secao>
-                </Accordion>
-              </Grupo>
+      {q.isLoading && <p className="text-sm text-muted-foreground">Carregando…</p>}
+      {q.error && <p className="rounded-lg border border-destructive/40 bg-card p-4 text-sm text-destructive">{q.error.message}</p>}
+      {q.data?.erro && <p className="rounded-lg border border-destructive/40 bg-card p-4 text-sm text-destructive">{q.data.erro}</p>}
+      <div className="space-y-6">
+        {q.data && (
+          <>
+            <Grupo titulo="Satisfação do cliente">
+              <Accordion type="multiple" className="rounded-lg border bg-card">
+                <Secao valor="nps" titulo="Satisfação do cliente" total={nps.length} ultimo><ListaNPS itens={nps} /></Secao>
+              </Accordion>
+            </Grupo>
 
-              <Grupo titulo="RQ-00-01 — Controle de informação documentada">
-                <Accordion type="multiple" className="rounded-lg border bg-card">
-                  <Secao valor="revisao-documentos" titulo="Revisão de documentos" total={revisoes.length} ultimo>
-                    <ListaRevisoes itens={revisoes} />
-                  </Secao>
-                </Accordion>
-              </Grupo>
+            <Grupo titulo="RQ-00-01 — Controle de informação documentada">
+              <Accordion type="multiple" className="rounded-lg border bg-card">
+                <Secao valor="revisao-documentos" titulo="Revisão de documentos" total={revisoes.length} ultimo>
+                  <ListaRevisoes itens={revisoes} />
+                </Secao>
+              </Accordion>
+            </Grupo>
 
-              <Grupo titulo="RQ-00-02 — NC">
-                <Accordion type="multiple" className="rounded-lg border bg-card">
-                  <Secao valor="analise-nc" titulo="Análise" total={analise.length}>
-                    <ListaNC itens={analise} />
-                  </Secao>
-                  <Secao valor="analise-nc-maior" titulo="Análise Maior" total={maior.length}>
-                    <ListaNC itens={maior} vazio="Nenhuma análise de NC maior pendente para você." />
-                  </Secao>
-                  <Secao valor="plano-acao" titulo="Plano de Ação" total={plano.length} ultimo>
-                    <ListaNC itens={plano} vazio="Nenhum plano de ação pendente para você." colunaDias="Dias em atraso" />
-                  </Secao>
-                </Accordion>
-              </Grupo>
+            <Grupo titulo="RQ-00-02 — NC">
+              <Accordion type="multiple" className="rounded-lg border bg-card">
+                <Secao valor="analise-nc" titulo="Análise" total={analise.length}>
+                  <ListaNC itens={analise} />
+                </Secao>
+                <Secao valor="analise-nc-maior" titulo="Análise Maior" total={maior.length}>
+                  <ListaNC itens={maior} vazio="Nenhuma análise de NC maior pendente para você." />
+                </Secao>
+                <Secao valor="plano-acao" titulo="Plano de Ação" total={plano.length} ultimo>
+                  <ListaNC itens={plano} vazio="Nenhum plano de ação pendente para você." colunaDias="Dias em atraso" />
+                </Secao>
+              </Accordion>
+            </Grupo>
 
-              <Grupo titulo="RQ-00-13 — SM e EL">
-                <Accordion type="multiple" className="rounded-lg border bg-card">
-                  <Secao valor="analise-sm" titulo="Análise" total={sm.length}>
-                    <ListaNC itens={sm} rotulo="SM" vazio="Nenhuma análise de SM pendente para você." />
-                  </Secao>
-                  <Secao valor="plano-acao-sm" titulo="Plano de Ação" total={planoSM.length} ultimo>
-                    <ListaNC itens={planoSM} rotulo="SM" vazio="Nenhum plano de ação de SM pendente para você." colunaDias="Dias em atraso" />
-                  </Secao>
-                </Accordion>
-              </Grupo>
-            </div>
-          )}
-        </TabsContent>
-        <TabsContent value="pessoas" className="mt-4">
-          <PendenciasGestaoPessoas />
-        </TabsContent>
-      </Tabs>
+            <Grupo titulo="RQ-00-13 — SM e EL">
+              <Accordion type="multiple" className="rounded-lg border bg-card">
+                <Secao valor="analise-sm" titulo="Análise" total={sm.length}>
+                  <ListaNC itens={sm} rotulo="SM" vazio="Nenhuma análise de SM pendente para você." />
+                </Secao>
+                <Secao valor="plano-acao-sm" titulo="Plano de Ação" total={planoSM.length} ultimo>
+                  <ListaNC itens={planoSM} rotulo="SM" vazio="Nenhum plano de ação de SM pendente para você." colunaDias="Dias em atraso" />
+                </Secao>
+              </Accordion>
+            </Grupo>
+          </>
+        )}
+        <PendenciasGestaoPessoas />
+      </div>
     </main>
   );
 }
@@ -190,7 +181,7 @@ function ListaRevisoes({ itens }: { itens: PendenciaRevisao[] }) {
 }
 
 function ListaNPS({ itens }: { itens: PendenciaNPS[] }) {
-  if (itens.length === 0) return <p className="py-4 text-center text-sm text-muted-foreground">Nenhum NPS pendente para você.</p>;
+  if (itens.length === 0) return <p className="py-4 text-center text-sm text-muted-foreground">Nenhuma satisfação do cliente pendente para você.</p>;
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">

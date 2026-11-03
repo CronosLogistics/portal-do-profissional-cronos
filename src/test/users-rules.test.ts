@@ -26,7 +26,7 @@ describe("navegação do portal", () => {
 
   it("coloca Benefícios e Parceiros como submenus do menu Benefícios", () => {
     const nav = principalNav(["funcionario"]);
-    const group = nav.find((entry) => entry.type === "group");
+    const group = nav.find((entry) => entry.type === "group" && entry.id === "beneficios");
     expect(group).toMatchObject({
       id: "beneficios",
       label: "Benefícios",
@@ -36,5 +36,24 @@ describe("navegação do portal", () => {
       ],
     });
     expect(nav.some((entry) => entry.type === "link" && entry.to === "/parceiros")).toBe(false);
+  });
+
+  it("coloca Elogios e Feedback do gestor como submenus do menu Feedbacks", () => {
+    const nav = principalNav(["funcionario"]);
+    const group = nav.find((entry) => entry.type === "group" && entry.id === "feedbacks");
+    expect(group).toMatchObject({
+      id: "feedbacks",
+      label: "Feedbacks",
+      children: [
+        { to: "/feedback", label: "Elogios" },
+        { to: "/feedback-gestor", label: "Feedback do gestor" },
+      ],
+    });
+    expect(nav.some((entry) => entry.type === "link" && entry.to === "/feedback")).toBe(false);
+  });
+
+  it("exibe Pendências sem o sufixo prioritárias", () => {
+    const nav = principalNav(["funcionario"]);
+    expect(nav.some((entry) => entry.type === "link" && entry.to === "/pendencias" && entry.label === "Pendências")).toBe(true);
   });
 });

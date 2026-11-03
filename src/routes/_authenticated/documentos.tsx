@@ -59,7 +59,7 @@ function DocumentosPage() {
       </header>
       {docs.isLoading && <p className="text-sm text-muted-foreground">Carregando…</p>}
       {docs.data?.length === 0 && (
-        <p className="rounded-lg border bg-card p-8 text-center text-sm text-muted-foreground">Nenhum documento disponível por enquanto.</p>
+        <p className="rounded-lg border bg-card p-8 text-center text-sm text-muted-foreground">Em breve</p>
       )}
       {!!docs.data?.length && (
         <div className="divide-y rounded-lg border bg-card">

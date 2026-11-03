@@ -17,6 +17,7 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedAvisosRouteImport } from './routes/_authenticated/avisos'
 import { Route as AuthenticatedDocumentosRouteImport } from './routes/_authenticated/documentos'
 import { Route as AuthenticatedFeedbackRouteImport } from './routes/_authenticated/feedback'
+import { Route as AuthenticatedFeedbackGestorRouteImport } from './routes/_authenticated/feedback-gestor'
 import { Route as AuthenticatedFormulariosRouteImport } from './routes/_authenticated/formularios'
 import { Route as AuthenticatedMuralRouteImport } from './routes/_authenticated/mural'
 import { Route as AuthenticatedParceirosRouteImport } from './routes/_authenticated/parceiros'
@@ -83,6 +84,12 @@ const AuthenticatedFeedbackRoute = AuthenticatedFeedbackRouteImport.update({
   path: '/feedback',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedFeedbackGestorRoute =
+  AuthenticatedFeedbackGestorRouteImport.update({
+    id: '/feedback-gestor',
+    path: '/feedback-gestor',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedFormulariosRoute =
   AuthenticatedFormulariosRouteImport.update({
     id: '/formularios',
@@ -241,6 +248,7 @@ export interface FileRoutesByFullPath {
   '/avisos': typeof AuthenticatedAvisosRoute
   '/documentos': typeof AuthenticatedDocumentosRoute
   '/feedback': typeof AuthenticatedFeedbackRoute
+  '/feedback-gestor': typeof AuthenticatedFeedbackGestorRoute
   '/formularios': typeof AuthenticatedFormulariosRoute
   '/mural': typeof AuthenticatedMuralRoute
   '/parceiros': typeof AuthenticatedParceirosRoute
@@ -274,6 +282,7 @@ export interface FileRoutesByTo {
   '/avisos': typeof AuthenticatedAvisosRoute
   '/documentos': typeof AuthenticatedDocumentosRoute
   '/feedback': typeof AuthenticatedFeedbackRoute
+  '/feedback-gestor': typeof AuthenticatedFeedbackGestorRoute
   '/formularios': typeof AuthenticatedFormulariosRoute
   '/mural': typeof AuthenticatedMuralRoute
   '/parceiros': typeof AuthenticatedParceirosRoute
@@ -311,6 +320,7 @@ export interface FileRoutesById {
   '/_authenticated/avisos': typeof AuthenticatedAvisosRoute
   '/_authenticated/documentos': typeof AuthenticatedDocumentosRoute
   '/_authenticated/feedback': typeof AuthenticatedFeedbackRoute
+  '/_authenticated/feedback-gestor': typeof AuthenticatedFeedbackGestorRoute
   '/_authenticated/formularios': typeof AuthenticatedFormulariosRoute
   '/_authenticated/mural': typeof AuthenticatedMuralRoute
   '/_authenticated/parceiros': typeof AuthenticatedParceirosRoute
@@ -349,6 +359,7 @@ export interface FileRouteTypes {
     | '/avisos'
     | '/documentos'
     | '/feedback'
+    | '/feedback-gestor'
     | '/formularios'
     | '/mural'
     | '/parceiros'
@@ -382,6 +393,7 @@ export interface FileRouteTypes {
     | '/avisos'
     | '/documentos'
     | '/feedback'
+    | '/feedback-gestor'
     | '/formularios'
     | '/mural'
     | '/parceiros'
@@ -418,6 +430,7 @@ export interface FileRouteTypes {
     | '/_authenticated/avisos'
     | '/_authenticated/documentos'
     | '/_authenticated/feedback'
+    | '/_authenticated/feedback-gestor'
     | '/_authenticated/formularios'
     | '/_authenticated/mural'
     | '/_authenticated/parceiros'
@@ -513,6 +526,13 @@ declare module '@tanstack/react-router' {
       path: '/feedback'
       fullPath: '/feedback'
       preLoaderRoute: typeof AuthenticatedFeedbackRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/feedback-gestor': {
+      id: '/_authenticated/feedback-gestor'
+      path: '/feedback-gestor'
+      fullPath: '/feedback-gestor'
+      preLoaderRoute: typeof AuthenticatedFeedbackGestorRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/formularios': {
@@ -737,6 +757,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAvisosRoute: typeof AuthenticatedAvisosRoute
   AuthenticatedDocumentosRoute: typeof AuthenticatedDocumentosRoute
   AuthenticatedFeedbackRoute: typeof AuthenticatedFeedbackRoute
+  AuthenticatedFeedbackGestorRoute: typeof AuthenticatedFeedbackGestorRoute
   AuthenticatedFormulariosRoute: typeof AuthenticatedFormulariosRoute
   AuthenticatedMuralRoute: typeof AuthenticatedMuralRoute
   AuthenticatedParceirosRoute: typeof AuthenticatedParceirosRoute
@@ -756,6 +777,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAvisosRoute: AuthenticatedAvisosRoute,
   AuthenticatedDocumentosRoute: AuthenticatedDocumentosRoute,
   AuthenticatedFeedbackRoute: AuthenticatedFeedbackRoute,
+  AuthenticatedFeedbackGestorRoute: AuthenticatedFeedbackGestorRoute,
   AuthenticatedFormulariosRoute: AuthenticatedFormulariosRoute,
   AuthenticatedMuralRoute: AuthenticatedMuralRoute,
   AuthenticatedParceirosRoute: AuthenticatedParceirosRoute,
@@ -785,13 +807,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

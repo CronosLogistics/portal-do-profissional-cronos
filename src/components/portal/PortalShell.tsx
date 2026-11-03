@@ -22,10 +22,11 @@ const moduleIcons: Record<PortalModule["to"], LucideIcon> = {
   "/formularios": ClipboardList,
   "/documentos": FolderOpen,
   "/feedback": MessageSquareHeart,
+  "/feedback-gestor": MessageSquareHeart,
   "/pendencias": ListChecks,
 };
 
-const groupIcons: Record<PortalNavGroup, LucideIcon> = { beneficios: Gift };
+const groupIcons: Record<PortalNavGroup, LucideIcon> = { beneficios: Gift, feedbacks: MessageSquareHeart };
 
 type NavTarget = "/" | PortalModule["to"] | "/admin" | "/admin/usuarios";
 
@@ -90,7 +91,7 @@ function SidebarBranch({
 export function PortalShell({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [openMenus, setOpenMenus] = useState({ beneficios: false, admin: false });
+  const [openMenus, setOpenMenus] = useState({ beneficios: false, feedbacks: false, admin: false });
   const me = useCurrentUser();
   const navigate = useNavigate();
   const signOut = useSignOut();
