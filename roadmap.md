@@ -38,3 +38,8 @@
 ## Pendências de informação documentada
 - [x] Mapear a lista Revisão de Documentos e integrar as pendências do responsável.
 - [x] Adicionar a seção sanfonada e validar regras e leitura autenticada (conta atual sem revisões pendentes).
+
+## Pendências de Gestão de Pessoas
+- [ ] Mapear as seis listas e campos de responsáveis no SharePoint.
+- [ ] Implementar filtros protegidos e a aba com menus sanfonados.
+- [ ] Testar regras de visualização e verificar a leitura no portal.
