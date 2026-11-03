@@ -34,7 +34,7 @@ export function InsiderEditor() {
   </section>;
 }
 
-/** Cancelling the native file picker restores window focus; Radix Dialog treats that as dismiss and runs the close animation while `open` stays true — blank modal. */
+/** Cancelling the native file picker restores window focus; Radix Dialog treats that as dismiss and runs the close animation while `open` stays true - blank modal. */
 function marcarSeletorArquivo(ref: RefObject<boolean>) {
   ref.current = true;
   const liberar = () => {

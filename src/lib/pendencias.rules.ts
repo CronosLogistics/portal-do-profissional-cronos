@@ -65,7 +65,7 @@ export function pendenciasDoUsuario(
       const dias = diasSemResposta(i.fields.Created!, agora);
       return {
         id: i.id,
-        nc: ncs.get(String(i.fields.NCLookupId ?? "")) ?? "—",
+        nc: ncs.get(String(i.fields.NCLookupId ?? "")) ?? "-",
         status: cfg.status(dias),
         diasSemResposta: dias,
         responsavel: usuarios.get(String(i.fields.Respons_x00e1_velLookupId))?.nome ?? "",
@@ -108,7 +108,7 @@ export function planosDoUsuario(
       const s = prazo ? statusPlanoAcao(prazo, agora) : { status: "No prazo" as const, diasAtraso: 0 };
       return {
         id: i.id,
-        nc: ncs.get(String(i.fields.NCLookupId ?? "")) ?? "—",
+        nc: ncs.get(String(i.fields.NCLookupId ?? "")) ?? "-",
         status: s.status,
         diasSemResposta: s.diasAtraso,
         responsavel: usuarios.get(String(i.fields.Respons_x00e1_velLookupId))?.nome ?? "",
