@@ -160,7 +160,7 @@ function SlideCronosDay({ agora }: { agora: Date }) {
 /** Um slide por categoria: aniversários juntos, tempo de casa juntos (a montagem do RH já reúne as pessoas). */
 function SlideMural({ posts }: { posts: PostVigente[] }) {
   const navigate = useNavigate();
-  const post = posts[0]!;
+  const post = posts[0];
   const varios = posts.length > 1;
   const [imgs, setImgs] = useState<(string | null)[]>([]);
   const chave = posts.map((p) => p.imagem_path ?? "").join("|");
@@ -168,6 +168,7 @@ function SlideMural({ posts }: { posts: PostVigente[] }) {
     Promise.all(posts.map((p) => urlImagem(p.imagem_path))).then(setImgs);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chave]);
+  if (!post) return null;
   const data = post.data_post.split("-").reverse().join("/");
   const resumo = !varios && post.texto ? post.texto.slice(0, 160) + (post.texto.length > 160 ? "…" : "") : "";
   const titulo = varios ? posts.map((p) => p.titulo).join(" · ") : post.titulo;
@@ -177,7 +178,7 @@ function SlideMural({ posts }: { posts: PostVigente[] }) {
     const { default: confetti } = await import("canvas-confetti");
     const cor = (v: string) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
     confetti({ particleCount: 90, spread: 75, origin: { y: 0.45 }, colors: [cor("--sidebar"), cor("--primary"), cor("--accent"), "#FFD700"] });
-    setTimeout(() => navigate(varios ? { to: "/mural" } : { to: "/mural", search: { post: post.id } }), 900);
+    setTimeout(() => navigate({ to: "/mural", search: { post: post.id }, resetScroll: false }), 900);
   };
 
   const config = {
@@ -196,7 +197,7 @@ function SlideMural({ posts }: { posts: PostVigente[] }) {
       acao={
         <>
           {post.tipo === "geral"
-            ? <Link to="/mural" search={{ post: post.id }} className="hc-btn">{config.botao}</Link>
+            ? <Link to="/mural" search={{ post: post.id }} resetScroll={false} className="hc-btn">{config.botao}</Link>
             : <button type="button" className="hc-btn" onClick={parabenizar}><Heart /> {config.botao}</button>}
           <span className="hc-data">{data} · Cronos Family</span>
         </>
