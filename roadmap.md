@@ -36,5 +36,5 @@
 - [x] Permitir adicionar e editar formulários e validar salvamento e permissões.
 
 ## Pendências de informação documentada
-- [ ] Mapear a lista Revisão de Documentos e integrar as pendências do responsável.
-- [ ] Adicionar a seção sanfonada e validar regras e leitura autenticada.
+- [x] Mapear a lista Revisão de Documentos e integrar as pendências do responsável.
+- [x] Adicionar a seção sanfonada e validar regras e leitura autenticada (conta atual sem revisões pendentes).
