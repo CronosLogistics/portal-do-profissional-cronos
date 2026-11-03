@@ -28,14 +28,14 @@ export function pessoasDoUsuario(tipo: TipoPendenciaPessoas, itens: ItemAnaliseN
     if (!gestaoPessoas && (!cfg.pessoa || !indicado?.email || indicado.email.trim().toLowerCase() !== alvo)) return [];
     const status = String(f[tipo === "agendamento" ? "StatusdoTreinamento" : "Status"] ?? "");
     if (/^(finalizad|cancelad|reprovad)/i.test(status)) return [];
-    if (tipo === "agendamento" && /^(cancelad|reprovad)/i.test(String(f.Aprovado ?? ""))) return [];
+    if (tipo === "agendamento" && /^(cancelad|reprovad)/i.test(String(f["Aprovado"] ?? ""))) return [];
     if (tipo === "experiencia" && status.trim()) return [];
-    if (tipo === "feedback" && String(f.FinalizadoFeeback_x003f_ ?? "").toLowerCase() === "sim") return [];
-    const admissao = new Date(String(f.Admiss_x00e3_o ?? "")).getTime();
+    if (tipo === "feedback" && String(f["FinalizadoFeeback_x003f_"] ?? "").toLowerCase() === "sim") return [];
+    const admissao = new Date(String(f["Admiss_x00e3_o"] ?? "")).getTime();
     const limite = tipo === "rq0244" ? 30 : 7;
     const prazoMs = admissao + limite * 86_400_000;
     const hoje = new Date(agora.toLocaleDateString("en-CA", { timeZone: "America/Sao_Paulo" }) + "T00:00:00-03:00").getTime();
     const dias = (tipo === "rq0244" || tipo === "rq0216") && Number.isFinite(admissao) ? Math.round((prazoMs - hoje) / 86_400_000) : null;
-    return [{ id: i.id, nome: String(f.Title ?? "—"), status: status || "Pendente", detalhe: String(f[tipo === "experiencia" ? "Experi_x00ea_ncia" : tipo === "anexos" ? "Turma" : tipo === "rq0244" ? "Treinamentopara" : tipo === "feedback" ? "Classifica_x00e7__x00e3_o" : "Aprovado"] ?? "—"), data: String(f[tipo === "experiencia" ? "DatadoAgendamento" : tipo === "agendamento" ? "DataSugerida" : tipo === "anexos" ? "DatadoTreinamento" : tipo === "feedback" ? "DatadoFeedback" : "Admiss_x00e3_o"] ?? ""), responsavel: (tipo === "experiencia" ? pessoa(f, "Respons_x00e1_velLookupId") : indicado)?.nome ?? "—", gestor: pessoa(f, "GestorRespons_x00e1_velLookupId")?.nome ?? "—", prazo: dias === null ? "" : new Date(prazoMs).toISOString(), dias, link: `https://cronoslogisticscombr.sharepoint.com/sites/peoplemanagementteamgroup/Lists/${encodeURIComponent(cfg.caminho)}/EditForm.aspx?ID=${encodeURIComponent(i.id)}` }];
+    return [{ id: i.id, nome: String(f["Title"] ?? "—"), status: status || "Pendente", detalhe: String(f[tipo === "experiencia" ? "Experi_x00ea_ncia" : tipo === "anexos" ? "Turma" : tipo === "rq0244" ? "Treinamentopara" : tipo === "feedback" ? "Classifica_x00e7__x00e3_o" : "Aprovado"] ?? "—"), data: String(f[tipo === "experiencia" ? "DatadoAgendamento" : tipo === "agendamento" ? "DataSugerida" : tipo === "anexos" ? "DatadoTreinamento" : tipo === "feedback" ? "DatadoFeedback" : "Admiss_x00e3_o"] ?? ""), responsavel: (tipo === "experiencia" ? pessoa(f, "Respons_x00e1_velLookupId") : indicado)?.nome ?? "—", gestor: pessoa(f, "GestorRespons_x00e1_velLookupId")?.nome ?? "—", prazo: dias === null ? "" : new Date(prazoMs).toISOString(), dias, link: `https://cronoslogisticscombr.sharepoint.com/sites/peoplemanagementteamgroup/Lists/${encodeURIComponent(cfg.caminho)}/EditForm.aspx?ID=${encodeURIComponent(i.id)}` }];
   });
 }
