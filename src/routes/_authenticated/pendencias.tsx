@@ -76,8 +76,8 @@ function PendenciasPage() {
               </Accordion>
             </Grupo>
 
-            <Grupo titulo="RQ-00-13 — SM e EL">
-              <Accordion type="multiple" className="rounded-lg border bg-card">
+            <Grupo titulo="RQ-00-13 — SM e EL" totais={[sm.length, planoSM.length]}>
+              <Accordion type="multiple" className="rounded-lg border bg-card [&>div:last-child]:border-b-0">
                 <Secao valor="analise-sm" titulo="Análise" total={sm.length}>
                   <ListaNC itens={sm} rotulo="SM" vazio="Nenhuma análise de SM pendente para você." />
                 </Secao>
@@ -100,11 +100,16 @@ function PendenciasGestaoPessoas() {
   const q = useQuery({ queryKey: ["pendencias-pessoas", me.data?.id], queryFn: () => buscar(), enabled: !!me.data?.id, staleTime: 60_000 });
   if (q.isLoading) return <p className="text-sm text-muted-foreground">Carregando…</p>;
   if (q.error) return <p className="rounded-lg border border-destructive/40 bg-card p-4 text-sm text-destructive">{q.error.message}</p>;
-  return <Accordion type="multiple" className="rounded-lg border bg-card">
-    {(Object.keys(LISTAS_PESSOAS) as TipoPendenciaPessoas[]).map((tipo, indice, tipos) => <Secao key={tipo} valor={tipo} titulo={LISTAS_PESSOAS[tipo].titulo} total={q.data?.listas[tipo]?.length ?? 0} ultimo={indice === tipos.length - 1}>
-      {q.data?.erros[tipo] ? <p className="py-4 text-sm text-destructive">{q.data.erros[tipo]}</p> : <ListaPessoas tipo={tipo} itens={q.data?.listas[tipo] ?? []} />}
-    </Secao>)}
-  </Accordion>;
+  const tipos = Object.keys(LISTAS_PESSOAS) as TipoPendenciaPessoas[];
+  const visiveis = tipos.filter(tipo => temPendencias(q.data?.listas[tipo]?.length ?? 0));
+  return <>
+    {tipos.filter(tipo => q.data?.erros[tipo]).map(tipo => <p key={tipo} role="alert" className="py-4 text-sm text-destructive">{LISTAS_PESSOAS[tipo].titulo}: {q.data?.erros[tipo]}</p>)}
+    {visiveis.length > 0 && <Accordion type="multiple" className="rounded-lg border bg-card">
+      {visiveis.map((tipo, indice) => <Secao key={tipo} valor={tipo} titulo={LISTAS_PESSOAS[tipo].titulo} total={q.data?.listas[tipo]?.length ?? 0} ultimo={indice === visiveis.length - 1}>
+        <ListaPessoas tipo={tipo} itens={q.data?.listas[tipo] ?? []} />
+      </Secao>)}
+    </Accordion>}
+  </>;
 }
 
 function ListaPessoas({ tipo, itens }: { tipo: TipoPendenciaPessoas; itens: PendenciaPessoas[] }) {
@@ -136,7 +141,8 @@ function ListaPessoas({ tipo, itens }: { tipo: TipoPendenciaPessoas; itens: Pend
   </table></div>;
 }
 
-function Grupo({ titulo, children }: { titulo: string; children?: React.ReactNode }) {
+function Grupo({ titulo, totais, children }: { titulo: string; totais: number[]; children?: React.ReactNode }) {
+  if (!temPendencias(...totais)) return null;
   return (
     <section className="space-y-2">
       <h2 className="uppercase-tracked px-1 text-primary">{titulo}</h2>
@@ -146,6 +152,7 @@ function Grupo({ titulo, children }: { titulo: string; children?: React.ReactNod
 }
 
 function Secao({ valor, titulo, total, ultimo, children }: { valor: string; titulo: string; total: number; ultimo?: boolean; children: React.ReactNode }) {
+  if (!temPendencias(total)) return null;
   return (
     <AccordionItem value={valor} className={ultimo ? "border-b-0" : undefined}>
       <AccordionTrigger className="px-5 text-base font-semibold text-foreground hover:no-underline">
