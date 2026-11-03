@@ -53,33 +53,53 @@ function PendenciasPage() {
           {q.error && <p className="rounded-lg border border-destructive/40 bg-card p-4 text-sm text-destructive">{q.error.message}</p>}
           {q.data?.erro && <p className="rounded-lg border border-destructive/40 bg-card p-4 text-sm text-destructive">{q.data.erro}</p>}
           {q.data && (
-            <Accordion type="multiple" className="rounded-lg border bg-card">
-              <AccordionItem value="analise-nc">
-                <AccordionTrigger className="px-5 text-base font-semibold text-foreground hover:no-underline">
-                  <span className="flex items-center gap-2">Análise de NC <span className="rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground">{analise.length}</span></span>
-                </AccordionTrigger>
-                <AccordionContent className="px-5"><ListaNC itens={analise} /></AccordionContent>
-              </AccordionItem>
-              <AccordionItem value="analise-nc-maior">
-                <AccordionTrigger className="px-5 text-base font-semibold text-foreground hover:no-underline">
-                  <span className="flex items-center gap-2">Análise de NC maior <span className="rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground">{maior.length}</span></span>
-                </AccordionTrigger>
-                <AccordionContent className="px-5"><ListaNC itens={maior} vazio="Nenhuma análise de NC maior pendente para você." /></AccordionContent>
-              </AccordionItem>
-              <AccordionItem value="plano-acao">
-                <AccordionTrigger className="px-5 text-base font-semibold text-foreground hover:no-underline">
-                  <span className="flex items-center gap-2">Plano de ação <span className="rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground">{plano.length}</span></span>
-                </AccordionTrigger>
-                <AccordionContent className="px-5"><ListaNC itens={plano} vazio="Nenhum plano de ação pendente para você." colunaDias="Dias em atraso" /></AccordionContent>
-              </AccordionItem>
-              <Secao valor="analise-sm" titulo="Análise de SM" total={sm.length}><ListaNC itens={sm} rotulo="SM" vazio="Nenhuma análise de SM pendente para você." /></Secao>
-              <Secao valor="plano-acao-sm" titulo="Plano de ação SM" total={planoSM.length}><ListaNC itens={planoSM} rotulo="SM" vazio="Nenhum plano de ação de SM pendente para você." colunaDias="Dias em atraso" /></Secao>
-              <Secao valor="nps" titulo="NPS" total={nps.length} ultimo><ListaNPS itens={nps} /></Secao>
-            </Accordion>
+            <div className="space-y-6">
+              <Grupo titulo="NPS">
+                <Accordion type="multiple" className="rounded-lg border bg-card">
+                  <Secao valor="nps" titulo="NPS" total={nps.length} ultimo><ListaNPS itens={nps} /></Secao>
+                </Accordion>
+              </Grupo>
+
+              <Grupo titulo="RQ-00-01 — Controle de informação documentada" />
+
+              <Grupo titulo="RQ-00-02 — NC">
+                <Accordion type="multiple" className="rounded-lg border bg-card">
+                  <Secao valor="analise-nc" titulo="Análise" total={analise.length}>
+                    <ListaNC itens={analise} />
+                  </Secao>
+                  <Secao valor="analise-nc-maior" titulo="Análise Maior" total={maior.length}>
+                    <ListaNC itens={maior} vazio="Nenhuma análise de NC maior pendente para você." />
+                  </Secao>
+                  <Secao valor="plano-acao" titulo="Plano de Ação" total={plano.length} ultimo>
+                    <ListaNC itens={plano} vazio="Nenhum plano de ação pendente para você." colunaDias="Dias em atraso" />
+                  </Secao>
+                </Accordion>
+              </Grupo>
+
+              <Grupo titulo="RQ-00-13 — SM e EL">
+                <Accordion type="multiple" className="rounded-lg border bg-card">
+                  <Secao valor="analise-sm" titulo="Análise" total={sm.length}>
+                    <ListaNC itens={sm} rotulo="SM" vazio="Nenhuma análise de SM pendente para você." />
+                  </Secao>
+                  <Secao valor="plano-acao-sm" titulo="Plano de Ação" total={planoSM.length} ultimo>
+                    <ListaNC itens={planoSM} rotulo="SM" vazio="Nenhum plano de ação de SM pendente para você." colunaDias="Dias em atraso" />
+                  </Secao>
+                </Accordion>
+              </Grupo>
+            </div>
           )}
         </TabsContent>
       </Tabs>
     </main>
+  );
+}
+
+function Grupo({ titulo, children }: { titulo: string; children?: React.ReactNode }) {
+  return (
+    <section className="space-y-2">
+      <h2 className="uppercase-tracked px-1 text-primary">{titulo}</h2>
+      {children}
+    </section>
   );
 }
 
