@@ -26,13 +26,8 @@ export const Route = createFileRoute("/_authenticated/pendencias")({
 
 function PendenciasPage() {
   const me = useCurrentUser();
-  const isAdmin = !!me.data?.isAdmin;
   const buscar = useServerFn(minhasPendencias);
-  const q = useQuery({ queryKey: ["pendencias"], queryFn: () => buscar(), enabled: isAdmin });
-
-  if (me.data && !isAdmin) {
-    return <main className="mx-auto w-full max-w-4xl px-4 py-8 sm:px-8"><p className="text-sm text-muted-foreground">Esta área ainda não está disponível.</p></main>;
-  }
+  const q = useQuery({ queryKey: ["pendencias", me.data?.id], queryFn: () => buscar(), enabled: !!me.data?.id });
   const analise = q.data?.analiseNC ?? [];
   const maior = q.data?.analiseNCMaior ?? [];
   const plano = q.data?.planoAcao ?? [];
@@ -110,7 +105,7 @@ function PendenciasPage() {
 function PendenciasGestaoPessoas() {
   const buscar = useServerFn(minhasPendenciasPessoas);
   const me = useCurrentUser();
-  const q = useQuery({ queryKey: ["pendencias-pessoas", me.data?.id], queryFn: () => buscar(), enabled: !!me.data?.isAdmin, staleTime: 60_000 });
+  const q = useQuery({ queryKey: ["pendencias-pessoas", me.data?.id], queryFn: () => buscar(), enabled: !!me.data?.id, staleTime: 60_000 });
   if (q.isLoading) return <p className="text-sm text-muted-foreground">Carregando…</p>;
   if (q.error) return <p className="rounded-lg border border-destructive/40 bg-card p-4 text-sm text-destructive">{q.error.message}</p>;
   return <Accordion type="multiple" className="rounded-lg border bg-card">

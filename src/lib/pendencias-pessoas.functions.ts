@@ -5,8 +5,6 @@ import { ehGestaoPessoas, LISTAS_PESSOAS, pessoasDoUsuario, type TipoPendenciaPe
 export const minhasPendenciasPessoas = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data: admin, error: erroAdmin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
-    if (erroAdmin || admin !== true) throw new Error("Acesso restrito a administradores.");
     const { data: perfil, error } = await context.supabase.from("profiles").select("email,is_active").eq("id", context.userId).maybeSingle();
     if (error || !perfil?.email || perfil.is_active !== true) throw new Error("Profissional não disponível.");
     const { data: vinculos, error: erroPerfis } = await context.supabase.from("usuario_perfis").select("perfis(nome,ativo)").eq("usuario_id", context.userId);

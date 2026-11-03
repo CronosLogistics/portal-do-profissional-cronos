@@ -14,14 +14,12 @@ type Resultado = {
 };
 const vazio = (erro: string | null): Resultado => ({ analiseNC: [], analiseNCMaior: [], planoAcao: [], analiseSM: [], planoAcaoSM: [], nps: [], revisoes: [], erro });
 
-/** Pendências da Qualidade da pessoa logada. Por enquanto, só administradores. */
+/** Pendências da Qualidade do profissional ativo logado. */
 export const minhasPendencias = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<Resultado> => {
-    const { data: admin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
-    if (admin !== true) throw new Error("Acesso restrito a administradores.");
     const { data: perfil } = await context.supabase.from("profiles").select("email,is_active").eq("id", context.userId).maybeSingle();
-    if (!perfil?.email || perfil.is_active === false) return vazio(null);
+    if (!perfil?.email || perfil.is_active !== true) return vazio(null);
     const email = perfil.email;
     try {
       const { dadosAnaliseNC, titulosNC } = await import("@/lib/pendencias.server");

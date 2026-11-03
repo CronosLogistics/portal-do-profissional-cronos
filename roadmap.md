@@ -43,3 +43,7 @@
 - [x] Mapear as seis listas e campos de responsáveis no SharePoint.
 - [x] Implementar filtros protegidos e a aba com menus sanfonados.
 - [x] Testar regras de visualização e verificar a leitura no portal (conta atual sem pendências atribuídas; leitura de linhas por GP não verificada pela tela).
+
+## Liberação das pendências prioritárias
+- [x] Liberar menu e consultas para todos os profissionais ativos, preservando os filtros por responsável e perfil.
+- [x] Validar testes de acesso para funcionário, RH e administrador e leitura autenticada das duas abas (sessão disponível de administrador; filtros individuais preservados).
