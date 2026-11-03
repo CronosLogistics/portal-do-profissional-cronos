@@ -74,9 +74,37 @@ function PostCard({ post, emFoco, meuId, podeEditar, onEditar }: { post: PostMur
   useEffect(() => { urlImagem(post.imagem_path).then(setImg); }, [post.imagem_path]);
   useEffect(() => {
     if (!emFoco) return;
-    ref.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    setTimeout(() => campo.current?.focus({ preventScroll: true }), 400);
-  }, [emFoco]);
+    const timeline = ref.current?.parentElement;
+    if (!timeline) return;
+    let frame = 0;
+    let stopped = false;
+    // Images (including earlier posts) can change the comment's position after navigation.
+    const posicionar = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        if (stopped) return;
+        campo.current?.scrollIntoView({ behavior: "instant", block: "center" });
+        campo.current?.focus({ preventScroll: true });
+      });
+    };
+    const observer = new ResizeObserver(posicionar);
+    const parar = () => {
+      stopped = true;
+      observer.disconnect();
+      cancelAnimationFrame(frame);
+    };
+    observer.observe(timeline);
+    posicionar();
+    // Never fight scrolling or typing once the person starts interacting.
+    const eventos = ["wheel", "touchstart", "pointerdown", "keydown"] as const;
+    eventos.forEach((evento) => window.addEventListener(evento, parar, { passive: true, once: true }));
+    const timeout = window.setTimeout(parar, 10_000);
+    return () => {
+      parar();
+      window.clearTimeout(timeout);
+      eventos.forEach((evento) => window.removeEventListener(evento, parar));
+    };
+  }, [emFoco, post.id]);
   const atualizar = () => qc.invalidateQueries({ queryKey: muralKey });
   const enviar = useMutation({
     mutationFn: () => comentar(post.id, texto),
@@ -99,7 +127,7 @@ function PostCard({ post, emFoco, meuId, podeEditar, onEditar }: { post: PostMur
       <span className="mural-data">{dataBR(post.data_post)}</span>
       <article className="rounded-lg border bg-card p-5 shadow-sm">
         <div className="flex items-start justify-between gap-3">
-          <h2 className="text-xl font-bold text-foreground">{post.titulo}</h2>
+          <h2 id={`titulo-post-${post.id}`} className="text-xl font-bold text-foreground">{post.titulo}</h2>
           {podeEditar && (
             <div className="flex gap-1">
               <Button size="icon" variant="ghost" aria-label="Editar post" onClick={onEditar}><Pencil /></Button>
@@ -134,7 +162,7 @@ function PostCard({ post, emFoco, meuId, podeEditar, onEditar }: { post: PostMur
             {post.comentarios.map((c) => <Comentario key={c.id} c={c} meu={c.usuario_id === meuId} podeRemover={podeEditar} onMudou={atualizar} />)}
           </ul>
           <form className="mt-4 flex gap-2" onSubmit={(e) => { e.preventDefault(); if (texto.trim()) enviar.mutate(); }}>
-            <Textarea ref={campo} rows={2} maxLength={1000} value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Escreva sua mensagem de parabéns…" aria-label="Comentário" />
+            <Textarea ref={campo} rows={2} maxLength={1000} value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Escreva sua mensagem de parabéns…" aria-label="Comentário" aria-describedby={`titulo-post-${post.id}`} />
             <Button type="submit" disabled={!texto.trim() || enviar.isPending}>Comentar</Button>
           </form>
         </div>
