@@ -8,6 +8,7 @@ import { minhasPendencias } from "@/lib/pendencias.functions";
 import { minhasPendenciasPessoas } from "@/lib/pendencias-pessoas.functions";
 import { LISTAS_PESSOAS, type TipoPendenciaPessoas, type PendenciaPessoas } from "@/lib/pendencias-pessoas.rules";
 import type { PendenciaNC, PendenciaNPS, PendenciaRevisao } from "@/lib/pendencias.rules";
+import { temPendencias } from "@/lib/pendencias-visibility";
 
 export const Route = createFileRoute("/_authenticated/pendencias")({
   head: () => ({
@@ -47,13 +48,13 @@ function PendenciasPage() {
       <div className="space-y-6">
         {q.data && (
           <>
-            <Grupo titulo="Satisfação do cliente">
+            <Grupo titulo="Satisfação do cliente" totais={[nps.length]}>
               <Accordion type="multiple" className="rounded-lg border bg-card">
                 <Secao valor="nps" titulo="Satisfação do cliente" total={nps.length} ultimo><ListaNPS itens={nps} /></Secao>
               </Accordion>
             </Grupo>
 
-            <Grupo titulo="RQ-00-01 — Controle de informação documentada">
+            <Grupo titulo="RQ-00-01 — Controle de informação documentada" totais={[revisoes.length]}>
               <Accordion type="multiple" className="rounded-lg border bg-card">
                 <Secao valor="revisao-documentos" titulo="Revisão de documentos" total={revisoes.length} ultimo>
                   <ListaRevisoes itens={revisoes} />
@@ -61,8 +62,8 @@ function PendenciasPage() {
               </Accordion>
             </Grupo>
 
-            <Grupo titulo="RQ-00-02 — NC">
-              <Accordion type="multiple" className="rounded-lg border bg-card">
+            <Grupo titulo="RQ-00-02 — NC" totais={[analise.length, maior.length, plano.length]}>
+              <Accordion type="multiple" className="rounded-lg border bg-card [&>div:last-child]:border-b-0">
                 <Secao valor="analise-nc" titulo="Análise" total={analise.length}>
                   <ListaNC itens={analise} />
                 </Secao>
