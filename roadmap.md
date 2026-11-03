@@ -40,6 +40,6 @@
 - [x] Adicionar a seção sanfonada e validar regras e leitura autenticada (conta atual sem revisões pendentes).
 
 ## Pendências de Gestão de Pessoas
-- [ ] Mapear as seis listas e campos de responsáveis no SharePoint.
-- [ ] Implementar filtros protegidos e a aba com menus sanfonados.
-- [ ] Testar regras de visualização e verificar a leitura no portal.
+- [x] Mapear as seis listas e campos de responsáveis no SharePoint.
+- [x] Implementar filtros protegidos e a aba com menus sanfonados.
+- [x] Testar regras de visualização e verificar a leitura no portal (conta atual sem pendências atribuídas; leitura de linhas por GP não verificada pela tela).
