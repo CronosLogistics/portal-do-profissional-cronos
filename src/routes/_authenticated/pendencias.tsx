@@ -88,13 +88,13 @@ function PendenciasPage() {
             </Grupo>
           </>
         )}
-        <PendenciasGestaoPessoas />
+        <PendenciasGestaoPessoas qualidadeVazia={q.isSuccess && !q.isFetching && !q.data.erro && !temPendencias(analise.length, maior.length, plano.length, sm.length, planoSM.length, nps.length, revisoes.length)} />
       </div>
     </main>
   );
 }
 
-function PendenciasGestaoPessoas() {
+function PendenciasGestaoPessoas({ qualidadeVazia }: { qualidadeVazia: boolean }) {
   const buscar = useServerFn(minhasPendenciasPessoas);
   const me = useCurrentUser();
   const q = useQuery({ queryKey: ["pendencias-pessoas", me.data?.id], queryFn: () => buscar(), enabled: !!me.data?.id, staleTime: 60_000 });
@@ -103,6 +103,7 @@ function PendenciasGestaoPessoas() {
   const tipos = Object.keys(LISTAS_PESSOAS) as TipoPendenciaPessoas[];
   const visiveis = tipos.filter(tipo => temPendencias(q.data?.listas[tipo]?.length ?? 0));
   return <>
+    {qualidadeVazia && q.isSuccess && !q.isFetching && !tipos.some(tipo => q.data.erros[tipo]) && visiveis.length === 0 && <p role="status" className="py-12 text-center text-sm text-muted-foreground">Você não tem pendências no momento.</p>}
     {tipos.filter(tipo => q.data?.erros[tipo]).map(tipo => <p key={tipo} role="alert" className="py-4 text-sm text-destructive">{LISTAS_PESSOAS[tipo].titulo}: {q.data?.erros[tipo]}</p>)}
     {visiveis.length > 0 && <Accordion type="multiple" className="rounded-lg border bg-card">
       {visiveis.map((tipo, indice) => <Secao key={tipo} valor={tipo} titulo={LISTAS_PESSOAS[tipo].titulo} total={q.data?.listas[tipo]?.length ?? 0} ultimo={indice === visiveis.length - 1}>
