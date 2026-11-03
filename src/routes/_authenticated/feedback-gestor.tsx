@@ -4,6 +4,7 @@ import { MessageSquare, ExternalLink, RefreshCw, UserRound } from "lucide-react"
 import { meusFeedbacksGestor } from "@/lib/feedback-gestor.functions";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 const feedbacksQuery = queryOptions({ queryKey: ["feedbacks-gestor-recebidos"], queryFn: () => meusFeedbacksGestor(), staleTime: 60_000 });
 
@@ -30,11 +31,28 @@ function FeedbackGestorPage() {
       <header className="mb-6 flex items-start justify-between gap-4">
         <div>
         <h1 className="text-3xl font-bold text-foreground">Feedback do gestor</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Feedbacks recebidos</p>
+        <p className="mt-1 text-sm text-muted-foreground">Seus feedbacks e registros pendentes.</p>
         </div>
         <Button variant="outline" size="icon" title="Atualizar feedbacks" aria-label="Atualizar feedbacks" disabled={q.isFetching} onClick={() => void q.refetch()}><RefreshCw className={q.isFetching ? "animate-spin" : ""} /></Button>
       </header>
-      {q.data.erro ? <p role="alert" className="border-l-2 border-destructive p-4 text-sm text-destructive">{q.data.erro}</p> : q.data.feedbacks.length === 0 ? <div className="py-12 text-center text-muted-foreground"><MessageSquare className="mx-auto mb-3 h-8 w-8" /><p className="text-sm">Nenhum feedback recebido por enquanto.</p></div> : (
+      {q.data.erro ? <p role="alert" className="border-l-2 border-destructive p-4 text-sm text-destructive">{q.data.erro}</p> : <Tabs defaultValue="responder">
+        <TabsList className="mb-4 h-auto flex-wrap justify-start">
+          <TabsTrigger value="responder">Para responder ({q.data.pendencias.length})</TabsTrigger>
+          <TabsTrigger value="recebidos">Recebidos ({q.data.feedbacks.length})</TabsTrigger>
+        </TabsList>
+        <TabsContent value="responder">
+          {q.data.pendencias.length === 0 ? <p role="status" className="py-12 text-center text-sm text-muted-foreground">Você não tem feedbacks pendentes para responder.</p> : <Accordion type="multiple">
+            {q.data.pendencias.map(p => <AccordionItem key={p.id} value={p.id}>
+              <AccordionTrigger className="gap-4 hover:no-underline"><span className="flex min-w-0 flex-wrap items-center gap-3"><span className="break-words font-semibold">{p.nome}</span><span className="text-xs text-muted-foreground">{p.status}</span></span></AccordionTrigger>
+              <AccordionContent>
+                <dl className="space-y-2 text-sm"><div>Profissional: {p.nome}</div><div>Autor: {p.responsavel}</div><div>Classificação: {p.detalhe}</div>{p.data && <div>Data do feedback: {new Date(p.data).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" })}</div>}</dl>
+                <Button asChild variant="link" className="mt-3 px-0"><a href={p.link} target="_blank" rel="noopener noreferrer">Responder no SharePoint <ExternalLink /></a></Button>
+              </AccordionContent>
+            </AccordionItem>)}
+          </Accordion>}
+        </TabsContent>
+        <TabsContent value="recebidos">
+      {q.data.feedbacks.length === 0 ? <div className="py-12 text-center text-muted-foreground"><MessageSquare className="mx-auto mb-3 h-8 w-8" /><p className="text-sm">Nenhum feedback recebido por enquanto.</p></div> : (
         <Accordion type="multiple" className="w-full">
           {q.data.feedbacks.map(f => <AccordionItem key={f.id} value={f.id}>
             <AccordionTrigger className="gap-4 hover:no-underline">
@@ -52,6 +70,8 @@ function FeedbackGestorPage() {
           </AccordionItem>)}
         </Accordion>
       )}
+        </TabsContent>
+      </Tabs>}
     </main>
   );
 }

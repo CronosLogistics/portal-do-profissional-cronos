@@ -1,5 +1,6 @@
 # Atualização visual do Portal do Profissional
 ## Feedback do gestor via SharePoint
+- [ ] Exibir pendências para responder por Autor, separadas dos feedbacks recebidos, e validar.
 - [x] Mapear destinatário e conteúdo da lista Feedbacks Gestores.
 - [x] Integrar mensagens recebidas por profissional; 13 testes passam e leitura autenticada sem erros (conta atual sem feedbacks recebidos; abertura de mensagem real não verificada pela tela).
 
