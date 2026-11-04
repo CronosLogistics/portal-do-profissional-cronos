@@ -1,7 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ArrowRight, Loader2, ShieldCheck } from "lucide-react";
-import loginImage from "@/assets/portal-login.jpg";
+import loginImageAsset from "@/assets/login-cidade-cronos.jpg.asset.json";
+const loginImage = loginImageAsset.url;
 
 import cronosLogo from "@/assets/cronos-full-logo.png.asset.json";
 import { supabase } from "@/integrations/supabase/client";
@@ -50,7 +51,7 @@ function AuthPage() {
   return (
     <main className="login-page">
       <section className="login-image-panel" aria-label="Profissionais da Cronos">
-        <img src={loginImage} alt="Profissionais trabalhando juntos em uma operação logística" width={1024} height={1536} className="login-photo" />
+        <img src={loginImage} alt="Vista da cidade com a frase Time is our partner" width={1920} height={923} className="login-photo" />
         <div className="login-image-shade" />
         <img src={cronosLogo.url} alt="Cronos Logistics" className="login-image-logo" />
         <div className="login-image-caption"><p>CRONOS LOGISTICS</p><h2>Portal do<br />Profissional</h2></div>
