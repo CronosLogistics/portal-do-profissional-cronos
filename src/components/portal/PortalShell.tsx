@@ -21,6 +21,7 @@ const moduleIcons: Record<PortalModule["to"], LucideIcon> = {
   "/recompensas": Award,
   "/treinamentos": GraduationCap,
   "/formularios": ClipboardList,
+  "/formularios-internos": ClipboardList,
   "/documentos": FolderOpen,
   "/feedback": MessageSquareHeart,
   "/feedback-gestor": MessageSquareHeart,

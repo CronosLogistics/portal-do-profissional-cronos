@@ -10,7 +10,7 @@ export const PERMISSOES = [
   { codigo: "avisos.insider", nome: "Publicar o Cronos Insider", descricao: "Ver a opção Cronos Insider em Novo aviso; a edição fica 3 dias no carrossel da página Início." },
   { codigo: "conteudo.editar", nome: "Editar conteúdos", descricao: "Cadastrar benefícios, parceiros, recompensas e textos do portal." },
   { codigo: "documentos.gerenciar", nome: "Gerenciar documentos", descricao: "Incluir, editar e remover links na página Documentos." },
-  { codigo: "formularios.gerenciar", nome: "Gerenciar formulários", descricao: "Adicionar e editar links na página Formulários." },
+  { codigo: "formularios.gerenciar", nome: "Gerenciar formulários", descricao: "Gerenciar links, criar questionários internos e consultar resultados respeitando o anonimato." },
   { codigo: "pendencias.liderados", nome: "Visualizar pendências dos liderados", descricao: "Consultar pendências dos níveis abaixo na hierarquia do departamento, conforme o SharePoint." },
 ] as const;
 

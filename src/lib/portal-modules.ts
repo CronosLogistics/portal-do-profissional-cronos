@@ -8,7 +8,7 @@ export type PortalRole = "admin" | "rh" | "funcionario";
 export type PortalNavGroup = "beneficios" | "feedbacks" | "avisos";
 
 export type PortalModule = {
-  to: "/avisos" | "/ferias" | "/mural" | "/beneficios" | "/parceiros" | "/recompensas" | "/treinamentos" | "/formularios" | "/documentos" | "/feedback" | "/feedback-gestor" | "/pendencias";
+  to: "/avisos" | "/ferias" | "/mural" | "/beneficios" | "/parceiros" | "/recompensas" | "/treinamentos" | "/formularios" | "/formularios-internos" | "/documentos" | "/feedback" | "/feedback-gestor" | "/pendencias";
   label: string;
   /** Texto do item quando o módulo aparece como submenu. */
   menuLabel?: string;
@@ -33,6 +33,7 @@ export const PORTAL_MODULES: PortalModule[] = [
   { to: "/recompensas", label: "Programas de Recompensas" },
   { to: "/treinamentos", label: "Treinamentos" },
   { to: "/formularios", label: "Formulários" },
+  { to: "/formularios-internos", label: "Formulários Internos" },
   { to: "/documentos", label: "Documentos" },
   { to: "/feedback", label: "Elogios", menuLabel: "Elogios", group: "feedbacks" },
   { to: "/feedback-gestor", label: "Feedback do gestor", group: "feedbacks" },

@@ -20,6 +20,7 @@ import { Route as AuthenticatedFeedbackRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedFeedbackGestorRouteImport } from './routes/_authenticated/feedback-gestor'
 import { Route as AuthenticatedFeriasRouteImport } from './routes/_authenticated/ferias'
 import { Route as AuthenticatedFormulariosRouteImport } from './routes/_authenticated/formularios'
+import { Route as AuthenticatedFormulariosInternosRouteImport } from './routes/_authenticated/formularios-internos'
 import { Route as AuthenticatedMuralRouteImport } from './routes/_authenticated/mural'
 import { Route as AuthenticatedParceirosRouteImport } from './routes/_authenticated/parceiros'
 import { Route as AuthenticatedPendenciasRouteImport } from './routes/_authenticated/pendencias'
@@ -100,6 +101,12 @@ const AuthenticatedFormulariosRoute =
   AuthenticatedFormulariosRouteImport.update({
     id: '/formularios',
     path: '/formularios',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedFormulariosInternosRoute =
+  AuthenticatedFormulariosInternosRouteImport.update({
+    id: '/formularios-internos',
+    path: '/formularios-internos',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedMuralRoute = AuthenticatedMuralRouteImport.update({
@@ -257,6 +264,7 @@ export interface FileRoutesByFullPath {
   '/feedback-gestor': typeof AuthenticatedFeedbackGestorRoute
   '/ferias': typeof AuthenticatedFeriasRoute
   '/formularios': typeof AuthenticatedFormulariosRoute
+  '/formularios-internos': typeof AuthenticatedFormulariosInternosRoute
   '/mural': typeof AuthenticatedMuralRoute
   '/parceiros': typeof AuthenticatedParceirosRoute
   '/pendencias': typeof AuthenticatedPendenciasRoute
@@ -292,6 +300,7 @@ export interface FileRoutesByTo {
   '/feedback-gestor': typeof AuthenticatedFeedbackGestorRoute
   '/ferias': typeof AuthenticatedFeriasRoute
   '/formularios': typeof AuthenticatedFormulariosRoute
+  '/formularios-internos': typeof AuthenticatedFormulariosInternosRoute
   '/mural': typeof AuthenticatedMuralRoute
   '/parceiros': typeof AuthenticatedParceirosRoute
   '/pendencias': typeof AuthenticatedPendenciasRoute
@@ -331,6 +340,7 @@ export interface FileRoutesById {
   '/_authenticated/feedback-gestor': typeof AuthenticatedFeedbackGestorRoute
   '/_authenticated/ferias': typeof AuthenticatedFeriasRoute
   '/_authenticated/formularios': typeof AuthenticatedFormulariosRoute
+  '/_authenticated/formularios-internos': typeof AuthenticatedFormulariosInternosRoute
   '/_authenticated/mural': typeof AuthenticatedMuralRoute
   '/_authenticated/parceiros': typeof AuthenticatedParceirosRoute
   '/_authenticated/pendencias': typeof AuthenticatedPendenciasRoute
@@ -371,6 +381,7 @@ export interface FileRouteTypes {
     | '/feedback-gestor'
     | '/ferias'
     | '/formularios'
+    | '/formularios-internos'
     | '/mural'
     | '/parceiros'
     | '/pendencias'
@@ -406,6 +417,7 @@ export interface FileRouteTypes {
     | '/feedback-gestor'
     | '/ferias'
     | '/formularios'
+    | '/formularios-internos'
     | '/mural'
     | '/parceiros'
     | '/pendencias'
@@ -444,6 +456,7 @@ export interface FileRouteTypes {
     | '/_authenticated/feedback-gestor'
     | '/_authenticated/ferias'
     | '/_authenticated/formularios'
+    | '/_authenticated/formularios-internos'
     | '/_authenticated/mural'
     | '/_authenticated/parceiros'
     | '/_authenticated/pendencias'
@@ -559,6 +572,13 @@ declare module '@tanstack/react-router' {
       path: '/formularios'
       fullPath: '/formularios'
       preLoaderRoute: typeof AuthenticatedFormulariosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/formularios-internos': {
+      id: '/_authenticated/formularios-internos'
+      path: '/formularios-internos'
+      fullPath: '/formularios-internos'
+      preLoaderRoute: typeof AuthenticatedFormulariosInternosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/mural': {
@@ -779,6 +799,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFeedbackGestorRoute: typeof AuthenticatedFeedbackGestorRoute
   AuthenticatedFeriasRoute: typeof AuthenticatedFeriasRoute
   AuthenticatedFormulariosRoute: typeof AuthenticatedFormulariosRoute
+  AuthenticatedFormulariosInternosRoute: typeof AuthenticatedFormulariosInternosRoute
   AuthenticatedMuralRoute: typeof AuthenticatedMuralRoute
   AuthenticatedParceirosRoute: typeof AuthenticatedParceirosRoute
   AuthenticatedPendenciasRoute: typeof AuthenticatedPendenciasRoute
@@ -800,6 +821,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFeedbackGestorRoute: AuthenticatedFeedbackGestorRoute,
   AuthenticatedFeriasRoute: AuthenticatedFeriasRoute,
   AuthenticatedFormulariosRoute: AuthenticatedFormulariosRoute,
+  AuthenticatedFormulariosInternosRoute: AuthenticatedFormulariosInternosRoute,
   AuthenticatedMuralRoute: AuthenticatedMuralRoute,
   AuthenticatedParceirosRoute: AuthenticatedParceirosRoute,
   AuthenticatedPendenciasRoute: AuthenticatedPendenciasRoute,

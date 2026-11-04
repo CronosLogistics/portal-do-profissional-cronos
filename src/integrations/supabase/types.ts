@@ -1013,6 +1013,94 @@ export type Database = {
           },
         ]
       }
+      questionarios_internos: {
+        Row: {
+          anonimo: boolean
+          criado_em: string
+          criador_id: string
+          descricao: string
+          id: string
+          perguntas: Json
+          sharepoint_registrado: boolean
+          titulo: string
+        }
+        Insert: {
+          anonimo: boolean
+          criado_em?: string
+          criador_id: string
+          descricao?: string
+          id?: string
+          perguntas: Json
+          sharepoint_registrado?: boolean
+          titulo: string
+        }
+        Update: {
+          anonimo?: boolean
+          criado_em?: string
+          criador_id?: string
+          descricao?: string
+          id?: string
+          perguntas?: Json
+          sharepoint_registrado?: boolean
+          titulo?: string
+        }
+        Relationships: []
+      }
+      questionarios_participacoes: {
+        Row: {
+          questionario_id: string
+          usuario_id: string
+        }
+        Insert: {
+          questionario_id: string
+          usuario_id: string
+        }
+        Update: {
+          questionario_id?: string
+          usuario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "questionarios_participacoes_questionario_id_fkey"
+            columns: ["questionario_id"]
+            isOneToOne: false
+            referencedRelation: "questionarios_internos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      questionarios_respostas: {
+        Row: {
+          id: string
+          questionario_id: string
+          respondente_id: string | null
+          respostas: Json
+          sharepoint_registrado: boolean
+        }
+        Insert: {
+          id?: string
+          questionario_id: string
+          respondente_id?: string | null
+          respostas: Json
+          sharepoint_registrado?: boolean
+        }
+        Update: {
+          id?: string
+          questionario_id?: string
+          respondente_id?: string | null
+          respostas?: Json
+          sharepoint_registrado?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "questionarios_respostas_questionario_id_fkey"
+            columns: ["questionario_id"]
+            isOneToOne: false
+            referencedRelation: "questionarios_internos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reward_programs: {
         Row: {
           contacts: string
@@ -1284,10 +1372,20 @@ export type Database = {
         }[]
       }
       contar_nao_lidos: { Args: never; Returns: number }
+      criar_questionario: {
+        Args: {
+          _anonimo: boolean
+          _descricao: string
+          _perguntas: Json
+          _titulo: string
+        }
+        Returns: string
+      }
       gere_aviso: {
         Args: { _autor: string; _perfil: string }
         Returns: boolean
       }
+      gestao_questionario: { Args: { _id: string }; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1360,6 +1458,7 @@ export type Database = {
           visivel_ate: string
         }[]
       }
+      listar_questionarios: { Args: never; Returns: Json }
       marcar_todos_avisos_lidos: { Args: never; Returns: number }
       marcar_tour_visto: { Args: never; Returns: undefined }
       membros_perfil: {
@@ -1417,6 +1516,10 @@ export type Database = {
         Returns: boolean
       }
       reservar_sincronizacao: { Args: never; Returns: boolean }
+      responder_questionario: {
+        Args: { _id: string; _respostas: Json }
+        Returns: string
+      }
       salvar_edicao_insider: {
         Args: {
           _conteudo: Json

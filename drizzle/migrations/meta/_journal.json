@@ -190,6 +190,13 @@
       "when": 1793800416032,
       "tag": "0026_departamentos_escopo_email_e_avisos",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1793801832579,
+      "tag": "0027_questionarios_internos",
+      "breakpoints": true
     }
   ]
 }
