@@ -9,41 +9,45 @@ let cache: { expira: number; itens: DocumentoSharePoint[]; erros: string[] } | n
 
 export async function consultarDocumentosSharePoint(key: string, lovable: string) {
   if (cache && cache.expira > Date.now()) return cache;
-  async function filhos(drive: string, raiz: string) {
-    const itens: ItemDocumentoGraph[] = [];
-    let path: string | null = `/v1.0/drives/${drive}/${raiz}/children?$select=id,name,webUrl,folder,file&$top=200`;
-    for (let pagina = 0; path && pagina < 50; pagina++) {
-      const response = await fetch(BASE + path, { headers: { Authorization: `Bearer ${lovable}`, "X-Connection-Api-Key": key } });
+  async function lote(paths: string[]) {
+      const response = await fetch(BASE + "/v1.0/$batch", { method: "POST", headers: { Authorization: `Bearer ${lovable}`, "X-Connection-Api-Key": key, "Content-Type": "application/json" }, body: JSON.stringify({ requests: paths.map((url, id) => ({ id: String(id), method: "GET", url })) }), signal: AbortSignal.timeout(45_000) });
       if (!response.ok) {
         const body = await response.text();
         console.error(`Documentos SharePoint [${response.status}]: ${body}`);
         throw new Error(`SharePoint [${response.status}]: ${body}`);
       }
-      const body = await response.json() as { value: ItemDocumentoGraph[]; "@odata.nextLink"?: string };
-      itens.push(...body.value);
-      path = null;
-      if (body["@odata.nextLink"]) {
-        const next = new URL(body["@odata.nextLink"]);
-        if (next.origin !== "https://graph.microsoft.com" || !next.pathname.startsWith(`/v1.0/drives/${drive}/`)) throw new Error("Paginação inesperada do SharePoint.");
-        path = next.pathname + next.search;
-      }
-    }
-    if (path) throw new Error("Limite de páginas de documentos excedido.");
-    return itens;
+      const body = await response.json() as { responses: { id: string; status: number; body: { value?: ItemDocumentoGraph[]; "@odata.nextLink"?: string; error?: unknown } }[] };
+      return paths.map((_, id) => {
+        const result = body.responses.find(r => r.id === String(id));
+        if (!result || result.status !== 200) throw new Error(`SharePoint [${result?.status}]: ${JSON.stringify(result?.body)}`);
+        return result.body;
+      });
   }
   const resultados = await Promise.all(FONTES.map(async fonte => {
     const itens: DocumentoSharePoint[] = [];
     try {
-      const fila = [{ raiz: fonte.raiz, pasta: "" }];
-      for (let indice = 0; indice < fila.length; indice++) {
-        if (indice >= 500) throw new Error("Limite de pastas excedido.");
-        const atual = fila[indice];
-        if (!atual) break;
-        for (const item of await filhos(fonte.drive, atual.raiz)) {
-          if (item.folder) fila.push({ raiz: `items/${encodeURIComponent(item.id)}`, pasta: [atual.pasta, item.name].filter(Boolean).join(" / ") });
+      const caminho = (raiz: string) => `/drives/${fonte.drive}/${raiz}/children?$select=id,name,webUrl,folder,file&$top=200`;
+      const fila = [{ path: caminho(fonte.raiz), pasta: "" }];
+      let consultas = 0;
+      while (fila.length) {
+        if (consultas > 2000) throw new Error("Limite de pastas excedido.");
+        const grupo = fila.splice(0, 20);
+        consultas += grupo.length;
+        const respostas = await lote(grupo.map(g => g.path));
+        respostas.forEach((body, indice) => {
+          const atual = grupo[indice];
+          if (!atual) return;
+          if (body["@odata.nextLink"]) {
+            const next = new URL(body["@odata.nextLink"]);
+            if (next.origin !== "https://graph.microsoft.com" || !next.pathname.startsWith(`/v1.0/drives/${fonte.drive}/`)) throw new Error("Paginação inesperada do SharePoint.");
+            fila.push({ path: next.pathname.replace(/^\/v1\.0/, "") + next.search, pasta: atual.pasta });
+          }
+          for (const item of body.value ?? []) {
+          if (item.folder) fila.push({ path: caminho(`items/${encodeURIComponent(item.id)}`), pasta: [atual.pasta, item.name].filter(Boolean).join(" / ") });
           const documento = projetarDocumento(item, fonte.categoria, atual.pasta);
           if (documento) itens.push(documento);
-        }
+          }
+        });
       }
       return { itens, erro: null };
     } catch (error) {
