@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { Award, ListChecks, MessageSquareHeart, Building2, ClipboardList, FolderOpen, PartyPopper, ChevronLeft, ChevronRight, Gift, GraduationCap, Home, LogOut, Megaphone, Menu, Settings, Tag, X } from "lucide-react";
+import { Award, CalendarDays, ListChecks, MessageSquareHeart, Building2, ClipboardList, FolderOpen, PartyPopper, ChevronLeft, ChevronRight, Gift, GraduationCap, Home, LogOut, Megaphone, Menu, Settings, Tag, X } from "lucide-react";
 import { TourBoasVindas } from "@/components/portal/TourBoasVindas";
 import { AvisosBell } from "@/components/avisos/AvisosBell";
 import { useAvisosAoVivo, useNaoLidos } from "@/hooks/useAvisos";
@@ -14,6 +14,7 @@ import logo from "@/assets/cronos-full-logo.png.asset.json";
 
 const moduleIcons: Record<PortalModule["to"], LucideIcon> = {
   "/avisos": Megaphone,
+  "/ferias": CalendarDays,
   "/mural": PartyPopper,
   "/beneficios": Gift,
   "/parceiros": Tag,
@@ -26,7 +27,7 @@ const moduleIcons: Record<PortalModule["to"], LucideIcon> = {
   "/pendencias": ListChecks,
 };
 
-const groupIcons: Record<PortalNavGroup, LucideIcon> = { beneficios: Gift, feedbacks: MessageSquareHeart };
+const groupIcons: Record<PortalNavGroup, LucideIcon> = { beneficios: Gift, feedbacks: MessageSquareHeart, avisos: Megaphone };
 
 type NavTarget = "/" | PortalModule["to"] | "/admin" | "/admin/usuarios";
 
@@ -91,7 +92,7 @@ function SidebarBranch({
 export function PortalShell({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [openMenus, setOpenMenus] = useState({ beneficios: false, feedbacks: false, admin: false });
+  const [openMenus, setOpenMenus] = useState({ beneficios: false, feedbacks: false, avisos: false, admin: false });
   const me = useCurrentUser();
   const navigate = useNavigate();
   const signOut = useSignOut();
@@ -164,6 +165,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
                     onClick={closeMobile}
                   >
                     {child.label}
+                    {child.to === "/avisos" && naoLidos > 0 && <span className="portal-count-badge portal-nav-badge">{naoLidos > 99 ? "99+" : naoLidos}</span>}
                   </Link>
                 ))}
               </SidebarBranch>

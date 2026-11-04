@@ -5,10 +5,10 @@
  */
 export type PortalRole = "admin" | "rh" | "funcionario";
 
-export type PortalNavGroup = "beneficios" | "feedbacks";
+export type PortalNavGroup = "beneficios" | "feedbacks" | "avisos";
 
 export type PortalModule = {
-  to: "/avisos" | "/mural" | "/beneficios" | "/parceiros" | "/recompensas" | "/treinamentos" | "/formularios" | "/documentos" | "/feedback" | "/feedback-gestor" | "/pendencias";
+  to: "/avisos" | "/ferias" | "/mural" | "/beneficios" | "/parceiros" | "/recompensas" | "/treinamentos" | "/formularios" | "/documentos" | "/feedback" | "/feedback-gestor" | "/pendencias";
   label: string;
   /** Texto do item quando o módulo aparece como submenu. */
   menuLabel?: string;
@@ -19,12 +19,14 @@ export type PortalModule = {
 };
 
 export const PORTAL_NAV_GROUPS: Record<PortalNavGroup, { label: string }> = {
+  avisos: { label: "Avisos" },
   beneficios: { label: "Benefícios" },
   feedbacks: { label: "Feedbacks" },
 };
 
 export const PORTAL_MODULES: PortalModule[] = [
-  { to: "/avisos", label: "Avisos" },
+  { to: "/avisos", label: "Avisos", group: "avisos" },
+  { to: "/ferias", label: "Férias dos Colaboradores", group: "avisos" },
   { to: "/mural", label: "Mural de comemorações" },
   { to: "/beneficios", label: "Benefícios", group: "beneficios" },
   { to: "/parceiros", label: "Parceiros e descontos", menuLabel: "Parceiros", group: "beneficios" },

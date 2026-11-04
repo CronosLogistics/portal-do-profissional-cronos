@@ -1,4 +1,8 @@
 # Atualização visual do Portal do Profissional
+## Consulta de férias
+- [x] Mapear campos de programação, retorno com extras e status dos ativos (colunas/filtros exatos da exibição ATIVOS não disponíveis por Graph v1.0; usados campos de consulta informados ao usuário).
+- [x] Criar submenu em Avisos e tabela com retorno ajustado por dias extras.
+- [x] Validar 9 testes e consulta autenticada com 327 registros reais, busca e tela de 873px sem erros.
 ## Feedback do gestor via SharePoint
 - [x] Exibir pendências para responder por Autor, separadas dos feedbacks recebidos; 15 testes passam e ambas as abas carregam sem erros (conta atual sem registros; resposta real no SharePoint não verificada).
 - [x] Mapear destinatário e conteúdo da lista Feedbacks Gestores.
