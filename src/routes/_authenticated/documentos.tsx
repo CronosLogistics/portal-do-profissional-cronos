@@ -1,22 +1,13 @@
-import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ExternalLink, FileText, Pencil, Plus, Trash2 } from "lucide-react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useCurrentUser } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
+import { ExternalLink, FolderOpen } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/documentos")({
   head: () => ({
     meta: [
-      { title: "Documentos | Portal do Profissional Cronos" },
-      { name: "description", content: "Links para os documentos oficiais da Cronos Logistics." },
-      { property: "og:title", content: "Documentos | Portal do Profissional Cronos" },
-      { property: "og:description", content: "Documentos oficiais da Cronos Logistics em um só lugar." },
+      { title: "Documentos Cronos | Portal do Profissional Cronos" },
+      { name: "description", content: "Qualidade e Modelo documental da Cronos Logistics." },
+      { property: "og:title", content: "Documentos Cronos | Portal do Profissional Cronos" },
+      { property: "og:description", content: "Acesso aos links de Qualidade e Modelo documental da Cronos Logistics." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -24,102 +15,43 @@ export const Route = createFileRoute("/_authenticated/documentos")({
   component: DocumentosPage,
 });
 
-type Documento = { id: string; titulo: string; url: string; departamento: string | null; cargo: string | null };
-const chave = ["documentos"];
-
-async function listar(): Promise<Documento[]> {
-  const { data, error } = await supabase.from("documentos").select("id,titulo,url,departamento,cargo").order("titulo");
-  if (error) throw error;
-  return data;
-}
+const documentos = [
+  {
+    titulo: "Qualidade",
+    url: "https://cronoslogisticscombr.sharepoint.com/sites/CronosLogistics-Principal/Qualidade/Forms/AllItems.aspx?id=%2Fsites%2FCronosLogistics-Principal%2FQualidade%2FQualidade&viewid=36d8fdb7-3836-47a6-8923-d2b071c6f62d&newTargetListUrl=%2Fsites%2FCronosLogistics-Principal%2FQualidade&viewpath=%2Fsites%2FCronosLogistics-Principal%2FQualidade%2FForms%2FAllItems.aspx",
+  },
+  {
+    titulo: "Modelo documental",
+    url: "https://cronoslogisticscombr.sharepoint.com/:f:/s/CronosLogistics-Principal/IgAPDfRFrN4hSL_lTlt7l0VMAawrJeZ4LyYLFVtzJYFUL7M?e=1IjAYm",
+  },
+];
 
 function DocumentosPage() {
-  const me = useCurrentUser();
-  const pode = Boolean(me.data?.can("documentos.gerenciar"));
-  const docs = useQuery({ queryKey: chave, queryFn: listar });
-  const qc = useQueryClient();
-  const [form, setForm] = useState<{ open: boolean; doc?: Documento | undefined }>({ open: false });
-  const excluir = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("documentos").delete().eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => { toast.success("Link removido"); qc.invalidateQueries({ queryKey: chave }); },
-    onError: () => toast.error("Não foi possível remover o link."),
-  });
-
   return (
-    <main className="mx-auto w-full max-w-4xl px-4 py-8 sm:px-8">
-      <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Documentos</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Documentos oficiais da Cronos Logistics (abrem em nova aba).</p>
-        </div>
-        {pode && <Button onClick={() => setForm({ open: true })}><Plus /> Novo link</Button>}
+    <main className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-8">
+      <header>
+        <h1 className="text-3xl font-bold text-foreground">Documentos Cronos</h1>
       </header>
-      {docs.isLoading && <p className="text-sm text-muted-foreground">Carregando…</p>}
-      {docs.data?.length === 0 && (
-        <p className="rounded-lg border bg-card p-8 text-center text-sm text-muted-foreground">Em breve</p>
-      )}
-      {!!docs.data?.length && (
-        <div className="divide-y rounded-lg border bg-card">
-          {docs.data.map((d) => (
-            <div key={d.id} className="flex items-center gap-3 p-4">
-              <FileText className="h-5 w-5 shrink-0 text-primary" />
-              <a href={d.url} target="_blank" rel="noreferrer" className="flex-1 font-semibold text-foreground hover:text-primary">
-                {d.titulo} <ExternalLink className="ml-1 inline h-3.5 w-3.5" />
-              </a>
-              {pode && (
-                <>
-                  <Button size="icon" variant="ghost" aria-label="Editar" onClick={() => setForm({ open: true, doc: d })}><Pencil /></Button>
-                  <Button size="icon" variant="ghost" aria-label="Remover" onClick={() => confirm(`Remover "${d.titulo}"?`) && excluir.mutate(d.id)}><Trash2 /></Button>
-                </>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-      {form.open && <DocForm doc={form.doc} onClose={() => setForm({ open: false })} />}
+      {documentos.map((documento) => (
+        <section key={documento.titulo} className="mt-8">
+          <h2 className="mb-3 text-lg font-bold text-primary">{documento.titulo}</h2>
+          <a
+            href={documento.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex min-w-0 items-center justify-between gap-4 rounded-lg border bg-card p-4 hover:bg-muted/50"
+          >
+            <span className="flex min-w-0 items-center gap-3 font-semibold text-foreground">
+              <FolderOpen className="h-5 w-5 shrink-0 text-primary" />
+              <span className="break-words">{documento.titulo}</span>
+            </span>
+            <span className="flex shrink-0 items-center gap-1 text-sm font-medium text-primary">
+              <span className="hidden sm:inline">Abrir</span>
+              <ExternalLink className="h-4 w-4" />
+            </span>
+          </a>
+        </section>
+      ))}
     </main>
-  );
-}
-
-function DocForm({ doc, onClose }: { doc?: Documento | undefined; onClose: () => void }) {
-  const qc = useQueryClient();
-  const [titulo, setTitulo] = useState(doc?.titulo ?? "");
-  const [url, setUrl] = useState(doc?.url ?? "");
-  const [departamento, setDepartamento] = useState(doc?.departamento ?? "");
-  const [cargo, setCargo] = useState(doc?.cargo ?? "");
-  const salvar = useMutation({
-    mutationFn: async () => {
-      const dados = { titulo: titulo.trim(), url: url.trim(), departamento: departamento.trim() || null, cargo: cargo.trim() || null };
-      const { error } = doc
-        ? await supabase.from("documentos").update(dados).eq("id", doc.id)
-        : await supabase.from("documentos").insert(dados);
-      if (error) throw error;
-    },
-    onSuccess: () => { toast.success("Link salvo"); qc.invalidateQueries({ queryKey: chave }); onClose(); },
-    onError: () => toast.error("Não foi possível salvar. Confira o título e se o endereço começa com https://."),
-  });
-  const valido = titulo.trim() && /^https?:\/\//i.test(url.trim());
-
-  return (
-    <Dialog open onOpenChange={(o) => !o && onClose()}>
-      <DialogContent>
-        <DialogHeader><DialogTitle>{doc ? "Editar link" : "Novo link"}</DialogTitle></DialogHeader>
-        <div className="space-y-4">
-          <div className="space-y-1.5"><Label htmlFor="doc-t">Título</Label><Input id="doc-t" maxLength={150} value={titulo} onChange={(e) => setTitulo(e.target.value)} /></div>
-          <div className="space-y-1.5"><Label htmlFor="doc-u">Endereço (URL)</Label><Input id="doc-u" placeholder="https://" value={url} onChange={(e) => setUrl(e.target.value)} /></div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5"><Label htmlFor="doc-d">Departamento</Label><Input id="doc-d" maxLength={100} placeholder="Todos" value={departamento} onChange={(e) => setDepartamento(e.target.value)} /></div>
-            <div className="space-y-1.5"><Label htmlFor="doc-c">Cargo</Label><Input id="doc-c" maxLength={100} placeholder="Todos" value={cargo} onChange={(e) => setCargo(e.target.value)} /></div>
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancelar</Button>
-          <Button disabled={!valido || salvar.isPending} onClick={() => salvar.mutate()}>Salvar</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
   );
 }
