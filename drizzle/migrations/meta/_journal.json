@@ -225,6 +225,13 @@
       "when": 1793814749699,
       "tag": "0031_avisos_confirmacao_leitura",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1793814990964,
+      "tag": "0032_avisos_confirmacao_catalogo",
+      "breakpoints": true
     }
   ]
 }

@@ -22,11 +22,16 @@ beforeAll(async () => {
   await db.exec(readFileSync(new URL('../../drizzle/migrations/0004_avisos.sql', import.meta.url),'utf8').replace('ALTER PUBLICATION supabase_realtime ADD TABLE public.avisos;', ''));
   await db.exec("ALTER TABLE avisos ADD COLUMN tipo text NOT NULL DEFAULT 'comum'");
   await db.exec(readFileSync(new URL('../../drizzle/migrations/0031_avisos_confirmacao_leitura.sql', import.meta.url),'utf8'));
+  await db.exec(`CREATE FUNCTION usuario_tem_permissao(uuid,text) RETURNS boolean LANGUAGE sql AS $$ SELECT $1='${admin}'::uuid $$;`);
+  await db.exec(readFileSync(new URL('../../drizzle/migrations/0032_avisos_confirmacao_catalogo.sql', import.meta.url),'utf8'));
   await db.query("SELECT set_config('test.uid',$1,false)",[admin]);
   obrigatorio = (await db.query<{id:string}>("INSERT INTO avisos(titulo,perfil_id,exige_confirmacao) VALUES('Ciência',$1,true) RETURNING id",[perfil])).rows[0]?.id ?? '';
   comum = (await db.query<{id:string}>("INSERT INTO avisos(titulo,perfil_id) VALUES('Normal',$1) RETURNING id",[perfil])).rows[0]?.id ?? '';
 },30000);
 afterAll(async () => { await db.close(); });
+it('catálogo do Administrador inclui a permissão de confirmação', async () => {
+  expect((await db.query<{p:string[]}>('SELECT minhas_permissoes() AS p')).rows[0]?.p).toContain('avisos.confirmacao');
+});
 it('leitura automática não confirma ciência nem usa isenção de primeiro acesso', async () => {
   await db.query("SELECT set_config('test.uid',$1,false)",[pessoa]);
   await db.query('INSERT INTO avisos_leituras(aviso_id,usuario_id) VALUES($1,$2)',[obrigatorio,pessoa]);
