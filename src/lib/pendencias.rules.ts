@@ -152,15 +152,15 @@ export function revisoesDoUsuario(itens: ItemAnaliseNC[], email: string, usuario
     if (respondida && !(necessitaRevisao && /^pendente$/i.test(statusRevisao))) return [];
     const criado = new Date(String(f.Created ?? "")).getTime();
     const decorrido = (agora.getTime() - criado) / 86_400_000;
-    const statusAnalise = respondida ? statusSalvo : Number.isFinite(decorrido) ? (decorrido < 1 ? "A vencer" : decorrido <= 2 ? "No prazo" : "Vencido") : statusSalvo || "—";
+    const statusAnalise = respondida ? statusSalvo : Number.isFinite(decorrido) ? (decorrido < 1 ? "A vencer" : decorrido <= 2 ? "No prazo" : "Vencido") : statusSalvo || "-";
     const hoje = new Date(agora.toLocaleDateString("en-CA", { timeZone: "America/Sao_Paulo" }) + "T00:00:00-03:00").getTime();
     const dias = (inicio: number, limite: number) => Number.isFinite(inicio) ? Math.max(0, Math.trunc((hoje - inicio) / 86_400_000 - limite)) : 0;
     return [{
       id: i.id,
-      documento: String(f["Title"] ?? "—"),
-      revisao: String(f["NdaRevis_x00e3_o"] ?? "—"),
+      documento: String(f["Title"] ?? "-"),
+      revisao: String(f["NdaRevis_x00e3_o"] ?? "-"),
       statusAnalise,
-      statusRevisao: statusRevisao || "—",
+      statusRevisao: statusRevisao || "-",
       diasAtrasoAnalise: respondida ? 0 : dias(criado, 2),
       diasAtrasoDocumento: respondida && necessitaRevisao && /^pendente$/i.test(statusRevisao) ? dias(new Date(resposta).getTime(), 7) : 0,
       responsavel: responsavel.nome,

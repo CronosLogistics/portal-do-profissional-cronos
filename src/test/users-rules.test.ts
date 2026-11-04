@@ -52,8 +52,24 @@ describe("navegação do portal", () => {
     expect(nav.some((entry) => entry.type === "link" && entry.to === "/feedback")).toBe(false);
   });
 
-  it("exibe Pendências sem o sufixo prioritárias", () => {
+  it("exibe Pendências sem o sufixo prioritárias logo abaixo do grupo Avisos", () => {
     const nav = principalNav(["funcionario"]);
-    expect(nav.some((entry) => entry.type === "link" && entry.to === "/pendencias" && entry.label === "Pendências")).toBe(true);
+    const idxAvisos = nav.findIndex((entry) => entry.type === "group" && entry.id === "avisos");
+    const idxPendencias = nav.findIndex((entry) => entry.type === "link" && entry.to === "/pendencias" && entry.label === "Pendências");
+    expect(idxPendencias).toBe(idxAvisos + 1);
+  });
+
+  it("agrupa Formulários Internos e Formulários SharePoint sob o menu Formulários", () => {
+    const nav = principalNav(["funcionario"]);
+    const group = nav.find((entry) => entry.type === "group" && entry.id === "formularios");
+    expect(group).toMatchObject({
+      id: "formularios",
+      label: "Formulários",
+      children: [
+        { to: "/formularios-internos", label: "Formulários Internos" },
+        { to: "/formularios", label: "Formulários SharePoint" },
+      ],
+    });
+    expect(nav.some((entry) => entry.type === "link" && (entry.to === "/formularios" || entry.to === "/formularios-internos"))).toBe(false);
   });
 });

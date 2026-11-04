@@ -23,7 +23,7 @@ export const Route = createFileRoute("/_authenticated/ferias")({
 });
 
 function formatarData(data: string | null) {
-  if (!data) return "—";
+  if (!data) return "-";
   return data.split("-").reverse().join("/");
 }
 
@@ -48,9 +48,9 @@ function FeriasPage() {
             <TableCell className="min-w-48 font-semibold">{item.nome}</TableCell>
             <TableCell className="whitespace-nowrap">{formatarData(item.inicio)}</TableCell>
             <TableCell className="whitespace-nowrap">{formatarData(item.fim)}</TableCell>
-            <TableCell>{item.dias ?? "—"}</TableCell>
+            <TableCell>{item.dias ?? "-"}</TableCell>
             <TableCell className="whitespace-nowrap font-semibold">{formatarData(item.retorno)}</TableCell>
-            <TableCell>{item.diasExtras ?? "—"}</TableCell>
+            <TableCell>{item.diasExtras ?? "-"}</TableCell>
             <TableCell className="min-w-40">{item.suplente}</TableCell>
           </TableRow>)}</TableBody>
         </Table>}

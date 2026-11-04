@@ -5,5 +5,5 @@ it("departamento Qualidade não concede administração mesmo com opções do Sh
   expect(permissoesDepartamento({ Permiss_x00e3_odoCoordenador: ["Gerenciar usuários", "Gerenciar perfis", "Gerenciar formulários"] }, "coordenador")).toEqual(["formularios.gerenciar"]);
 });
 it("perfil não Administrador nunca ganha administração pelas permissões cadastradas", () => {
-  expect(permissoesEfetivas(true, [{ id: "qualidade", nome: "QUALIDADE — Coordenador/Gerente", ativo: true, sistema: false, permissoes: ["admin.usuarios", "admin.perfis", "conteudo.editar"] }])).toEqual(["conteudo.editar"]);
+  expect(permissoesEfetivas(true, [{ id: "qualidade", nome: "QUALIDADE - Coordenador/Gerente", ativo: true, sistema: false, permissoes: ["admin.usuarios", "admin.perfis", "conteudo.editar"] }])).toEqual(["conteudo.editar"]);
 });

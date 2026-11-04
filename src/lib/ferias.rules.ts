@@ -25,6 +25,6 @@ export function feriasDosAtivos(itens: ItemFerias[], usuarios: Map<string, strin
     .map(({ id, fields: f }) => ({
       id, nome: String(f["Title"] ?? "Profissional não identificado"), inicio: data(f["Inicio"]), fim: data(f["Fim"]),
       dias: numero(f["Dias"]), retorno: retornoFerias(f), diasExtras: numero(f["DiasExtrasdeAus_x00ea_ncia"]),
-      suplente: usuarios.get(String(f["SuplenteLookupId"] ?? "")) ?? "—",
+      suplente: usuarios.get(String(f["SuplenteLookupId"] ?? "")) ?? "-",
     })).sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
 }

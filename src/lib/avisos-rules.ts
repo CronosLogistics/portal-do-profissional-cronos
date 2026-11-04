@@ -35,6 +35,16 @@ export function tituloComContador(titulo: string, naoLidos: number): string {
   return naoLidos > 0 ? `(${naoLidos > 99 ? "99+" : naoLidos}) ${base}` : base;
 }
 
+/** Busca em título, remetente e texto do aviso (HTML ignorado). */
+export function filtrarAvisosPorBusca<T extends { titulo: string; perfil_nome: string; mensagem: string }>(avisos: T[], busca: string): T[] {
+  const termo = busca.trim().toLocaleLowerCase("pt-BR");
+  if (!termo) return avisos;
+  return avisos.filter((a) => {
+    const texto = `${a.titulo} ${a.perfil_nome} ${a.mensagem.replace(/<[^>]*>/g, " ")}`.toLocaleLowerCase("pt-BR");
+    return texto.includes(termo);
+  });
+}
+
 export function podeEditarAviso(status: StatusAviso) {
   return status === "Agendado" || status === "Publicado";
 }

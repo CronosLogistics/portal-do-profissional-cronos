@@ -8,6 +8,7 @@ import { minhasPendencias } from "@/lib/pendencias.functions";
 import { minhasPendenciasPessoas } from "@/lib/pendencias-pessoas.functions";
 import { LISTAS_PESSOAS, type TipoPendenciaPessoas, type PendenciaPessoas } from "@/lib/pendencias-pessoas.rules";
 import type { PendenciaNC, PendenciaNPS, PendenciaRevisao } from "@/lib/pendencias.rules";
+import { pendenciasKey, pendenciasPessoasKey } from "@/hooks/usePendencias";
 import { temPendencias } from "@/lib/pendencias-visibility";
 
 export const Route = createFileRoute("/_authenticated/pendencias")({
@@ -27,7 +28,7 @@ export const Route = createFileRoute("/_authenticated/pendencias")({
 function PendenciasPage() {
   const me = useCurrentUser();
   const buscar = useServerFn(minhasPendencias);
-  const q = useQuery({ queryKey: ["pendencias", me.data?.id], queryFn: () => buscar(), enabled: !!me.data?.id });
+  const q = useQuery({ queryKey: [...pendenciasKey, me.data?.id], queryFn: () => buscar(), enabled: !!me.data?.id, staleTime: 60_000 });
   const analise = q.data?.analiseNC ?? [];
   const maior = q.data?.analiseNCMaior ?? [];
   const plano = q.data?.planoAcao ?? [];
@@ -54,7 +55,7 @@ function PendenciasPage() {
               </Accordion>
             </Grupo>
 
-            <Grupo titulo="RQ-00-01 — Controle de informação documentada" totais={[revisoes.length]}>
+            <Grupo titulo="RQ-00-01 - Controle de informação documentada" totais={[revisoes.length]}>
               <Accordion type="multiple" className="rounded-lg border bg-card">
                 <Secao valor="revisao-documentos" titulo="Revisão de documentos" total={revisoes.length} ultimo>
                   <ListaRevisoes itens={revisoes} />
@@ -62,7 +63,7 @@ function PendenciasPage() {
               </Accordion>
             </Grupo>
 
-            <Grupo titulo="RQ-00-02 — NC" totais={[analise.length, maior.length, plano.length]}>
+            <Grupo titulo="RQ-00-02 - NC" totais={[analise.length, maior.length, plano.length]}>
               <Accordion type="multiple" className="rounded-lg border bg-card [&>div:last-child]:border-b-0">
                 <Secao valor="analise-nc" titulo="Análise" total={analise.length}>
                   <ListaNC itens={analise} />
@@ -76,7 +77,7 @@ function PendenciasPage() {
               </Accordion>
             </Grupo>
 
-            <Grupo titulo="RQ-00-13 — SM e EL" totais={[sm.length, planoSM.length]}>
+            <Grupo titulo="RQ-00-13 - SM e EL" totais={[sm.length, planoSM.length]}>
               <Accordion type="multiple" className="rounded-lg border bg-card [&>div:last-child]:border-b-0">
                 <Secao valor="analise-sm" titulo="Análise" total={sm.length}>
                   <ListaNC itens={sm} rotulo="SM" vazio="Nenhuma análise de SM pendente para você." />
@@ -97,7 +98,7 @@ function PendenciasPage() {
 function PendenciasGestaoPessoas({ qualidadeVazia }: { qualidadeVazia: boolean }) {
   const buscar = useServerFn(minhasPendenciasPessoas);
   const me = useCurrentUser();
-  const q = useQuery({ queryKey: ["pendencias-pessoas", me.data?.id], queryFn: () => buscar(), enabled: !!me.data?.id, staleTime: 60_000 });
+  const q = useQuery({ queryKey: [...pendenciasPessoasKey, me.data?.id], queryFn: () => buscar(), enabled: !!me.data?.id, staleTime: 60_000 });
   if (q.isLoading) return <p className="text-sm text-muted-foreground">Carregando…</p>;
   if (q.error) return <p className="rounded-lg border border-destructive/40 bg-card p-4 text-sm text-destructive">{q.error.message}</p>;
   const tipos = Object.keys(LISTAS_PESSOAS) as TipoPendenciaPessoas[];
@@ -118,7 +119,7 @@ function ListaPessoas({ tipo, itens }: { tipo: TipoPendenciaPessoas; itens: Pend
   const rq = tipo === "rq0244" || tipo === "rq0216";
   const data = (valor: string) => {
     const d = new Date(valor);
-    return Number.isFinite(d.getTime()) ? d.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" }) : "—";
+    return Number.isFinite(d.getTime()) ? d.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" }) : "-";
   };
   const detalhe = tipo === "experiencia" ? "Ciclo Experiência" : tipo === "anexos" ? "Turma" : tipo === "rq0244" ? "Treinamento para" : tipo === "feedback" ? "Classificação" : "Status da aprovação";
   return <div className="overflow-x-auto"><table className="w-full text-sm">
@@ -134,7 +135,7 @@ function ListaPessoas({ tipo, itens }: { tipo: TipoPendenciaPessoas; itens: Pend
       <td className="py-2 pr-4 font-semibold text-foreground">{p.nome}</td>
       {tipo !== "rq0216" && <td className="py-2 pr-4">{p.detalhe}</td>}
       <td className="py-2 pr-4">{p.status}</td><td className="py-2 pr-4 whitespace-nowrap">{data(p.data)}</td>
-      {rq && <><td className="py-2 pr-4 whitespace-nowrap">{data(p.prazo)}</td><td className={`py-2 pr-4 ${p.dias !== null && p.dias < 0 ? "font-semibold text-destructive" : "text-foreground"}`}>{p.dias ?? "—"}</td></>}
+      {rq && <><td className="py-2 pr-4 whitespace-nowrap">{data(p.prazo)}</td><td className={`py-2 pr-4 ${p.dias !== null && p.dias < 0 ? "font-semibold text-destructive" : "text-foreground"}`}>{p.dias ?? "-"}</td></>}
       {tipo === "experiencia" && <td className="py-2 pr-4">{p.gestor}</td>}
       {tipo !== "rq0216" && <td className="py-2 pr-4">{p.responsavel}</td>}
       <td className="py-2 text-right"><a href={p.link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 font-semibold text-primary hover:underline">Link para o item <ExternalLink className="h-3.5 w-3.5 shrink-0" /></a></td>
@@ -202,7 +203,7 @@ function ListaNPS({ itens }: { itens: PendenciaNPS[] }) {
             <tr key={p.id} className="border-t">
               <td className="py-2 pr-4 font-semibold text-foreground">{p.cliente}</td>
               <td className="py-2 pr-4">{p.processo}</td>
-              <td className="py-2 pr-4">{p.nota ?? "—"}</td>
+              <td className="py-2 pr-4">{p.nota ?? "-"}</td>
               <td className="py-2 pr-4"><span className="rounded-full bg-secondary px-2 py-0.5 text-xs font-semibold text-secondary-foreground">{p.status}</span></td>
               <td className="py-2 text-right">
                 <a href={p.link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 font-semibold text-primary hover:underline">Link para o item <ExternalLink className="h-3.5 w-3.5" /></a>

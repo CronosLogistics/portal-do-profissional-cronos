@@ -1,10 +1,11 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Archive, CheckCheck, Pencil, Plus, Trash2 } from "lucide-react";
+import { Archive, CheckCheck, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useCurrentUser } from "@/hooks/useAuth";
@@ -13,7 +14,7 @@ import { AvisoLeitura, type AvisoExibido } from "@/components/avisos/AvisoLeitur
 import { AvisoForm } from "@/components/avisos/AvisoForm";
 import { InsiderEditor } from "@/components/avisos/InsiderEditor";
 import { arquivarAviso, avisosEnviados, avisosKey, cancelarAviso, listarAvisos, marcarTodosLidos, POR_PAGINA, type AvisoEnviado } from "@/lib/avisos-client";
-import { formatarDataBrasilia, statusAviso, type StatusAviso } from "@/lib/avisos-rules";
+import { filtrarAvisosPorBusca, formatarDataBrasilia, statusAviso, type StatusAviso } from "@/lib/avisos-rules";
 
 export const Route = createFileRoute("/_authenticated/avisos")({
   validateSearch: (s: Record<string, unknown>): { aviso?: string } => (typeof s["aviso"] === "string" ? { aviso: s["aviso"] } : {}),
@@ -67,6 +68,7 @@ function Recebidos() {
   const navigate = useNavigate({ from: "/avisos" });
   const { aviso: abertoId } = Route.useSearch();
   const [filtro, setFiltro] = useState<"todos" | "nao-lidos">("todos");
+  const [busca, setBusca] = useState("");
   const naoLidos = useNaoLidos();
   const lista = useInfiniteQuery({
     queryKey: [...avisosKey, "lista", filtro],
@@ -75,6 +77,12 @@ function Recebidos() {
     getNextPageParam: (last, pages) => (last.length < POR_PAGINA ? undefined : pages.length * POR_PAGINA),
   });
   const avisos = useMemo(() => lista.data?.pages.flat() ?? [], [lista.data]);
+  const avisosFiltrados = useMemo(() => filtrarAvisosPorBusca(avisos, busca), [avisos, busca]);
+  // Com busca ativa, carrega as demais páginas para procurar em todos os avisos vigentes.
+  useEffect(() => {
+    if (!busca.trim() || !lista.hasNextPage || lista.isFetchingNextPage) return;
+    void lista.fetchNextPage();
+  }, [busca, lista.hasNextPage, lista.isFetchingNextPage, lista.fetchNextPage]);
   // Aviso aberto pelo sino/alerta pode não estar na página carregada.
   const extra = useQuery({
     queryKey: [...avisosKey, "um", abertoId],
@@ -87,6 +95,10 @@ function Recebidos() {
     onSuccess: () => qc.invalidateQueries({ queryKey: avisosKey }),
     onError: (e: Error) => toast.error(e.message),
   });
+  const buscando = Boolean(busca.trim());
+  const vazio = avisos.length === 0;
+  const semResultado = !vazio && avisosFiltrados.length === 0;
+  const aindaBuscando = buscando && Boolean(lista.hasNextPage);
 
   return (
     <section className="mt-4">
@@ -99,13 +111,19 @@ function Recebidos() {
         </div>
         <Button size="sm" variant="ghost" disabled={!naoLidos.data || todos.isPending} onClick={() => todos.mutate()}><CheckCheck />Marcar todos como lidos</Button>
       </div>
+      <div className="relative mb-4 w-full sm:max-w-sm">
+        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        <Input aria-label="Buscar avisos" placeholder="Buscar avisos" value={busca} onChange={(e) => setBusca(e.target.value)} className="pl-9" />
+      </div>
       {lista.isLoading ? (
         <p className="py-10 text-center text-muted-foreground">Carregando avisos...</p>
-      ) : avisos.length === 0 ? (
+      ) : vazio ? (
         <p className="rounded-lg border py-10 text-center text-muted-foreground">{filtro === "nao-lidos" ? "Você está em dia: nenhum aviso não lido." : "Nenhum aviso vigente no momento."}</p>
+      ) : semResultado ? (
+        <p className="rounded-lg border py-10 text-center text-muted-foreground">{aindaBuscando ? "Buscando em todos os avisos..." : `Nenhum aviso encontrado para “${busca.trim()}”.`}</p>
       ) : (
         <ul className="grid gap-2">
-          {avisos.map((a) => (
+          {avisosFiltrados.map((a) => (
             <li key={a.id}>
               <button type="button" className={`aviso-item ${a.lido ? "" : "is-unread"}`} onClick={() => void navigate({ search: { aviso: a.id } })}>
                 <span className="aviso-dot" aria-hidden="true" />
@@ -119,7 +137,7 @@ function Recebidos() {
           ))}
         </ul>
       )}
-      {lista.hasNextPage && (
+      {!buscando && lista.hasNextPage && (
         <div className="mt-4 text-center">
           <Button variant="outline" disabled={lista.isFetchingNextPage} onClick={() => void lista.fetchNextPage()}>{lista.isFetchingNextPage ? "Carregando..." : "Carregar mais"}</Button>
         </div>

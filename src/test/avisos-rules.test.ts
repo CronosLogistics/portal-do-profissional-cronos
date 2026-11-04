@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { brasiliaParaUtc, statusAviso, tituloComContador, utcParaBrasilia } from "@/lib/avisos-rules";
+import { brasiliaParaUtc, filtrarAvisosPorBusca, statusAviso, tituloComContador, utcParaBrasilia } from "@/lib/avisos-rules";
 
 const agora = new Date("2026-10-23T15:00:00Z");
 
@@ -31,6 +31,19 @@ describe("título da aba", () => {
   it("mostra o contador e não duplica", () => {
     expect(tituloComContador("(1) Portal do Profissional", 2)).toBe("(2) Portal do Profissional");
     expect(tituloComContador("(3) Portal do Profissional", 0)).toBe("Portal do Profissional");
+  });
+});
+
+describe("busca de avisos", () => {
+  const avisos = [
+    { titulo: "Férias coletivas", perfil_nome: "RH", mensagem: "<p>Comunicado oficial</p>" },
+    { titulo: "Novo benefício", perfil_nome: "Benefícios", mensagem: "Plano odontológico" },
+  ];
+  it("filtra por título, remetente ou texto sem HTML", () => {
+    expect(filtrarAvisosPorBusca(avisos, "férias").map((a) => a.titulo)).toEqual(["Férias coletivas"]);
+    expect(filtrarAvisosPorBusca(avisos, "benefícios").map((a) => a.titulo)).toEqual(["Novo benefício"]);
+    expect(filtrarAvisosPorBusca(avisos, "odontológico").map((a) => a.titulo)).toEqual(["Novo benefício"]);
+    expect(filtrarAvisosPorBusca(avisos, "  ")).toEqual(avisos);
   });
 });
 

@@ -4,6 +4,7 @@ import { Award, CalendarDays, ListChecks, MessageSquareHeart, Building2, Clipboa
 import { TourBoasVindas } from "@/components/portal/TourBoasVindas";
 import { AvisosBell } from "@/components/avisos/AvisosBell";
 import { useAvisosAoVivo, useNaoLidos } from "@/hooks/useAvisos";
+import { useTotalPendencias } from "@/hooks/usePendencias";
 import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
@@ -28,7 +29,7 @@ const moduleIcons: Record<PortalModule["to"], LucideIcon> = {
   "/pendencias": ListChecks,
 };
 
-const groupIcons: Record<PortalNavGroup, LucideIcon> = { beneficios: Gift, feedbacks: MessageSquareHeart, avisos: Megaphone };
+const groupIcons: Record<PortalNavGroup, LucideIcon> = { beneficios: Gift, feedbacks: MessageSquareHeart, avisos: Megaphone, formularios: ClipboardList };
 
 type NavTarget = "/" | PortalModule["to"] | "/admin" | "/admin/usuarios";
 
@@ -93,11 +94,12 @@ function SidebarBranch({
 export function PortalShell({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [openMenus, setOpenMenus] = useState({ beneficios: false, feedbacks: false, avisos: false, admin: false });
+  const [openMenus, setOpenMenus] = useState({ beneficios: false, feedbacks: false, avisos: false, formularios: false, admin: false });
   const me = useCurrentUser();
   const navigate = useNavigate();
   const signOut = useSignOut();
   const naoLidos = useNaoLidos().data ?? 0;
+  const totalPendencias = useTotalPendencias(me.data?.id);
   useAvisosAoVivo(me.data?.id, naoLidos);
   const { office } = useOffice();
   const { pathname } = useLocation();
@@ -137,6 +139,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
                     <Icon />
                     <span className="sidebar-label">{entry.label}</span>
                     {entry.to === "/avisos" && naoLidos > 0 && <span className="portal-count-badge portal-nav-badge">{naoLidos > 99 ? "99+" : naoLidos}</span>}
+                    {entry.to === "/pendencias" && totalPendencias > 0 && <span className="portal-count-badge portal-nav-badge">{totalPendencias > 99 ? "99+" : totalPendencias}</span>}
                   </Link>
                 </Button>
               );
