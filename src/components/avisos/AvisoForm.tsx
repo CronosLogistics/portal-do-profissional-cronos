@@ -10,7 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useCurrentUser } from "@/hooks/useAuth";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { avisosKey, perfisRemetentes, salvarAviso, type AvisoEnviado } from "@/lib/avisos-client";
+import { avisosKey, departamentosDestinatarios, perfisRemetentes, salvarAviso, type AvisoEnviado } from "@/lib/avisos-client";
 import { brasiliaParaUtc, statusAviso, TITULO_MAX, utcParaBrasilia } from "@/lib/avisos-rules";
 import { AvisoHtml } from "./AvisoLeitura";
 import { formatarDataBrasilia } from "@/lib/avisos-rules";
@@ -65,6 +65,10 @@ function EditorSimples({ initial, onChange }: { initial: string; onChange: (html
 export function AvisoForm({ open, onClose, aviso }: { open: boolean; onClose: () => void; aviso?: AvisoEnviado | null }) {
   const qc = useQueryClient();
   const perfis = useQuery({ queryKey: [...avisosKey, "remetentes"], queryFn: perfisRemetentes, enabled: open });
+  const departamentos = useQuery({ queryKey: [...avisosKey, "departamentos"], queryFn: departamentosDestinatarios, enabled: open });
+  const [destino, setDestino] = useState<"todos" | "departamentos">("todos");
+  const [departamentosIds, setDepartamentosIds] = useState<string[]>([]);
+  const [buscaDepartamento, setBuscaDepartamento] = useState("");
   const publicado = aviso ? statusAviso(aviso) !== "Agendado" : false;
   const [perfilId, setPerfilId] = useState("");
   const [titulo, setTitulo] = useState("");
@@ -81,6 +85,9 @@ export function AvisoForm({ open, onClose, aviso }: { open: boolean; onClose: ()
   useEffect(() => {
     if (!open) return;
     setPreview(false);
+    setDestino(aviso?.departamentos_ids?.length ? "departamentos" : "todos");
+    setDepartamentosIds(aviso?.departamentos_ids ?? []);
+    setBuscaDepartamento("");
     setExigeConfirmacao(aviso?.exige_confirmacao ?? false);
     setPerfilId(aviso?.perfil_id ?? "");
     setTitulo(aviso?.titulo ?? "");
@@ -97,9 +104,10 @@ export function AvisoForm({ open, onClose, aviso }: { open: boolean; onClose: ()
 
   const salvar = useMutation({
     mutationFn: () => {
+      if (destino === "departamentos" && departamentosIds.length === 0) throw new Error("Selecione pelo menos um departamento.");
       if (quando === "agendar" && !agendarEm && !publicado) throw new Error("Informe a data e hora do agendamento.");
       const publicarEm = publicado && aviso ? aviso.publicar_em : quando === "agora" ? new Date().toISOString() : brasiliaParaUtc(agendarEm);
-      return salvarAviso({ perfil_id: perfilId, titulo, mensagem, publicar_em: publicarEm, expira_em: expiraEm ? brasiliaParaUtc(expiraEm) : null, tipo: aviso?.tipo ?? "comum", exige_confirmacao: exigeConfirmacao }, aviso?.id);
+      return salvarAviso({ perfil_id: perfilId, titulo, mensagem, publicar_em: publicarEm, expira_em: expiraEm ? brasiliaParaUtc(expiraEm) : null, tipo: aviso?.tipo ?? "comum", exige_confirmacao: exigeConfirmacao, departamentos_ids: destino === "todos" ? [] : departamentosIds }, aviso?.id);
     },
     onSuccess: async () => {
       toast.success(aviso ? "Aviso atualizado." : quando === "agora" ? "Aviso publicado." : "Aviso agendado.");
@@ -127,6 +135,7 @@ export function AvisoForm({ open, onClose, aviso }: { open: boolean; onClose: ()
               {formatarDataBrasilia(quando === "agendar" && agendarEm ? brasiliaParaUtc(agendarEm) : new Date().toISOString())}
             </p>
             <AvisoHtml html={mensagem} />
+            <p className="mt-4 text-sm text-muted-foreground">Para: {destino === "todos" ? "Todos os profissionais ativos" : departamentos.data?.filter((d) => departamentosIds.includes(d.id)).map((d) => d.nome).join(", ")}</p>
           </div>
         ) : (
           <div className="grid gap-4">
@@ -174,7 +183,27 @@ export function AvisoForm({ open, onClose, aviso }: { open: boolean; onClose: ()
             </div>
             <div className="grid gap-2">
               <Label>Para</Label>
-              <Input value="Todos os profissionais ativos" disabled />
+              <RadioGroup value={destino} disabled={publicado || Boolean(aviso && aviso.tipo !== "comum")} onValueChange={(v) => setDestino(v as "todos" | "departamentos")} className="grid gap-2 sm:grid-cols-2">
+                <label className="flex items-center gap-2 text-sm"><RadioGroupItem value="todos" />Todos os profissionais ativos</label>
+                <label className="flex items-center gap-2 text-sm"><RadioGroupItem value="departamentos" />Selecionar departamentos</label>
+              </RadioGroup>
+              {destino === "departamentos" && (
+                <div className="grid gap-2 rounded-md border p-3">
+                  <Input aria-label="Buscar departamento" placeholder="Buscar departamento" value={buscaDepartamento} onChange={(e) => setBuscaDepartamento(e.target.value)} />
+                  {departamentos.isError ? <p role="alert" className="text-sm text-destructive">{departamentos.error.message}</p> : departamentos.isLoading ? <p className="text-sm text-muted-foreground">Carregando departamentos...</p> : (
+                    <div className="grid max-h-44 gap-2 overflow-y-auto">
+                      {departamentos.data?.filter((d) => d.nome.toLocaleLowerCase("pt-BR").includes(buscaDepartamento.toLocaleLowerCase("pt-BR"))).map((d) => (
+                        <label key={d.id} className="flex items-start gap-2 text-sm">
+                          <Checkbox className="mt-0.5 shrink-0" checked={departamentosIds.includes(d.id)} disabled={publicado} onCheckedChange={(v) => setDepartamentosIds((ids) => v === true ? [...ids, d.id] : ids.filter((id) => id !== d.id))} />
+                          <span className="min-w-0 break-words">{d.nome}</span>
+                        </label>
+                      ))}
+                      {!departamentos.data?.length && <p className="text-sm text-muted-foreground">Nenhum departamento disponível.</p>}
+                    </div>
+                  )}
+                  <p className="text-xs text-muted-foreground">{departamentosIds.length} departamento(s) selecionado(s)</p>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -184,7 +213,7 @@ export function AvisoForm({ open, onClose, aviso }: { open: boolean; onClose: ()
           </Button>
           <div className="flex gap-2">
             <Button type="button" variant="ghost" onClick={onClose}>Cancelar</Button>
-            <Button type="button" disabled={salvar.isPending || !perfilId || !titulo.trim()} onClick={() => salvar.mutate()}>
+            <Button type="button" disabled={salvar.isPending || !perfilId || !titulo.trim() || (destino === "departamentos" && (!departamentosIds.length || departamentos.isError || departamentos.isLoading))} onClick={() => salvar.mutate()}>
               {salvar.isPending ? "Salvando..." : aviso ? "Salvar" : quando === "agora" ? "Publicar" : "Agendar"}
             </Button>
           </div>

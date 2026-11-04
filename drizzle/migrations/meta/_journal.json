@@ -232,6 +232,13 @@
       "when": 1793814990964,
       "tag": "0032_avisos_confirmacao_catalogo",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1793815584771,
+      "tag": "0033_avisos_destinatarios_departamentos",
+      "breakpoints": true
     }
   ]
 }

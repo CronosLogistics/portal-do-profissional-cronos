@@ -1,4 +1,7 @@
 # Atualização visual do Portal do Profissional
+## Destinatários dos avisos
+- [x] Selecionar todos os profissionais ou um ou mais departamentos sincronizados no campo Para, com busca e prévia.
+- [x] Aplicar destinatários na central, sino, leituras e acompanhamento; 30 testes passam. Envio, edição, entrega a Tecnologia e bloqueio fora do departamento verificados na tela, sem erros; avisos temporários arquivados.
 ## Avisos com confirmação de leitura
 - [x] Adicionar permissão departamental, confirmação explícita e proteção contra leitura automática/coletiva; 69 perfis sincronizados conforme as tags existentes.
 - [x] Substituir opção Insider, adicionar filtro obrigatório, sino persistente e acompanhamento nominal.

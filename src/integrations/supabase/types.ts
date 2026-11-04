@@ -19,6 +19,7 @@ export type Database = {
           arquivado_em: string | null
           autor_id: string
           criado_em: string
+          departamentos_ids: string[]
           editado_em: string | null
           exige_confirmacao: boolean
           expira_em: string | null
@@ -33,6 +34,7 @@ export type Database = {
           arquivado_em?: string | null
           autor_id?: string
           criado_em?: string
+          departamentos_ids?: string[]
           editado_em?: string | null
           exige_confirmacao?: boolean
           expira_em?: string | null
@@ -47,6 +49,7 @@ export type Database = {
           arquivado_em?: string | null
           autor_id?: string
           criado_em?: string
+          departamentos_ids?: string[]
           editado_em?: string | null
           exige_confirmacao?: boolean
           expira_em?: string | null
@@ -1371,6 +1374,10 @@ export type Database = {
       }
       aplicar_departamentos: { Args: { _snapshot: Json }; Returns: number }
       aviso_disponivel: { Args: { _id: string }; Returns: boolean }
+      aviso_para_usuario: {
+        Args: { _aviso_id: string; _usuario_id: string }
+        Returns: boolean
+      }
       aviso_vigente: {
         Args: { _arquivado: string; _expira: string; _publicar: string }
         Returns: boolean
@@ -1414,6 +1421,7 @@ export type Database = {
           titulo: string
         }[]
       }
+      avisos_enviados_destinatarios: { Args: never; Returns: Json }
       buscar_profissionais_ativos: {
         Args: { _busca: string }
         Returns: {
@@ -1444,6 +1452,13 @@ export type Database = {
           _titulo: string
         }
         Returns: string
+      }
+      departamentos_destinatarios_avisos: {
+        Args: never
+        Returns: {
+          id: string
+          nome: string
+        }[]
       }
       editar_questionario: {
         Args: {

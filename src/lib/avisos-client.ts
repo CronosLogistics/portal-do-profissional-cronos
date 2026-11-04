@@ -18,6 +18,7 @@ export type AvisoRecebido = {
 export type TipoAviso = "comum" | "insider" | "compilado";
 
 export type AvisoEnviado = {
+  departamentos_ids: string[];
   id: string;
   titulo: string;
   mensagem: string;
@@ -69,9 +70,9 @@ export async function marcarTodosLidos() {
 }
 
 export async function avisosEnviados(): Promise<AvisoEnviado[]> {
-  const { data, error } = await supabase.rpc("avisos_enviados_confirmacao");
+  const { data, error } = await supabase.rpc("avisos_enviados_destinatarios");
   if (error) throw amigavel(error.message);
-  return ((data ?? []) as AvisoEnviado[]).map((a) => ({ ...a, lidos: Number(a.lidos), ativos: Number(a.ativos) }));
+  return ((data ?? []) as unknown as AvisoEnviado[]).map((a) => ({ ...a, lidos: Number(a.lidos), ativos: Number(a.ativos) }));
 }
 
 export async function perfisRemetentes(): Promise<{ id: string; nome: string }[]> {
@@ -80,7 +81,13 @@ export async function perfisRemetentes(): Promise<{ id: string; nome: string }[]
   return data ?? [];
 }
 
-export type DadosAviso = { perfil_id: string; titulo: string; mensagem: string; publicar_em: string; expira_em: string | null; tipo?: TipoAviso; exige_confirmacao?: boolean };
+export async function departamentosDestinatarios(): Promise<{ id: string; nome: string }[]> {
+  const { data, error } = await supabase.rpc("departamentos_destinatarios_avisos");
+  if (error) throw amigavel(error.message);
+  return data ?? [];
+}
+
+export type DadosAviso = { perfil_id: string; titulo: string; mensagem: string; publicar_em: string; expira_em: string | null; tipo?: TipoAviso; exige_confirmacao?: boolean; departamentos_ids?: string[] };
 
 export async function salvarAviso(dados: DadosAviso, id?: string) {
   const titulo = dados.titulo.trim();
