@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ExternalLink, FileText, Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { ExternalLink, FileText, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,8 +9,6 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useCurrentUser } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { listarDocumentosSharePoint } from "@/lib/documentos-sharepoint.functions";
-import { filtrarDocumentos } from "@/lib/documentos-sharepoint.rules";
 
 export const Route = createFileRoute("/_authenticated/documentos")({
   head: () => ({
@@ -39,14 +37,6 @@ function DocumentosPage() {
   const me = useCurrentUser();
   const pode = Boolean(me.data?.can("documentos.gerenciar"));
   const docs = useQuery({ queryKey: chave, queryFn: listar });
-  const sharepoint = useQuery({ queryKey: ["documentos-sharepoint"], queryFn: () => listarDocumentosSharePoint(), staleTime: 60_000 });
-  const [busca, setBusca] = useState("");
-  const [categoria, setCategoria] = useState<string | undefined>();
-  const categorias = ["Qualidade", "Modelo Documental", ...(docs.data?.length ? ["Outros documentos"] : [])];
-  const documentos = filtrarDocumentos([
-    ...(sharepoint.data?.itens ?? []),
-    ...(docs.data ?? []).map(d => ({ ...d, categoria: "Outros documentos", pasta: [d.departamento, d.cargo].filter(Boolean).join(" / ") })),
-  ], busca, categoria);
   const qc = useQueryClient();
   const [form, setForm] = useState<{ open: boolean; doc?: Documento | undefined }>({ open: false });
   const excluir = useMutation({
@@ -59,43 +49,36 @@ function DocumentosPage() {
   });
 
   return (
-    <main className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-8">
+    <main className="mx-auto w-full max-w-4xl px-4 py-8 sm:px-8">
       <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Documentos Cronos</h1>
+          <h1 className="text-3xl font-bold text-foreground">Documentos</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Documentos oficiais da Cronos Logistics (abrem em nova aba).</p>
         </div>
         {pode && <Button onClick={() => setForm({ open: true })}><Plus /> Novo link</Button>}
       </header>
-      <div className="mt-6 flex flex-wrap items-center gap-2">
-        <div className="relative w-full sm:w-72">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input className="pl-9" aria-label="Buscar documento" placeholder="Buscar documento" value={busca} onChange={e => setBusca(e.target.value)} />
+      {docs.isLoading && <p className="text-sm text-muted-foreground">Carregando…</p>}
+      {docs.data?.length === 0 && (
+        <p className="rounded-lg border bg-card p-8 text-center text-sm text-muted-foreground">Em breve</p>
+      )}
+      {!!docs.data?.length && (
+        <div className="divide-y rounded-lg border bg-card">
+          {docs.data.map((d) => (
+            <div key={d.id} className="flex items-center gap-3 p-4">
+              <FileText className="h-5 w-5 shrink-0 text-primary" />
+              <a href={d.url} target="_blank" rel="noreferrer" className="flex-1 font-semibold text-foreground hover:text-primary">
+                {d.titulo} <ExternalLink className="ml-1 inline h-3.5 w-3.5" />
+              </a>
+              {pode && (
+                <>
+                  <Button size="icon" variant="ghost" aria-label="Editar" onClick={() => setForm({ open: true, doc: d })}><Pencil /></Button>
+                  <Button size="icon" variant="ghost" aria-label="Remover" onClick={() => confirm(`Remover "${d.titulo}"?`) && excluir.mutate(d.id)}><Trash2 /></Button>
+                </>
+              )}
+            </div>
+          ))}
         </div>
-        <Button size="sm" variant={!categoria ? "default" : "outline"} onClick={() => setCategoria(undefined)}>Todos</Button>
-        {categorias.map(c => <Button key={c} size="sm" variant={categoria === c ? "default" : "outline"} onClick={() => setCategoria(c)}>{c}</Button>)}
-      </div>
-      {(docs.isPending || sharepoint.isPending) && <p className="mt-8 text-sm text-muted-foreground">Carregando documentos…</p>}
-      {(sharepoint.error || docs.error) && <p role="alert" className="mt-6 text-sm text-destructive">Não foi possível carregar todos os documentos. <Button variant="link" onClick={() => { void sharepoint.refetch(); void docs.refetch(); }}>Tentar novamente</Button></p>}
-      {sharepoint.data?.erros.map(erro => <p key={erro} role="alert" className="mt-6 text-sm text-destructive">{erro}</p>)}
-      {!docs.isPending && !sharepoint.isPending && !sharepoint.error && !docs.error && documentos.length === 0 && <p className="mt-8 border-t py-8 text-center text-sm text-muted-foreground">Nenhum documento encontrado.</p>}
-      {categorias.filter(c => documentos.some(d => d.categoria === c)).map(c => (
-        <section key={c} className="mt-8">
-          <h2 className="mb-3 text-lg font-bold text-primary">{c}</h2>
-          <div className="divide-y rounded-lg border bg-card">
-            {documentos.filter(d => d.categoria === c).map(d => {
-              const local = c === "Outros documentos" ? docs.data?.find(item => item.id === d.id) : undefined;
-              return <div key={`${c}-${d.id}`} className="flex items-center gap-2 pr-3">
-                <a href={d.url} target="_blank" rel="noreferrer" className="flex min-w-0 flex-1 items-center gap-3 p-4 hover:bg-muted/50">
-                  <FileText className="h-5 w-5 shrink-0 text-primary" />
-                  <div className="min-w-0 flex-1"><p className="break-words font-semibold text-foreground">{d.titulo}</p>{d.pasta && <p className="break-words text-sm text-muted-foreground">{d.pasta}</p>}</div>
-                  <span className="flex shrink-0 items-center gap-1 text-sm font-medium text-primary"><span className="hidden sm:inline">Abrir documento</span><ExternalLink className="h-4 w-4" /></span>
-                </a>
-                {pode && local && <><Button size="icon" variant="ghost" aria-label={`Editar ${d.titulo}`} onClick={() => setForm({ open: true, doc: local })}><Pencil /></Button><Button size="icon" variant="ghost" aria-label={`Remover ${d.titulo}`} onClick={() => confirm(`Remover "${d.titulo}"?`) && excluir.mutate(d.id)}><Trash2 /></Button></>}
-              </div>;
-            })}
-          </div>
-        </section>
-      ))}
+      )}
       {form.open && <DocForm doc={form.doc} onClose={() => setForm({ open: false })} />}
     </main>
   );

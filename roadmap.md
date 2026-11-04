@@ -1,7 +1,4 @@
 # Atualização visual do Portal do Profissional
-## Documentos Cronos no SharePoint
-- [x] Listar documentos das pastas Qualidade e Modelo Documental no padrão de Formulários, mantendo links cadastrados e o caminho das subpastas.
-- [x] Validar consulta autenticada de 3994 arquivos, filtros, busca e apresentação; 4 testes passam, sem erros na tela. Abertura do arquivo no SharePoint exige a sessão Microsoft do visitante e não foi exercitada.
 ## Destinatários dos avisos
 - [x] Selecionar todos os profissionais ou um ou mais departamentos sincronizados no campo Para, com busca e prévia.
 - [x] Aplicar destinatários na central, sino, leituras e acompanhamento; 30 testes passam. Envio, edição, entrega a Tecnologia e bloqueio fora do departamento verificados na tela, sem erros; avisos temporários arquivados.
