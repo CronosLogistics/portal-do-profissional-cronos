@@ -1,7 +1,7 @@
 export type ItemFerias = { id: string; fields: Record<string, unknown> };
 export type FeriasColaborador = {
   id: string; nome: string; inicio: string | null; fim: string | null;
-  dias: number | null; retorno: string | null; diasExtras: number | null; suplente: string;
+  dias: number | null; retorno: string | null; diasExtras: number | null; suplente: string; status: string;
 };
 
 function data(valor: unknown): string | null {
@@ -27,5 +27,6 @@ export function feriasDosAtivos(itens: ItemFerias[], usuarios: Map<string, strin
       id, nome: String(f["Title"] ?? "Profissional não identificado"), inicio: data(f["Inicio"]), fim: data(f["Fim"]),
       dias: numero(f["Dias"]), retorno: retornoFerias(f), diasExtras: numero(f["DiasExtrasdeAus_x00ea_ncia"]),
       suplente: usuarios.get(String(f["SuplenteLookupId"] ?? "")) ?? "-",
+      status: String(f["Status_x0020_Semana_x0020_F_x00e"] ?? "").trim(),
     })).sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
 }

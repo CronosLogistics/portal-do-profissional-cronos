@@ -43,9 +43,10 @@ function FeriasPage() {
       </div>
       {itens.length === 0 ? <p role="status" className="py-12 text-center text-sm text-muted-foreground">{busca ? "Nenhum colaborador encontrado." : "Nenhuma programação de férias disponível no momento."}</p> :
         <Table>
-          <TableHeader><TableRow><TableHead>Nome</TableHead><TableHead>Início</TableHead><TableHead>Fim</TableHead><TableHead>Retorno</TableHead><TableHead>Suplente</TableHead></TableRow></TableHeader>
+          <TableHeader><TableRow><TableHead>Nome</TableHead><TableHead>Status</TableHead><TableHead>Início</TableHead><TableHead>Fim</TableHead><TableHead>Retorno</TableHead><TableHead>Suplente</TableHead></TableRow></TableHeader>
           <TableBody>{itens.map(item => <TableRow key={item.id}>
             <TableCell className="min-w-48 font-semibold">{item.nome}</TableCell>
+            <TableCell className="whitespace-nowrap">{item.status}</TableCell>
             <TableCell className="whitespace-nowrap">{formatarData(item.inicio)}</TableCell>
             <TableCell className="whitespace-nowrap">{formatarData(item.fim)}</TableCell>
             <TableCell className="whitespace-nowrap font-semibold">{formatarData(item.retorno)}</TableCell>
