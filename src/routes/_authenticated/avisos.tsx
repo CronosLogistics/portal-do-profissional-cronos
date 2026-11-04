@@ -127,12 +127,18 @@ function Recebidos() {
         <ul className="grid gap-2">
           {avisosFiltrados.map((a) => (
             <li key={a.id}>
-              <Button type="button" variant="ghost" className={`aviso-item !h-auto w-full !flex-wrap !justify-start !whitespace-normal !text-left sm:!flex-nowrap ${a.lido ? "" : "is-unread"}`} onClick={() => void navigate({ search: { aviso: a.id } })}>
+              <Button type="button" variant="ghost" className={`aviso-item !h-auto w-full !flex-wrap !justify-start !whitespace-normal !text-left hover:!bg-muted hover:!text-foreground sm:!flex-nowrap ${a.lido ? "" : "is-unread"}`} onClick={() => void navigate({ search: { aviso: a.id } })}>
                 <span className="aviso-dot" aria-hidden="true" />
                 <span className="min-w-0 flex-1">
-                  <span className="block text-xs font-bold uppercase tracking-wide text-accent">{a.perfil_nome}</span>
-                  <span className="block truncate text-base">{a.titulo}</span>
-                  {a.exige_confirmacao && <span className="block text-xs font-bold text-accent">Leitura obrigatória{a.lido ? " · ciência confirmada" : ""}</span>}
+                  <span className="flex flex-wrap items-center gap-2">
+                    <span className="text-xs font-bold uppercase tracking-wide text-accent">{a.perfil_nome}</span>
+                    {a.exige_confirmacao && (
+                      <span className="aviso-tag-obrigatoria">
+                        Leitura obrigatória{a.lido ? " · confirmada" : ""}
+                      </span>
+                    )}
+                  </span>
+                  <span className="mt-0.5 block truncate text-base text-foreground">{a.titulo}</span>
                 </span>
                 <span className="w-full text-xs text-muted-foreground sm:w-auto sm:shrink-0">{formatarDataBrasilia(a.publicar_em)}{a.editado_em ? " · editado" : ""}</span>
               </Button>

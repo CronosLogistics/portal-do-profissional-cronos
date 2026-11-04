@@ -57,7 +57,10 @@ export function AvisoCorpo({ aviso }: { aviso: AvisoExibido }) {
   return (
     <>
       <DialogHeader>
-        <p className="text-xs font-bold uppercase tracking-wide text-accent">{aviso.perfil_nome}</p>
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="text-xs font-bold uppercase tracking-wide text-accent">{aviso.perfil_nome}</p>
+          {aviso.exige_confirmacao && <span className="aviso-tag-obrigatoria">Leitura obrigatória</span>}
+        </div>
         <DialogTitle className="text-xl pr-16">{aviso.titulo}</DialogTitle>
         <DialogDescription>
           {formatarDataBrasilia(aviso.publicar_em)}

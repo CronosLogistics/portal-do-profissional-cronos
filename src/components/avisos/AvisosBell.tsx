@@ -49,9 +49,11 @@ export function AvisosBell({ naoLidos }: { naoLidos: number }) {
                   void navigate({ to: "/avisos", search: { aviso: a.id } });
                 }}
               >
-                <span className="text-[11px] font-bold uppercase text-accent">{a.perfil_nome}</span>
-                <span className="line-clamp-2 text-sm">{a.titulo}</span>
-                {a.exige_confirmacao && <strong className="text-xs text-accent">Leitura obrigatória</strong>}
+                <span className="flex flex-wrap items-center gap-1.5">
+                  <span className="text-[11px] font-bold uppercase text-accent">{a.perfil_nome}</span>
+                  {a.exige_confirmacao && <span className="aviso-tag-obrigatoria">Leitura obrigatória</span>}
+                </span>
+                <span className="line-clamp-2 text-sm text-foreground">{a.titulo}</span>
                 <span className="text-xs text-muted-foreground">{formatarDataBrasilia(a.publicar_em)}</span>
               </button>
             </li>

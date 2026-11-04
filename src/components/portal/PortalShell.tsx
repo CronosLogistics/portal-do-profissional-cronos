@@ -4,7 +4,7 @@ import { Award, CalendarDays, ListChecks, MessageSquareHeart, Building2, Clipboa
 import { TourBoasVindas } from "@/components/portal/TourBoasVindas";
 import { AvisosBell } from "@/components/avisos/AvisosBell";
 import { useAvisosAoVivo, useNaoLidos } from "@/hooks/useAvisos";
-import { useTotalPendencias } from "@/hooks/usePendencias";
+import { useAlertaPendenciasLogin, useTotalPendencias } from "@/hooks/usePendencias";
 import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
@@ -99,7 +99,8 @@ export function PortalShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const signOut = useSignOut();
   const naoLidos = useNaoLidos().data ?? 0;
-  const totalPendencias = useTotalPendencias(me.data?.id);
+  const { total: totalPendencias, pronto: pendenciasProntas } = useTotalPendencias(me.data?.id);
+  useAlertaPendenciasLogin(me.data?.id, totalPendencias, pendenciasProntas);
   useAvisosAoVivo(me.data?.id, naoLidos);
   const { office } = useOffice();
   const { pathname } = useLocation();
