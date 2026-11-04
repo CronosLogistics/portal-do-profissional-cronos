@@ -32,7 +32,7 @@ async function ler<T>(path: string): Promise<T[]> {
 export async function consultarFerias() {
   if (cache && cache.expira > Date.now()) return cache.itens;
   const [itens, users] = await Promise.all([
-    ler<ItemFerias>(`/v1.0/sites/${SITE}/lists/862481b1-77c6-4f93-9274-1e1e5848edea/items?$select=id&$expand=fields($select=Title,Inicio,Fim,Dias,Retorno,DiasExtrasdeAus_x00ea_ncia,DatadeRetornocomDiasExtras,StatusProfissional,SuplenteLookupId)&$top=999`),
+    ler<ItemFerias>(`/v1.0/sites/${SITE}/lists/862481b1-77c6-4f93-9274-1e1e5848edea/items?$select=id&$expand=fields($select=Title,Inicio,Fim,Dias,Retorno,DiasExtrasdeAus_x00ea_ncia,DatadeRetornocomDiasExtras,StatusProfissional,Status_x0020_Semana_x0020_F_x00e,SuplenteLookupId)&$top=999`),
     ler<{ id: string; fields: { Title?: string } }>(`/v1.0/sites/${SITE}/lists/dcbf95ce-8b48-451e-b14f-eab5d8fa098f/items?$select=id&$expand=fields($select=Title)&$top=999`),
   ]);
   const usuarios = new Map(users.map(u => [u.id, (u.fields.Title ?? "").replace(/\s*-\s*Cronos Logistics$/i, "").trim()]));

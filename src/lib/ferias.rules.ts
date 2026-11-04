@@ -21,7 +21,8 @@ export function retornoFerias(fields: Record<string, unknown>): string | null {
 }
 
 export function feriasDosAtivos(itens: ItemFerias[], usuarios: Map<string, string>): FeriasColaborador[] {
-  return itens.filter(({ fields }) => ["ATIVO", "EFETIVADO/ATIVO"].includes(String(fields["StatusProfissional"] ?? "").trim().toUpperCase()))
+  return itens.filter(({ fields }) => ["ATIVO", "EFETIVADO/ATIVO"].includes(String(fields["StatusProfissional"] ?? "").trim().toUpperCase())
+    && String(fields["Status_x0020_Semana_x0020_F_x00e"] ?? "").trim() !== "")
     .map(({ id, fields: f }) => ({
       id, nome: String(f["Title"] ?? "Profissional não identificado"), inicio: data(f["Inicio"]), fim: data(f["Fim"]),
       dias: numero(f["Dias"]), retorno: retornoFerias(f), diasExtras: numero(f["DiasExtrasdeAus_x00ea_ncia"]),

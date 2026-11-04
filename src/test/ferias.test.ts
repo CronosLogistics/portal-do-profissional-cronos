@@ -13,10 +13,16 @@ describe("Consulta de férias", () => {
     expect(retornoFerias({ Retorno: "2026-11-10T03:00:00Z", DiasExtrasdeAus_x00ea_ncia: 3 })).toBe("2026-11-10");
   });
   it("consulta apenas profissionais ativos sem expor outros campos de RH", () => {
-    const itens = ["ATIVO", "EFETIVADO/ATIVO", "DESLIGADO", "EFETIVADO/DESLIGADO"].map((status, i) => ({ id: String(i), fields: { Title: "Pessoa", StatusProfissional: status, Observa_x00e7__x00f5_es: "Privado" } }));
+    const itens = ["ATIVO", "EFETIVADO/ATIVO", "DESLIGADO", "EFETIVADO/DESLIGADO"].map((status, i) => ({ id: String(i), fields: { Title: "Pessoa", StatusProfissional: status, Status_x0020_Semana_x0020_F_x00e: "Férias programadas", Observa_x00e7__x00f5_es: "Privado" } }));
     const resultado = feriasDosAtivos(itens, new Map());
     expect(resultado.map(i => i.id)).toEqual(["0", "1"]);
     expect(resultado[0]).not.toHaveProperty("Observa_x00e7__x00f5_es");
+  });
+  it("omite colaboradores sem status de férias preenchido", () => {
+    const itens = [undefined, null, "", "   ", "Férias programadas"].map((status, i) => ({
+      id: String(i), fields: { Title: "Pessoa", StatusProfissional: "ATIVO", Status_x0020_Semana_x0020_F_x00e: status },
+    }));
+    expect(feriasDosAtivos(itens, new Map()).map(item => item.id)).toEqual(["4"]);
   });
   it("disponibiliza férias no grupo Avisos para profissionais sem perfis extras", () => {
     expect(visibleModules([]).map(m => m.to)).toContain("/ferias");

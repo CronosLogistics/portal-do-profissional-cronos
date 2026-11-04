@@ -12,9 +12,9 @@ export const Route = createFileRoute("/_authenticated/ferias")({
   loader: ({ context }) => context.queryClient.ensureQueryData(feriasQuery),
   pendingComponent: () => <p className="p-8 text-sm text-muted-foreground">Carregando férias…</p>,
   head: () => ({ meta: [
-    { title: "Férias dos Colaboradores | Portal do Profissional Cronos" },
+    { title: "Férias Programadas | Portal do Profissional Cronos" },
     { name: "description", content: "Consulta da programação de férias dos colaboradores ativos da Cronos Logistics." },
-    { property: "og:title", content: "Férias dos Colaboradores | Portal do Profissional Cronos" },
+    { property: "og:title", content: "Férias Programadas | Portal do Profissional Cronos" },
     { property: "og:description", content: "Programação e datas de retorno dos colaboradores Cronos." },
     { property: "og:type", content: "website" },
     { name: "twitter:card", content: "summary" },
@@ -33,7 +33,7 @@ function FeriasPage() {
   const itens = q.data.itens.filter(item => item.nome.toLocaleLowerCase("pt-BR").includes(busca.trim().toLocaleLowerCase("pt-BR")));
   return <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-8">
     <header className="mb-6 flex items-start justify-between gap-4">
-      <h1 className="min-w-0 break-words text-3xl font-bold text-foreground">Férias dos Colaboradores</h1>
+      <h1 className="min-w-0 break-words text-3xl font-bold text-foreground">Férias Programadas</h1>
       <Button variant="outline" size="icon" className="shrink-0" title="Atualizar férias" aria-label="Atualizar férias" disabled={q.isFetching} onClick={() => void q.refetch()}><RefreshCw className={q.isFetching ? "animate-spin" : ""} /></Button>
     </header>
     {q.data.erro ? <p role="alert" className="border-l-2 border-destructive p-4 text-sm text-destructive">{q.data.erro}</p> : <>
@@ -43,14 +43,12 @@ function FeriasPage() {
       </div>
       {itens.length === 0 ? <p role="status" className="py-12 text-center text-sm text-muted-foreground">{busca ? "Nenhum colaborador encontrado." : "Nenhuma programação de férias disponível no momento."}</p> :
         <Table>
-          <TableHeader><TableRow><TableHead>Nome</TableHead><TableHead>Início</TableHead><TableHead>Fim</TableHead><TableHead>Dias</TableHead><TableHead>Retorno</TableHead><TableHead>Dias extras</TableHead><TableHead>Suplente</TableHead></TableRow></TableHeader>
+          <TableHeader><TableRow><TableHead>Nome</TableHead><TableHead>Início</TableHead><TableHead>Fim</TableHead><TableHead>Retorno</TableHead><TableHead>Suplente</TableHead></TableRow></TableHeader>
           <TableBody>{itens.map(item => <TableRow key={item.id}>
             <TableCell className="min-w-48 font-semibold">{item.nome}</TableCell>
             <TableCell className="whitespace-nowrap">{formatarData(item.inicio)}</TableCell>
             <TableCell className="whitespace-nowrap">{formatarData(item.fim)}</TableCell>
-            <TableCell>{item.dias ?? "-"}</TableCell>
             <TableCell className="whitespace-nowrap font-semibold">{formatarData(item.retorno)}</TableCell>
-            <TableCell>{item.diasExtras ?? "-"}</TableCell>
             <TableCell className="min-w-40">{item.suplente}</TableCell>
           </TableRow>)}</TableBody>
         </Table>}

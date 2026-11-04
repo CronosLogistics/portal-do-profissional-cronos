@@ -27,7 +27,7 @@ export const PORTAL_NAV_GROUPS: Record<PortalNavGroup, { label: string }> = {
 
 export const PORTAL_MODULES: PortalModule[] = [
   { to: "/avisos", label: "Avisos", group: "avisos" },
-  { to: "/ferias", label: "Férias dos Colaboradores", group: "avisos" },
+  { to: "/ferias", label: "Férias Programadas", group: "avisos" },
   { to: "/pendencias", label: "Pendências" },
   { to: "/mural", label: "Mural de comemorações" },
   { to: "/beneficios", label: "Benefícios", group: "beneficios" },
