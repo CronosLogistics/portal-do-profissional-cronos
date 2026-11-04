@@ -30,6 +30,9 @@ export function AdminTabs() {
       {me.data?.can("admin.perfis") && (
         <Link to="/admin/perfis" activeProps={activeClass} className={tabClass}>Perfis</Link>
       )}
+      {me.data?.isAdmin && (
+        <Link to="/admin/historico" activeProps={activeClass} className={tabClass}>Histórico</Link>
+      )}
     </div>
   );
 }

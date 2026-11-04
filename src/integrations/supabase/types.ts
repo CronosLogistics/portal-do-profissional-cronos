@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      auditoria_logs: {
+        Row: {
+          acao: string
+          alvo: string
+          antes: Json | null
+          autor_id: string | null
+          autor_nome: string
+          criado_em: string
+          depois: Json | null
+          id: string
+          modulo: string
+          operacao: string
+        }
+        Insert: {
+          acao: string
+          alvo?: string
+          antes?: Json | null
+          autor_id?: string | null
+          autor_nome?: string
+          criado_em?: string
+          depois?: Json | null
+          id?: string
+          modulo: string
+          operacao: string
+        }
+        Update: {
+          acao?: string
+          alvo?: string
+          antes?: Json | null
+          autor_id?: string | null
+          autor_nome?: string
+          criado_em?: string
+          depois?: Json | null
+          id?: string
+          modulo?: string
+          operacao?: string
+        }
+        Relationships: []
+      }
       avisos: {
         Row: {
           arquivado_em: string | null
@@ -1373,6 +1412,13 @@ export type Database = {
         }[]
       }
       aplicar_departamentos: { Args: { _snapshot: Json }; Returns: number }
+      autores_auditoria: {
+        Args: never
+        Returns: {
+          id: string
+          nome: string
+        }[]
+      }
       aviso_disponivel: { Args: { _id: string }; Returns: boolean }
       aviso_para_usuario: {
         Args: { _aviso_id: string; _usuario_id: string }
@@ -1508,6 +1554,29 @@ export type Database = {
         Returns: undefined
       }
       limpar_html_aviso: { Args: { _html: string }; Returns: string }
+      listar_auditoria: {
+        Args: {
+          _ate: string
+          _autor: string
+          _de: string
+          _deslocamento: number
+          _limite: number
+          _modulo: string
+        }
+        Returns: {
+          acao: string
+          alvo: string
+          antes: Json
+          autor_id: string
+          autor_nome: string
+          criado_em: string
+          depois: Json
+          id: string
+          modulo: string
+          operacao: string
+          total: number
+        }[]
+      }
       listar_avisos: {
         Args: {
           _deslocamento?: number

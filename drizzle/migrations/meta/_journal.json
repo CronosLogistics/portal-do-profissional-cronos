@@ -239,6 +239,13 @@
       "when": 1793815584771,
       "tag": "0033_avisos_destinatarios_departamentos",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1793818803324,
+      "tag": "0034_auditoria_logs",
+      "breakpoints": true
     }
   ]
 }
