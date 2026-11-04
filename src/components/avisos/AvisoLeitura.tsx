@@ -11,6 +11,7 @@ import {
   apagarComentarioCompilado,
   avisosKey,
   comentarCompilado,
+  confirmarLeitura,
   EMOJIS_COMPILADO,
   htmlCompilado,
   interacoesCompilado,
@@ -31,6 +32,8 @@ export type AvisoExibido = {
   editado_em?: string | null;
   lido?: boolean;
   tipo?: string;
+  exige_confirmacao?: boolean;
+  confirmado_em?: string | null;
 };
 
 /** Mensagem já limpa pelo banco (só negrito, itálico, listas e links). */
@@ -251,10 +254,16 @@ function ComentarioCompiladoItem({
 /** Abrir o aviso grava a leitura. */
 export function AvisoLeitura({ aviso, onClose }: { aviso: AvisoExibido | null; onClose: () => void }) {
   const qc = useQueryClient();
+  const [confirmadoId, setConfirmadoId] = useState<string | null>(null);
+  const confirmar = useMutation({
+    mutationFn: (id: string) => confirmarLeitura(id),
+    onSuccess: async (_data, id) => { setConfirmadoId(id); await qc.invalidateQueries({ queryKey: avisosKey }); toast.success("Ciência confirmada."); },
+    onError: (e: Error) => toast.error(e.message),
+  });
   useEffect(() => {
-    if (!aviso?.id || aviso.lido) return;
-    void marcarLido(aviso.id).then(() => qc.invalidateQueries({ queryKey: avisosKey }));
-  }, [aviso?.id, aviso?.lido, qc]);
+    if (!aviso?.id || aviso.lido || aviso.exige_confirmacao) return;
+    void marcarLido(aviso.id).then(() => qc.invalidateQueries({ queryKey: avisosKey })).catch(() => toast.error("Não foi possível registrar a leitura."));
+  }, [aviso?.id, aviso?.lido, aviso?.exige_confirmacao, qc]);
   const grande = leituraGrande(aviso);
   const compilado = (aviso?.tipo === "compilado" || aviso?.tipo === "insider") && aviso?.id;
   return (
@@ -262,6 +271,14 @@ export function AvisoLeitura({ aviso, onClose }: { aviso: AvisoExibido | null; o
       <DialogContent className={grande ? "leitor-modal" : "max-h-[85dvh] max-w-2xl overflow-y-auto"}>
         {compilado && aviso?.id ? <CompiladoAtalhos avisoId={aviso.id} /> : null}
         {aviso && <AvisoCorpo aviso={aviso} />}
+        {aviso?.exige_confirmacao && aviso.id && (
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-4">
+            <strong className="text-sm text-accent">Leitura obrigatória</strong>
+            <Button disabled={confirmar.isPending || Boolean(aviso.confirmado_em) || confirmadoId === aviso.id} onClick={() => aviso.id && confirmar.mutate(aviso.id)}>
+              {aviso.confirmado_em || confirmadoId === aviso.id ? "Ciência confirmada" : confirmar.isPending ? "Confirmando..." : "Li e estou ciente"}
+            </Button>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

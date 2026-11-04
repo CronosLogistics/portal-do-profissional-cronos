@@ -11,6 +11,8 @@ export type AvisoRecebido = {
   editado_em: string | null;
   lido: boolean;
   tipo: TipoAviso;
+  exige_confirmacao: boolean;
+  confirmado_em?: string | null;
 };
 
 export type TipoAviso = "comum" | "insider" | "compilado";
@@ -30,6 +32,8 @@ export type AvisoEnviado = {
   lidos: number;
   ativos: number;
   tipo: TipoAviso;
+  exige_confirmacao: boolean;
+  confirmado_em?: string | null;
 };
 
 export const avisosKey = ["avisos"] as const;
@@ -42,8 +46,8 @@ function amigavel(message?: string) {
   return new Error(m || "Não foi possível concluir a operação.");
 }
 
-export async function listarAvisos(soNaoLidos: boolean, limite = POR_PAGINA, deslocamento = 0): Promise<AvisoRecebido[]> {
-  const { data, error } = await supabase.rpc("listar_avisos", { _so_nao_lidos: soNaoLidos, _limite: limite, _deslocamento: deslocamento });
+export async function listarAvisos(soNaoLidos: boolean, limite = POR_PAGINA, deslocamento = 0, obrigatorios = false, avisoId?: string, priorizar = false): Promise<AvisoRecebido[]> {
+  const { data, error } = await supabase.rpc("listar_avisos_confirmacao", { _so_nao_lidos: soNaoLidos, _limite: limite, _deslocamento: deslocamento, _so_obrigatorios: obrigatorios, ...(avisoId ? { _aviso_id: avisoId } : {}), _priorizar: priorizar });
   if (error) throw amigavel(error.message);
   return (data ?? []) as AvisoRecebido[];
 }
@@ -65,7 +69,7 @@ export async function marcarTodosLidos() {
 }
 
 export async function avisosEnviados(): Promise<AvisoEnviado[]> {
-  const { data, error } = await supabase.rpc("avisos_enviados");
+  const { data, error } = await supabase.rpc("avisos_enviados_confirmacao");
   if (error) throw amigavel(error.message);
   return ((data ?? []) as AvisoEnviado[]).map((a) => ({ ...a, lidos: Number(a.lidos), ativos: Number(a.ativos) }));
 }
@@ -76,7 +80,7 @@ export async function perfisRemetentes(): Promise<{ id: string; nome: string }[]
   return data ?? [];
 }
 
-export type DadosAviso = { perfil_id: string; titulo: string; mensagem: string; publicar_em: string; expira_em: string | null; tipo?: TipoAviso };
+export type DadosAviso = { perfil_id: string; titulo: string; mensagem: string; publicar_em: string; expira_em: string | null; tipo?: TipoAviso; exige_confirmacao?: boolean };
 
 export async function salvarAviso(dados: DadosAviso, id?: string) {
   const titulo = dados.titulo.trim();
@@ -183,4 +187,16 @@ export async function reagirCompilado(avisoId: string, emoji: EmojiCompilado, at
     { onConflict: "aviso_id,usuario_id" },
   );
   if (error) throw amigavel(error.message);
+}
+
+export async function confirmarLeitura(avisoId: string) {
+  const { data, error } = await supabase.rpc("confirmar_leitura_aviso", { _aviso_id: avisoId });
+  if (error) throw amigavel(error.message);
+  return data;
+}
+export type AcompanhamentoAviso = { titulo: string; pessoas: { id: string; nome: string; confirmado_em: string | null }[] };
+export async function acompanharAviso(avisoId: string): Promise<AcompanhamentoAviso> {
+  const { data, error } = await supabase.rpc("acompanhamento_aviso", { _aviso_id: avisoId });
+  if (error) throw amigavel(error.message);
+  return data as unknown as AcompanhamentoAviso;
 }

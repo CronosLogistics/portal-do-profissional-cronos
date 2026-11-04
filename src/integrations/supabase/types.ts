@@ -20,6 +20,7 @@ export type Database = {
           autor_id: string
           criado_em: string
           editado_em: string | null
+          exige_confirmacao: boolean
           expira_em: string | null
           id: string
           mensagem: string
@@ -33,6 +34,7 @@ export type Database = {
           autor_id?: string
           criado_em?: string
           editado_em?: string | null
+          exige_confirmacao?: boolean
           expira_em?: string | null
           id?: string
           mensagem?: string
@@ -46,6 +48,7 @@ export type Database = {
           autor_id?: string
           criado_em?: string
           editado_em?: string | null
+          exige_confirmacao?: boolean
           expira_em?: string | null
           id?: string
           mensagem?: string
@@ -92,6 +95,32 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "avisos_comentarios_aviso_id_fkey"
+            columns: ["aviso_id"]
+            isOneToOne: false
+            referencedRelation: "avisos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      avisos_confirmacoes: {
+        Row: {
+          aviso_id: string
+          confirmado_em: string
+          usuario_id: string
+        }
+        Insert: {
+          aviso_id: string
+          confirmado_em?: string
+          usuario_id: string
+        }
+        Update: {
+          aviso_id?: string
+          confirmado_em?: string
+          usuario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "avisos_confirmacoes_aviso_id_fkey"
             columns: ["aviso_id"]
             isOneToOne: false
             referencedRelation: "avisos"
@@ -1289,6 +1318,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      acompanhamento_aviso: { Args: { _aviso_id: string }; Returns: Json }
       admin_contagem_profissionais: {
         Args: never
         Returns: {
@@ -1340,6 +1370,7 @@ export type Database = {
         }[]
       }
       aplicar_departamentos: { Args: { _snapshot: Json }; Returns: number }
+      aviso_disponivel: { Args: { _id: string }; Returns: boolean }
       aviso_vigente: {
         Args: { _arquivado: string; _expira: string; _publicar: string }
         Returns: boolean
@@ -1352,6 +1383,26 @@ export type Database = {
           autor_id: string
           autor_nome: string
           editado_em: string
+          expira_em: string
+          id: string
+          lidos: number
+          mensagem: string
+          perfil_id: string
+          perfil_nome: string
+          publicar_em: string
+          tipo: string
+          titulo: string
+        }[]
+      }
+      avisos_enviados_confirmacao: {
+        Args: never
+        Returns: {
+          arquivado_em: string
+          ativos: number
+          autor_id: string
+          autor_nome: string
+          editado_em: string
+          exige_confirmacao: boolean
           expira_em: string
           id: string
           lidos: number
@@ -1383,6 +1434,7 @@ export type Database = {
           titulo: string
         }[]
       }
+      confirmar_leitura_aviso: { Args: { _aviso_id: string }; Returns: string }
       contar_nao_lidos: { Args: never; Returns: number }
       criar_questionario: {
         Args: {
@@ -1449,6 +1501,29 @@ export type Database = {
         }
         Returns: {
           editado_em: string
+          expira_em: string
+          id: string
+          lido: boolean
+          mensagem: string
+          perfil_nome: string
+          publicar_em: string
+          tipo: string
+          titulo: string
+        }[]
+      }
+      listar_avisos_confirmacao: {
+        Args: {
+          _aviso_id?: string
+          _deslocamento?: number
+          _limite?: number
+          _priorizar?: boolean
+          _so_nao_lidos?: boolean
+          _so_obrigatorios?: boolean
+        }
+        Returns: {
+          confirmado_em: string
+          editado_em: string
+          exige_confirmacao: boolean
           expira_em: string
           id: string
           lido: boolean

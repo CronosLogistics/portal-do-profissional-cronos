@@ -5,6 +5,7 @@ export const NIVEIS = ["lider", "coordenador", "supervisor", "liderado"] as cons
 export type NivelDepartamento = typeof NIVEIS[number];
 const COLUNAS = { lider: "Permiss_x00f5_esdoL_x00ed_der", coordenador: "Permiss_x00e3_odoCoordenador", supervisor: "Permiss_x00f5_esdoSupervisor", liderado: "Permiss_x00f5_esdosLiderados" };
 const MAPA: Record<string, string> = {
+  "Permitir envio de confirmação de leitura": "avisos.confirmacao", "Publicar avisos com confirmação de leitura": "avisos.confirmacao",
   "Publicar avisos": "avisos.publicar", "Gerenciar avisos": "avisos.gerenciar", "Publicar o Cronos Insider": "avisos.insider",
   "Editar conteúdos": "conteudo.editar", "Gerenciar documentos": "documentos.gerenciar", "Gerenciar formulários": "formularios.gerenciar",
 };

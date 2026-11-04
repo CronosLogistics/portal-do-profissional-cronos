@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -11,7 +12,7 @@ export function AvisosBell({ naoLidos }: { naoLidos: number }) {
   const [open, setOpen] = useState(false);
   const qc = useQueryClient();
   const navigate = useNavigate();
-  const recentes = useQuery({ queryKey: [...avisosKey, "recentes"], queryFn: () => listarAvisos(false, 5, 0), enabled: open });
+  const recentes = useQuery({ queryKey: [...avisosKey, "recentes"], queryFn: () => listarAvisos(true, 100, 0, false, undefined, true), enabled: open });
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -29,8 +30,7 @@ export function AvisosBell({ naoLidos }: { naoLidos: number }) {
             className="h-auto p-0 text-xs"
             disabled={!naoLidos}
             onClick={async () => {
-              await marcarTodosLidos();
-              await qc.invalidateQueries({ queryKey: avisosKey });
+              try { await marcarTodosLidos(); await qc.invalidateQueries({ queryKey: avisosKey }); } catch (e) { toast.error(e instanceof Error ? e.message : "Não foi possível registrar as leituras."); }
             }}
           >
             Marcar todas
@@ -51,6 +51,7 @@ export function AvisosBell({ naoLidos }: { naoLidos: number }) {
               >
                 <span className="text-[11px] font-bold uppercase text-accent">{a.perfil_nome}</span>
                 <span className="line-clamp-2 text-sm">{a.titulo}</span>
+                {a.exige_confirmacao && <strong className="text-xs text-accent">Leitura obrigatória</strong>}
                 <span className="text-xs text-muted-foreground">{formatarDataBrasilia(a.publicar_em)}</span>
               </button>
             </li>

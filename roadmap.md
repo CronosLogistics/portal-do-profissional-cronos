@@ -1,4 +1,8 @@
 # Atualização visual do Portal do Profissional
+## Avisos com confirmação de leitura
+- [ ] Adicionar permissão departamental, confirmação explícita e proteção contra leitura automática/coletiva.
+- [ ] Substituir opção Insider, adicionar filtro obrigatório, sino persistente e acompanhamento nominal.
+- [ ] Validar regras em testes e fluxo autenticado completo.
 ## Administração exclusiva
 - [x] Auditar todos os perfis e bloquear permissões administrativas fora de Administrador de sistema, incluindo futuras sincronizações; removidas dos quatro perfis departamentais encontrados.
 - [x] Validar Qualidade e Administrador na tela, sem erros; 24 testes passam, incluindo proteção da sincronização e preservação das permissões operacionais.

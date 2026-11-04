@@ -12,6 +12,7 @@ import { useCurrentUser } from "@/hooks/useAuth";
 import { useNaoLidos } from "@/hooks/useAvisos";
 import { AvisoLeitura, type AvisoExibido } from "@/components/avisos/AvisoLeitura";
 import { AvisoForm } from "@/components/avisos/AvisoForm";
+import { AvisoAcompanhamento } from "@/components/avisos/AvisoAcompanhamento";
 import { InsiderEditor } from "@/components/avisos/InsiderEditor";
 import { arquivarAviso, avisosEnviados, avisosKey, cancelarAviso, listarAvisos, marcarTodosLidos, POR_PAGINA, type AvisoEnviado } from "@/lib/avisos-client";
 import { filtrarAvisosPorBusca, formatarDataBrasilia, statusAviso, type StatusAviso } from "@/lib/avisos-rules";
@@ -33,7 +34,7 @@ export const Route = createFileRoute("/_authenticated/avisos")({
 
 function AvisosPage() {
   const me = useCurrentUser();
-  const podePublicar = Boolean(me.data?.can("avisos.publicar") || me.data?.can("avisos.gerenciar"));
+  const podePublicar = Boolean(me.data?.can("avisos.publicar") || me.data?.can("avisos.gerenciar") || me.data?.can("avisos.confirmacao"));
   const [form, setForm] = useState<{ open: boolean; aviso?: AvisoEnviado | null }>({ open: false });
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-8">
@@ -42,7 +43,7 @@ function AvisosPage() {
           <h1 className="text-3xl font-bold text-foreground">Avisos</h1>
           <p className="text-muted-foreground">Comunicados oficiais para todos os profissionais.</p>
         </div>
-        {me.data?.can("avisos.publicar") && <Button onClick={() => setForm({ open: true, aviso: null })}><Plus />Novo aviso</Button>}
+        {(me.data?.can("avisos.publicar") || me.data?.can("avisos.confirmacao")) && <Button onClick={() => setForm({ open: true, aviso: null })}><Plus />Novo aviso</Button>}
       </header>
       {podePublicar || me.data?.can("avisos.insider") ? (
         <Tabs defaultValue="recebidos">
@@ -67,12 +68,12 @@ function Recebidos() {
   const qc = useQueryClient();
   const navigate = useNavigate({ from: "/avisos" });
   const { aviso: abertoId } = Route.useSearch();
-  const [filtro, setFiltro] = useState<"todos" | "nao-lidos">("todos");
+  const [filtro, setFiltro] = useState<"todos" | "nao-lidos" | "obrigatorios">("todos");
   const [busca, setBusca] = useState("");
   const naoLidos = useNaoLidos();
   const lista = useInfiniteQuery({
     queryKey: [...avisosKey, "lista", filtro],
-    queryFn: ({ pageParam }) => listarAvisos(filtro === "nao-lidos", POR_PAGINA, pageParam),
+    queryFn: ({ pageParam }) => listarAvisos(filtro === "nao-lidos", POR_PAGINA, pageParam, filtro === "obrigatorios"),
     initialPageParam: 0,
     getNextPageParam: (last, pages) => (last.length < POR_PAGINA ? undefined : pages.length * POR_PAGINA),
   });
@@ -86,7 +87,7 @@ function Recebidos() {
   // Aviso aberto pelo sino/alerta pode não estar na página carregada.
   const extra = useQuery({
     queryKey: [...avisosKey, "um", abertoId],
-    queryFn: async () => (await listarAvisos(false, 100, 0)).find((a) => a.id === abertoId) ?? null,
+    queryFn: async () => (await listarAvisos(false, 1, 0, false, abertoId))[0] ?? null,
     enabled: Boolean(abertoId) && !avisos.some((a) => a.id === abertoId),
   });
   const aberto: AvisoExibido | null = (abertoId && (avisos.find((a) => a.id === abertoId) ?? extra.data)) || null;
@@ -103,11 +104,12 @@ function Recebidos() {
   return (
     <section className="mt-4">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button size="sm" variant={filtro === "todos" ? "default" : "outline"} onClick={() => setFiltro("todos")}>Todos</Button>
           <Button size="sm" variant={filtro === "nao-lidos" ? "default" : "outline"} onClick={() => setFiltro("nao-lidos")}>
             Não lidos{naoLidos.data ? ` (${naoLidos.data})` : ""}
           </Button>
+          <Button size="sm" variant={filtro === "obrigatorios" ? "default" : "outline"} onClick={() => setFiltro("obrigatorios")}>Leitura obrigatória</Button>
         </div>
         <Button size="sm" variant="ghost" disabled={!naoLidos.data || todos.isPending} onClick={() => todos.mutate()}><CheckCheck />Marcar todos como lidos</Button>
       </div>
@@ -115,10 +117,10 @@ function Recebidos() {
         <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input aria-label="Buscar avisos" placeholder="Buscar avisos" value={busca} onChange={(e) => setBusca(e.target.value)} className="pl-9" />
       </div>
-      {lista.isLoading ? (
+      {lista.isError ? <p role="alert" className="py-6 text-destructive">{lista.error.message}</p> : lista.isLoading ? (
         <p className="py-10 text-center text-muted-foreground">Carregando avisos...</p>
       ) : vazio ? (
-        <p className="rounded-lg border py-10 text-center text-muted-foreground">{filtro === "nao-lidos" ? "Você está em dia: nenhum aviso não lido." : "Nenhum aviso vigente no momento."}</p>
+        <p className="rounded-lg border py-10 text-center text-muted-foreground">{filtro === "nao-lidos" ? "Você está em dia: nenhum aviso não lido." : filtro === "obrigatorios" ? "Nenhum aviso de leitura obrigatória." : "Nenhum aviso vigente no momento."}</p>
       ) : semResultado ? (
         <p className="rounded-lg border py-10 text-center text-muted-foreground">{aindaBuscando ? "Buscando em todos os avisos..." : `Nenhum aviso encontrado para “${busca.trim()}”.`}</p>
       ) : (
@@ -130,6 +132,7 @@ function Recebidos() {
                 <span className="min-w-0 flex-1">
                   <span className="block text-xs font-bold uppercase tracking-wide text-accent">{a.perfil_nome}</span>
                   <span className="block truncate text-base">{a.titulo}</span>
+                  {a.exige_confirmacao && <span className="block text-xs font-bold text-accent">Leitura obrigatória{a.lido ? " · ciência confirmada" : ""}</span>}
                 </span>
                 <span className="shrink-0 text-xs text-muted-foreground">{formatarDataBrasilia(a.publicar_em)}{a.editado_em ? " · editado" : ""}</span>
               </button>
@@ -151,6 +154,8 @@ const statusVariant: Record<StatusAviso, "default" | "secondary" | "outline"> = 
 
 function Enviados({ onEdit }: { onEdit: (a: AvisoEnviado) => void }) {
   const qc = useQueryClient();
+  const me = useCurrentUser();
+  const [acompanhamento, setAcompanhamento] = useState<string | null>(null);
   const enviados = useQuery({ queryKey: [...avisosKey, "enviados"], queryFn: avisosEnviados });
   const [confirmar, setConfirmar] = useState<{ tipo: "arquivar" | "cancelar"; aviso: AvisoEnviado } | null>(null);
   const acao = useMutation({
@@ -162,6 +167,7 @@ function Enviados({ onEdit }: { onEdit: (a: AvisoEnviado) => void }) {
     onError: (e: Error) => toast.error(e.message),
   });
   if (enviados.isLoading) return <p className="py-10 text-center text-muted-foreground">Carregando...</p>;
+  if (enviados.isError) return <p role="alert" className="text-destructive">{enviados.error.message}</p>;
   if (!enviados.data?.length) return <p className="mt-4 rounded-lg border py-10 text-center text-muted-foreground">Nenhum aviso enviado pelos seus perfis.</p>;
   return (
     <section className="mt-4 grid gap-2">
@@ -172,6 +178,7 @@ function Enviados({ onEdit }: { onEdit: (a: AvisoEnviado) => void }) {
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant={statusVariant[st]}>{st}</Badge>
+                {a.exige_confirmacao && <Badge variant="outline">Leitura obrigatória</Badge>}
                 <span className="text-xs font-bold uppercase text-accent">{a.perfil_nome}</span>
                 {a.editado_em && <span className="text-xs text-muted-foreground">editado</span>}
               </div>
@@ -181,8 +188,9 @@ function Enviados({ onEdit }: { onEdit: (a: AvisoEnviado) => void }) {
                 {a.expira_em ? ` · expira em ${formatarDataBrasilia(a.expira_em)}` : ""} · por {a.autor_nome || "-"}
               </p>
             </div>
-            {st !== "Agendado" && <p className="text-sm"><strong>Lido por {a.lidos}</strong> de {a.ativos} ativos</p>}
-            <div className="flex gap-1">
+            {st !== "Agendado" && <p className="text-sm"><strong>{a.exige_confirmacao ? "Confirmado por" : "Lido por"} {a.lidos}</strong> de {a.ativos} ativos</p>}
+            <div className="flex flex-wrap gap-1">
+              {a.exige_confirmacao && me.data?.can("avisos.confirmacao") && <Button size="sm" variant="outline" onClick={() => setAcompanhamento(a.id)}><CheckCheck />Acompanhar leituras</Button>}
               {(st === "Agendado" || st === "Publicado") && <Button size="sm" variant="ghost" onClick={() => onEdit(a)}><Pencil />{st === "Agendado" ? "Editar" : "Corrigir"}</Button>}
               {st === "Agendado" && <Button size="sm" variant="ghost" onClick={() => setConfirmar({ tipo: "cancelar", aviso: a })}><Trash2 />Cancelar</Button>}
               {(st === "Publicado" || st === "Expirado") && <Button size="sm" variant="ghost" onClick={() => setConfirmar({ tipo: "arquivar", aviso: a })}><Archive />Arquivar</Button>}
@@ -190,6 +198,7 @@ function Enviados({ onEdit }: { onEdit: (a: AvisoEnviado) => void }) {
           </article>
         );
       })}
+      <AvisoAcompanhamento id={acompanhamento} onClose={() => setAcompanhamento(null)} />
       <AlertDialog open={Boolean(confirmar)} onOpenChange={(o) => !o && setConfirmar(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
