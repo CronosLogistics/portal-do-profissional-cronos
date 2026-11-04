@@ -183,6 +183,13 @@
       "when": 1793800279116,
       "tag": "0025_departamentos_corrigir_variavel_perfil",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1793800416032,
+      "tag": "0026_departamentos_escopo_email_e_avisos",
+      "breakpoints": true
     }
   ]
 }

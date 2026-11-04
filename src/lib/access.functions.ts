@@ -58,5 +58,7 @@ export const registrarAcesso = createServerFn({ method: "POST" })
       ultimo_acesso: now,
     });
     if (upErr) throw new Error("Não foi possível registrar o acesso.");
+    const { sincronizarDepartamentos } = await import("./departamentos.server");
+    await sincronizarDepartamentos(true);
     return { ok: true };
   });

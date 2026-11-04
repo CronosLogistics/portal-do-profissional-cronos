@@ -348,6 +348,32 @@ export type Database = {
           },
         ]
       }
+      departamento_relacoes: {
+        Row: {
+          departamento_id: string
+          lider_email: string
+          liderado_email: string
+        }
+        Insert: {
+          departamento_id: string
+          lider_email: string
+          liderado_email: string
+        }
+        Update: {
+          departamento_id?: string
+          lider_email?: string
+          liderado_email?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "departamento_relacoes_departamento_id_fkey"
+            columns: ["departamento_id"]
+            isOneToOne: false
+            referencedRelation: "departamentos_portal"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       departamentos_portal: {
         Row: {
           atualizado_em: string

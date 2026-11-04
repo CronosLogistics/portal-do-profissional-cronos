@@ -21,14 +21,17 @@ export type CurrentUser = {
 export const currentUserQueryKey = ["current-user"] as const;
 
 async function fetchCurrentUser(): Promise<CurrentUser | null> {
-  const { data } = await supabase.auth.getUser();
+  const { data, error } = await supabase.auth.getUser();
+  if (error) throw new Error("Não foi possível confirmar seu acesso.");
   const user = data.user;
   if (!user) return null;
   const setor = await meuDepartamento();
-  const [{ data: profile }, { data: perms }] = await Promise.all([
+  const [profileResult, permsResult] = await Promise.all([
     supabase.from("profiles").select("full_name, email").eq("id", user.id).maybeSingle(),
     supabase.rpc("minhas_permissoes"),
   ]);
+  if (profileResult.error || permsResult.error) throw new Error("Não foi possível verificar suas permissões.");
+  const profile = profileResult.data, perms = permsResult.data;
   const permissions = ((perms as string[] | null) ?? []) as Permissao[];
   const can = (p: Permissao) => permissions.includes(p);
   const roles: PortalRole[] = ["funcionario"];

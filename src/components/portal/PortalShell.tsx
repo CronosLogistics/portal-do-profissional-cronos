@@ -229,7 +229,12 @@ export function PortalShell({ children }: { children: ReactNode }) {
             <Button variant="ghost" size="sm" onClick={() => void signOut()} title="Sair do portal"><LogOut className="size-4" /><span className="hidden sm:inline">Sair</span></Button>
           </div>
         </header>
-        <div className="portal-canvas">{children}</div>
+        <div className="portal-canvas">
+          {me.isError && <div role="alert" className="mb-4 flex flex-wrap items-center gap-3 border border-destructive p-4 text-sm text-destructive">
+            <span>{me.error.message}</span><Button variant="outline" size="sm" onClick={() => void me.refetch()}>Tentar novamente</Button>
+          </div>}
+          {children}
+        </div>
         <TourBoasVindas userId={me.data?.id} />
       </div>
     </div>

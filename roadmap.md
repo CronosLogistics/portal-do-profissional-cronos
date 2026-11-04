@@ -1,9 +1,9 @@
 # Atualização visual do Portal do Profissional
 ## Setores e liderança
-- [ ] Confirmar convivência dos perfis atuais com as permissões da lista Departamentos e o significado de confirmação de leitura.
-- [ ] Vincular setor automaticamente e sincronizar perfis por departamento e nível de liderança.
-- [ ] Expandir consulta de pendências para liderados conforme hierarquia e permissões.
-- [ ] Validar isolamento entre departamentos, níveis e o exemplo de Caxias do Sul.
+- [x] Confirmar substituição dos perfis atuais, preservando Administrador de sistema, e consulta própria/liderados por nível autorizado.
+- [x] Vincular setor automaticamente e sincronizar perfis por departamento e nível de liderança.
+- [x] Expandir consulta de pendências para liderados conforme hierarquia e permissões.
+- [x] Validar 45 testes, sincronização real dos 30 departamentos e hierarquia de Caxias; setor e perfis conferidos no portal em 873px. Consulta de linhas como Matheus/Ana/Alexey não exercitada: essas contas ainda não constam no portal.
 ## Consulta de férias
 - [x] Mapear campos de programação, retorno com extras e status dos ativos (colunas/filtros exatos da exibição ATIVOS não disponíveis por Graph v1.0; usados campos de consulta informados ao usuário).
 - [x] Criar submenu em Avisos e tabela com retorno ajustado por dias extras.
