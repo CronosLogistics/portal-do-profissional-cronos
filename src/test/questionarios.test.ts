@@ -16,6 +16,7 @@ beforeAll(async () => {
     CREATE FUNCTION tem_permissao(text) RETURNS boolean LANGUAGE sql AS $$ SELECT auth.uid()='${gestor}'::uuid AND $1='formularios.gerenciar' $$;`);
   await db.exec(readFileSync(new URL("../../drizzle/migrations/0027_questionarios_internos.sql", import.meta.url), "utf8"));
   await db.exec(readFileSync(new URL("../../drizzle/migrations/0029_questionarios_edicao_resposta_unica.sql", import.meta.url), "utf8"));
+  await db.exec(readFileSync(new URL("../../drizzle/migrations/0030_questionarios_exclusao_segura.sql", import.meta.url), "utf8"));
   await db.query("SELECT set_config('test.uid',$1,false)", [gestor]);
   anon = (await db.query<{ id: string }>("SELECT criar_questionario('Anônimo','',true,'[\"Primeira?\",\"Segunda?\"]') AS id")).rows[0]?.id ?? "";
   identificado = (await db.query<{ id: string }>("SELECT criar_questionario('Identificado','',false,'[\"Pergunta?\"]') AS id")).rows[0]?.id ?? "";
@@ -82,4 +83,27 @@ it("edição preserva perguntas e respostas anteriores e mantém anonimato", asy
 it("questionário mantém perguntas sequenciais preenchidas", () => {
   expect(novoQuestionarioSchema.parse({ titulo: "Teste", descricao: "", anonimo: false, perguntas: ["Primeira", "Segunda", "Terceira"] }).perguntas).toEqual(["Primeira", "Segunda", "Terceira"]);
   expect(novoQuestionarioSchema.safeParse({ titulo: "Teste", descricao: "", anonimo: true, perguntas: [""] }).success).toBe(false);
+});
+it("exclusão exige gestor e remove respostas e participação sem afetar outros formulários", async () => {
+  await db.query("SELECT set_config('test.uid',$1,false)", [pessoa]);
+  await expect(db.query("SELECT iniciar_exclusao_questionario($1)", [anon])).rejects.toThrow("Sem permissão");
+  await db.query("SELECT set_config('test.uid',$1,false)", [gestor]);
+  await db.query("SELECT reservar_registro_questionario($1)", [anon]);
+  await expect(db.query("SELECT iniciar_exclusao_questionario($1)", [anon])).rejects.toThrow("Sincronização");
+  await db.query("SELECT liberar_registro_questionario($1)", [anon]);
+  await db.query("SELECT iniciar_exclusao_questionario($1)", [anon]);
+  await expect(db.query("SELECT responder_questionario($1,'[\"Resposta\"]')", [anon])).rejects.toThrow("exclusão");
+  await expect(db.query("SELECT editar_questionario($1,'Outra','','[\"P?\"]')", [anon])).rejects.toThrow("exclusão");
+  expect((await db.query<{ ok: boolean }>("SELECT reservar_registro_questionario($1) AS ok", [anon])).rows[0]?.ok).toBe(false);
+  await db.query("SELECT set_config('test.uid',$1,false)", [pessoa]);
+  const list = (await db.query<{ lista: { id: string }[] }>("SELECT listar_questionarios() AS lista")).rows[0]?.lista;
+  expect(list?.some(q => q.id === anon)).toBe(false);
+  await db.query("SELECT set_config('test.uid',$1,false)", [gestor]);
+  await db.exec("SET ROLE authenticated");
+  await expect(db.query("SELECT finalizar_exclusao_questionario($1)", [anon])).rejects.toThrow();
+  await db.exec("RESET ROLE");
+  await db.query("SELECT finalizar_exclusao_questionario($1)", [anon]);
+  for (const table of ["questionarios_respostas", "questionarios_participacoes"]) expect((await db.query(`SELECT * FROM ${table} WHERE questionario_id=$1`, [anon])).rows).toHaveLength(0);
+  expect((await db.query("SELECT * FROM questionarios_internos WHERE id=$1", [anon])).rows).toHaveLength(0);
+  expect((await db.query("SELECT * FROM questionarios_internos WHERE id=$1", [identificado])).rows).toHaveLength(1);
 });

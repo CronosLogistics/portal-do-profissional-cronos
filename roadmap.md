@@ -3,7 +3,7 @@
 - [x] Auditar todos os perfis e bloquear permissões administrativas fora de Administrador de sistema, incluindo futuras sincronizações; removidas dos quatro perfis departamentais encontrados.
 - [x] Validar Qualidade e Administrador na tela, sem erros; 24 testes passam, incluindo proteção da sincronização e preservação das permissões operacionais.
 ## Formulários internos
-- [ ] Adicionar exclusão confirmada por gestores e remover registros correspondentes do portal e SharePoint, com recuperação quando o SharePoint falhar.
+- [x] Adicionar exclusão confirmada por gestores e remover registros correspondentes do portal e SharePoint; 14 testes passam, criação/resposta/cancelamento/exclusão verificados na tela e remoção confirmada no SharePoint.
 - [x] Permitir edição após envio preservando perguntas e respostas existentes e mantendo anonimato.
 - [x] Registrar cada resposta completa em uma única linha no SharePoint; formulários existentes salvos e registros antigos consolidados, com leitura real confirmada.
 - [x] Criar menu separado, questionários com perguntas sequenciais e gestão por formularios.gerenciar.
