@@ -34,7 +34,9 @@ export function montarDepartamentos(departamentos: ItemAnaliseNC[], profissionai
   const pessoas = new Map<string, SnapshotDepartamentos["pessoas"][number]>();
   const idsDepartamentos = new Set(departamentos.map(d => d.id));
   for (const [email, rows] of porEmail) {
-    const id = rows.length === 1 ? String(rows[0]?.fields['SETORLookupId'] ?? "") : "";
+    const fields = rows.length === 1 ? rows[0]?.fields : undefined;
+    const atual = String(fields?.['DEPARTAMENTOATUALLookupId'] ?? "").trim();
+    const id = fields ? atual || String(fields['SETORLookupId'] ?? "").trim() : "";
     pessoas.set(email, { email, departamento: idsDepartamentos.has(id) ? id : null, vinculos: [] });
   }
   const identidade = (id: unknown) => normalizarEmail(usuarios.get(String(id ?? ""))?.email ?? "");

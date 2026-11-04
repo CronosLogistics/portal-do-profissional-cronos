@@ -27,7 +27,7 @@ async function ler<T>(lista: string, campos: string): Promise<T[]> {
 export async function consultarDepartamentos(): Promise<SnapshotDepartamentos> {
   const [departamentos, profissionais, users] = await Promise.all([
     ler<ItemAnaliseNC>("d51e41a8-32ca-41b8-bd98-76b9027db451", "Title,L_x00ed_derDiretoLookupId,CoordenadorLookupId,Supervisor,Permiss_x00f5_esdosLiderados,Permiss_x00f5_esdoSupervisor,Permiss_x00e3_odoCoordenador,Permiss_x00f5_esdoL_x00ed_der"),
-    ler<ItemAnaliseNC>("0e37d734-d94f-4832-9802-d3c2e7daf395", "field_1,SETORLookupId,E_x002d_MAILCORPORATIVOLookupId"),
+    ler<ItemAnaliseNC>("0e37d734-d94f-4832-9802-d3c2e7daf395", "field_1,DEPARTAMENTOATUALLookupId,SETORLookupId,E_x002d_MAILCORPORATIVOLookupId"),
     ler<{ id: string; fields: { EMail?: string; Title?: string } }>("dcbf95ce-8b48-451e-b14f-eab5d8fa098f", "EMail,Title"),
   ]);
   if (!departamentos.length || !profissionais.length || !users.length) throw new Error("Consulta de setores vazia; acessos existentes foram preservados.");

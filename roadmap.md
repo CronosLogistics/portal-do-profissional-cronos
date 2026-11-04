@@ -1,5 +1,6 @@
 # Atualização visual do Portal do Profissional
 ## Setores e liderança
+- [x] Usar Departamento Atual de Profissionais Brasil, com contratação como alternativa quando vazio; 16 testes passam e sincronização real concluída sem erro. Conta Cloud acessou pendências, mas não possui setor no SharePoint; ingresso de um novo contratado real não exercitado.
 - [x] Confirmar substituição dos perfis atuais, preservando Administrador de sistema, e consulta própria/liderados por nível autorizado.
 - [x] Vincular setor automaticamente e sincronizar perfis por departamento e nível de liderança.
 - [x] Expandir consulta de pendências para liderados conforme hierarquia e permissões.
