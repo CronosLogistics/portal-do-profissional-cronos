@@ -3,6 +3,8 @@
 - [x] Auditar todos os perfis e bloquear permissões administrativas fora de Administrador de sistema, incluindo futuras sincronizações; removidas dos quatro perfis departamentais encontrados.
 - [x] Validar Qualidade e Administrador na tela, sem erros; 24 testes passam, incluindo proteção da sincronização e preservação das permissões operacionais.
 ## Formulários internos
+- [x] Permitir edição após envio preservando perguntas e respostas existentes e mantendo anonimato.
+- [x] Registrar cada resposta completa em uma única linha no SharePoint; formulários existentes salvos e registros antigos consolidados, com leitura real confirmada.
 - [x] Criar menu separado, questionários com perguntas sequenciais e gestão por formularios.gerenciar.
 - [x] Manter questionários pendentes até resposta; anonimato oculta identidades de respostas e pendentes dos gestores.
 - [x] Registrar perguntas e respostas na lista Registro Padrão para Formulários via conexão Microsoft SharePoint; 27 testes passam, criação/resposta/resultados anônimos verificados na tela e quatro registros confirmados no SharePoint. Registros de teste removidos.

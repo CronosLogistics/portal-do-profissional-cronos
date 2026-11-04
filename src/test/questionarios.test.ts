@@ -15,6 +15,7 @@ beforeAll(async () => {
     CREATE FUNCTION is_active_user(uuid) RETURNS boolean LANGUAGE sql AS $$ SELECT EXISTS(SELECT 1 FROM profiles WHERE id=$1 AND is_active) $$;
     CREATE FUNCTION tem_permissao(text) RETURNS boolean LANGUAGE sql AS $$ SELECT auth.uid()='${gestor}'::uuid AND $1='formularios.gerenciar' $$;`);
   await db.exec(readFileSync(new URL("../../drizzle/migrations/0027_questionarios_internos.sql", import.meta.url), "utf8"));
+  await db.exec(readFileSync(new URL("../../drizzle/migrations/0029_questionarios_edicao_resposta_unica.sql", import.meta.url), "utf8"));
   await db.query("SELECT set_config('test.uid',$1,false)", [gestor]);
   anon = (await db.query<{ id: string }>("SELECT criar_questionario('Anônimo','',true,'[\"Primeira?\",\"Segunda?\"]') AS id")).rows[0]?.id ?? "";
   identificado = (await db.query<{ id: string }>("SELECT criar_questionario('Identificado','',false,'[\"Pergunta?\"]') AS id")).rows[0]?.id ?? "";
@@ -53,8 +54,30 @@ it("gestores não leem diretamente participações ou respostas", async () => {
   await db.exec("RESET ROLE");
 });
 it("não envia identidade de respondente anônimo ao SharePoint", () => {
-  const fields = camposRegistro({ id: anon, titulo: "Anônimo", anonimo: true }, "Pergunta", "Resposta", "Criador", "Pessoa (pessoa@test)");
+  const fields = camposRegistro({ id: anon, titulo: "Anônimo", anonimo: true }, ["Pergunta"], ["Resposta"], "Criador", "Pessoa (pessoa@test)");
   expect(fields.Respondidopor).toBe("Anônimo"); expect(JSON.stringify(fields)).not.toContain("pessoa@test");
+});
+it("cada resposta completa ocupa uma linha com todas as perguntas e respostas", () => {
+  const fields = camposRegistro({ id: anon, titulo: "Pesquisa", anonimo: false }, ["Primeira?", "Segunda?"], ["Um", "Dois"], "Gestor", "Pessoa");
+  expect(fields.Pergunta).toBe("1. Primeira?\n\n2. Segunda?");
+  expect(fields.Resposta).toBe("1. Um\n\n2. Dois");
+  expect(fields.Respondidopor).toBe("Pessoa");
+});
+it("somente gestores editam um formulário enviado", async () => {
+  await db.query("SELECT set_config('test.uid',$1,false)", [pessoa]);
+  await expect(db.query("SELECT editar_questionario($1,'Negado','','[\"Outra?\"]')", [anon])).rejects.toThrow("Sem permissão");
+});
+it("edição preserva perguntas e respostas anteriores e mantém anonimato", async () => {
+  await db.query("SELECT set_config('test.uid',$1,false)", [gestor]);
+  await db.query("SELECT editar_questionario($1,'Atualizado','Descrição','[\"Nova?\"]')", [anon]);
+  const result = (await db.query<{ dados: { respostas: { perguntas: string[]; respostas: string[]; nome: unknown }[]; respondidos: number } }>("SELECT gestao_questionario($1) AS dados", [anon])).rows[0]?.dados;
+  expect(result?.respostas[0]).toMatchObject({ perguntas: ["Primeira?", "Segunda?"], respostas: ["Um", "Dois"], nome: null });
+  expect(result?.respondidos).toBe(1);
+  const q = (await db.query<{ titulo: string; anonimo: boolean; perguntas: string[] }>("SELECT titulo,anonimo,perguntas FROM questionarios_internos WHERE id=$1", [anon])).rows[0];
+  expect(q).toEqual({ titulo: "Atualizado", anonimo: true, perguntas: ["Nova?"] });
+  await db.query("SELECT responder_questionario($1,'[\"Nova resposta\"]')", [anon]);
+  const snapshots = (await db.query<{ perguntas: string[] }>("SELECT perguntas FROM questionarios_respostas WHERE questionario_id=$1 AND respostas='[\"Nova resposta\"]'", [anon])).rows[0]?.perguntas;
+  expect(snapshots).toEqual(["Nova?"]);
 });
 it("questionário mantém perguntas sequenciais preenchidas", () => {
   expect(novoQuestionarioSchema.parse({ titulo: "Teste", descricao: "", anonimo: false, perguntas: ["Primeira", "Segunda", "Terceira"] }).perguntas).toEqual(["Primeira", "Segunda", "Terceira"]);

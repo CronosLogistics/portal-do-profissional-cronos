@@ -1021,6 +1021,7 @@ export type Database = {
           descricao: string
           id: string
           perguntas: Json
+          revisao: number
           sharepoint_registrado: boolean
           titulo: string
         }
@@ -1031,6 +1032,7 @@ export type Database = {
           descricao?: string
           id?: string
           perguntas: Json
+          revisao?: number
           sharepoint_registrado?: boolean
           titulo: string
         }
@@ -1041,6 +1043,7 @@ export type Database = {
           descricao?: string
           id?: string
           perguntas?: Json
+          revisao?: number
           sharepoint_registrado?: boolean
           titulo?: string
         }
@@ -1072,6 +1075,7 @@ export type Database = {
       questionarios_respostas: {
         Row: {
           id: string
+          perguntas: Json | null
           questionario_id: string
           respondente_id: string | null
           respostas: Json
@@ -1079,6 +1083,7 @@ export type Database = {
         }
         Insert: {
           id?: string
+          perguntas?: Json | null
           questionario_id: string
           respondente_id?: string | null
           respostas: Json
@@ -1086,6 +1091,7 @@ export type Database = {
         }
         Update: {
           id?: string
+          perguntas?: Json | null
           questionario_id?: string
           respondente_id?: string | null
           respostas?: Json
@@ -1380,6 +1386,15 @@ export type Database = {
           _titulo: string
         }
         Returns: string
+      }
+      editar_questionario: {
+        Args: {
+          _descricao: string
+          _id: string
+          _perguntas: Json
+          _titulo: string
+        }
+        Returns: undefined
       }
       gere_aviso: {
         Args: { _autor: string; _perfil: string }

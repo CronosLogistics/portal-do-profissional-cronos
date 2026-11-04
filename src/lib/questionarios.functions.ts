@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { novoQuestionarioSchema, respostaQuestionarioSchema, idQuestionarioSchema, type Questionario, type GestaoQuestionario } from "./questionarios.rules";
+import { novoQuestionarioSchema, editarQuestionarioSchema, respostaQuestionarioSchema, idQuestionarioSchema, type Questionario, type GestaoQuestionario } from "./questionarios.rules";
 
 export const listarQuestionarios = createServerFn({ method: "GET" }).middleware([requireSupabaseAuth]).handler(async ({ context }): Promise<Questionario[]> => {
   const result = await context.supabase.rpc("listar_questionarios");
@@ -31,4 +31,11 @@ export const reenviarQuestionarioSharePoint = createServerFn({ method: "POST" })
   if (acesso.error) throw new Error("Sem permissão para gerenciar este formulário.");
   const { registrarQuestionarioSharePoint } = await import("./questionarios.server"); await registrarQuestionarioSharePoint(data.id);
   return { registrado: true };
+});
+export const editarQuestionario = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth]).inputValidator(input => editarQuestionarioSchema.parse(input)).handler(async ({ data, context }) => {
+  const result = await context.supabase.rpc("editar_questionario", { _id: data.id, _titulo: data.titulo, _descricao: data.descricao, _perguntas: data.perguntas });
+  if (result.error) throw new Error("Não foi possível editar o formulário. Confira sua permissão e os campos.");
+  let registrado = true;
+  try { const { registrarQuestionarioSharePoint } = await import("./questionarios.server"); await registrarQuestionarioSharePoint(data.id); } catch { registrado = false; }
+  return { registrado };
 });

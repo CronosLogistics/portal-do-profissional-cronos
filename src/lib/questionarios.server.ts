@@ -9,26 +9,28 @@ async function graph(path: string, init: RequestInit = {}) {
   headers.set("Authorization", `Bearer ${key}`); headers.set("X-Connection-Api-Key", connection);
   const result = await fetch(`https://connector-gateway.lovable.dev/microsoft_sharepoint/sites/${SITE}/lists/${LISTA}${path}`, { ...init, headers, signal: AbortSignal.timeout(20000) });
   if (!result.ok) { const body = await result.text(); console.error(`Registro de formulários Microsoft [${result.status}]: ${body}`); throw new Error(`Não foi possível registrar no SharePoint [${result.status}].`); }
-  return result.json() as Promise<{ value?: { id: string }[] }>;
+  if (result.status === 204) return {};
+  return result.json() as Promise<{ value?: { id: string; fields?: { Title?: string } }[]; "@odata.nextLink"?: string }>;
 }
 async function registrar(chave: string, fields: Record<string, string>) {
   const found = await graph(`/items?$filter=${encodeURIComponent(`fields/Title eq '${chave}'`)}&$select=id&$top=1`, { headers: { Prefer: "HonorNonIndexedQueriesWarningMayFailRandomly" } });
-  if (found.value?.length) return;
+  const existing = found.value?.[0];
+  if (existing) { await graph(`/items/${existing.id}/fields`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(fields) }); return; }
   await graph("/items", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ fields: { ...fields, Title: chave } }) });
 }
 /** Caller must authenticate and authorize the exact questionnaire before invoking this helper. */
 export async function registrarQuestionarioSharePoint(id: string, respostaId?: string) {
   const { supabaseAdmin: db } = await import("@/integrations/supabase/client.server");
-  const { data: q, error } = await db.from("questionarios_internos").select("id,titulo,anonimo,perguntas,criador_id,sharepoint_registrado").eq("id", id).single();
+  const { data: q, error } = await db.from("questionarios_internos").select("id,titulo,anonimo,perguntas,criador_id,sharepoint_registrado,revisao").eq("id", id).single();
   if (error || !q) throw new Error("Questionário não encontrado.");
   const perguntas = q.perguntas as string[];
   const criador = await db.from("profiles").select("full_name").eq("id", q.criador_id).single();
   if (!q.sharepoint_registrado) {
-    for (const [i, pergunta] of perguntas.entries()) await registrar(`Q:${id}:${i + 1}`, camposRegistro(q, pergunta, "", criador.data?.full_name ?? "", ""));
-    const updated = await db.from("questionarios_internos").update({ sharepoint_registrado: true }).eq("id", id);
+    await registrar(`Q:${id}`, camposRegistro(q, perguntas, [], criador.data?.full_name ?? "", ""));
+    const updated = await db.from("questionarios_internos").update({ sharepoint_registrado: true }).eq("id", id).eq("revisao", q.revisao);
     if (updated.error) throw new Error("Não foi possível confirmar o registro.");
   }
-  let query = db.from("questionarios_respostas").select("id,respostas,respondente_id").eq("questionario_id", id).eq("sharepoint_registrado", false).limit(100);
+  let query = db.from("questionarios_respostas").select("id,perguntas,respostas,respondente_id").eq("questionario_id", id);
   if (respostaId) query = query.eq("id", respostaId);
   const { data: respostas, error: falha } = await query;
   if (falha) throw new Error("Não foi possível consultar os registros pendentes.");
@@ -36,8 +38,24 @@ export async function registrarQuestionarioSharePoint(id: string, respostaId?: s
     let nome = "";
     if (!q.anonimo && resposta.respondente_id) { const profile = await db.from("profiles").select("full_name,email").eq("id", resposta.respondente_id).single(); nome = `${profile.data?.full_name ?? ""} (${profile.data?.email ?? ""})`; }
     const textos = resposta.respostas as string[];
-    for (const [i, pergunta] of perguntas.entries()) await registrar(`R:${id}:${resposta.id}:${i + 1}`, { ...camposRegistro(q, pergunta, textos[i] ?? "", criador.data?.full_name ?? "", nome), ...(q.anonimo ? {} : { DatadaResposta: new Date().toISOString() }) });
+    await registrar(`R:${id}:${resposta.id}`, camposRegistro(q, (resposta.perguntas ?? perguntas) as string[], textos, criador.data?.full_name ?? "", nome));
     const updated = await db.from("questionarios_respostas").update({ sharepoint_registrado: true }).eq("id", resposta.id);
     if (updated.error) throw new Error("Não foi possível confirmar o registro da resposta.");
   }
+  // Consolidate legacy per-question rows only after complete replacement rows are saved.
+  const prefixes = [`Q:${id}:`, ...(respostas ?? []).map(r => `R:${id}:${r.id}:`)];
+  let path: string | undefined = "/items?$expand=fields($select=Title)&$select=id,fields&$top=200";
+  const legacy: string[] = [];
+  while (path) {
+    const page = await graph(path);
+    for (const item of page.value ?? []) if (prefixes.some(prefix => item.fields?.Title?.startsWith(prefix))) legacy.push(item.id);
+    const next = page["@odata.nextLink"];
+    if (next) {
+      const url = new URL(next);
+      const base = `/v1.0/sites/${SITE}/lists/${LISTA}`;
+      if (url.hostname !== "graph.microsoft.com" || !url.pathname.startsWith(`${base}/items`)) throw new Error("Paginação Microsoft inválida.");
+      path = url.pathname.slice(base.length) + url.search;
+    } else path = undefined;
+  }
+  for (const legacyId of legacy) await graph(`/items/${legacyId}`, { method: "DELETE" });
 }
