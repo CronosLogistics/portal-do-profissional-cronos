@@ -36,7 +36,7 @@ export const PORTAL_MODULES: PortalModule[] = [
   { to: "/treinamentos", label: "Treinamentos" },
   { to: "/formularios-internos", label: "Formulários Internos", group: "formularios" },
   { to: "/formularios", label: "Formulários SharePoint", menuLabel: "Formulários SharePoint", group: "formularios" },
-  { to: "/documentos", label: "Documentos" },
+  { to: "/documentos", label: "Documentos Cronos" },
   { to: "/feedback", label: "Elogios", menuLabel: "Elogios", group: "feedbacks" },
   { to: "/feedback-gestor", label: "Feedback do gestor", group: "feedbacks" },
 ];
