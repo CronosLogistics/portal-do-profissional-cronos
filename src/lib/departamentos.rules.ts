@@ -26,16 +26,20 @@ export type SnapshotDepartamentos = {
 export function montarDepartamentos(departamentos: ItemAnaliseNC[], profissionais: ItemAnaliseNC[], usuarios: Map<string, PessoaSharePoint>): SnapshotDepartamentos {
   const porEmail = new Map<string, ItemAnaliseNC[]>();
   for (const p of profissionais) {
-    if (!["ATIVO", "EFETIVADO/ATIVO"].includes(String(p.fields.field_1 ?? "").trim().toUpperCase())) continue;
-    const email = normalizarEmail(usuarios.get(String(p.fields.E_x002d_MAILCORPORATIVOLookupId ?? ""))?.email ?? "");
+    if (!["ATIVO", "EFETIVADO/ATIVO"].includes(String(p.fields['field_1'] ?? "").trim().toUpperCase())) continue;
+    const email = normalizarEmail(usuarios.get(String(p.fields['E_x002d_MAILCORPORATIVOLookupId'] ?? ""))?.email ?? "");
     if (email) porEmail.set(email, [...(porEmail.get(email) ?? []), p]);
   }
   const snapshot: SnapshotDepartamentos = { departamentos: [], pessoas: [], hierarquia: [] };
   const pessoas = new Map<string, SnapshotDepartamentos["pessoas"][number]>();
-  for (const [email, rows] of porEmail) pessoas.set(email, { email, departamento: rows.length === 1 ? String(rows[0]?.fields.SETORLookupId ?? "") || null : null, vinculos: [] });
+  const idsDepartamentos = new Set(departamentos.map(d => d.id));
+  for (const [email, rows] of porEmail) {
+    const id = rows.length === 1 ? String(rows[0]?.fields['SETORLookupId'] ?? "") : "";
+    pessoas.set(email, { email, departamento: idsDepartamentos.has(id) ? id : null, vinculos: [] });
+  }
   const identidade = (id: unknown) => normalizarEmail(usuarios.get(String(id ?? ""))?.email ?? "");
   for (const d of departamentos) {
-    const nome = String(d.fields.Title ?? "").trim();
+    const nome = String(d.fields['Title'] ?? "").trim();
     if (!nome) continue;
     snapshot.departamentos.push({ id: d.id, nome, perfis: NIVEIS.map(nivel => ({ nivel, permissoes: permissoesDepartamento(d.fields, nivel) })) });
     const niveis = new Map<string, NivelDepartamento>();
@@ -44,9 +48,9 @@ export function montarDepartamentos(departamentos: ItemAnaliseNC[], profissionai
       const antigo = niveis.get(email);
       if (!antigo || NIVEIS.indexOf(nivel) < NIVEIS.indexOf(antigo)) niveis.set(email, nivel);
     };
-    atribuir(identidade(d.fields.L_x00ed_derDiretoLookupId), "lider");
-    atribuir(identidade(d.fields.CoordenadorLookupId), "coordenador");
-    for (const supervisor of Array.isArray(d.fields.Supervisor) ? d.fields.Supervisor : []) {
+    atribuir(identidade(d.fields['L_x00ed_derDiretoLookupId']), "lider");
+    atribuir(identidade(d.fields['CoordenadorLookupId']), "coordenador");
+    for (const supervisor of Array.isArray(d.fields['Supervisor']) ? d.fields['Supervisor'] : []) {
       if (supervisor && typeof supervisor === "object" && "LookupId" in supervisor) atribuir(identidade(supervisor.LookupId), "supervisor");
     }
     for (const [email, p] of pessoas) if (p.departamento === d.id) atribuir(email, "liderado");

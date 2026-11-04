@@ -169,6 +169,20 @@
       "when": 1793364550496,
       "tag": "0023_treinamentos_storage",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1793800143312,
+      "tag": "0024_departamentos_hierarquia_acesso",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1793800279116,
+      "tag": "0025_departamentos_corrigir_variavel_perfil",
+      "breakpoints": true
     }
   ]
 }

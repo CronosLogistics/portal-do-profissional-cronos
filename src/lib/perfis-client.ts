@@ -7,6 +7,7 @@ export type PerfilResumo = {
   descricao: string;
   sistema: boolean;
   ativo: boolean;
+  departamento_sp_id: string | null;
   permissoes: string[];
   membros: number;
 };
@@ -20,7 +21,7 @@ function amigavel(message?: string) {
 
 export async function listarPerfis(): Promise<PerfilResumo[]> {
   const [perfis, perms, membros] = await Promise.all([
-    supabase.from("perfis").select("id, nome, descricao, sistema, ativo").order("sistema", { ascending: false }).order("nome"),
+    supabase.from("perfis").select("id, nome, descricao, sistema, ativo, departamento_sp_id").order("sistema", { ascending: false }).order("nome"),
     supabase.from("perfil_permissoes").select("perfil_id, permissao"),
     supabase.from("usuario_perfis").select("perfil_id"),
   ]);

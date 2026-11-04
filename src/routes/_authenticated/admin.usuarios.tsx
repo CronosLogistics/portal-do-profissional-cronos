@@ -78,6 +78,8 @@ function UsersPage() {
       else if (r.sucesso) toast.success(`${r.alterados} profissional(is) atualizado(s).`);
       else toast.error(r.erro ?? "A sincronização falhou.");
       refresh();
+      void qc.invalidateQueries({ queryKey: currentUserQueryKey });
+      void qc.invalidateQueries({ queryKey: ["perfis"] });
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "A sincronização falhou."),
   });
@@ -203,12 +205,12 @@ function UsersPage() {
                       {u.perfis.map((p) => (
                         <Badge key={p.id} variant={p.sistema ? "default" : "secondary"} className="gap-1 pr-1">
                           {p.nome}
-                          <button
+                          {!(perfis.data ?? []).find(x => x.id === p.id)?.departamento_sp_id && <button
                             type="button"
                             aria-label={`Remover perfil ${p.nome}`}
                             className="rounded-sm opacity-70 hover:opacity-100"
                             onClick={() => p.sistema ? setRemoving({ user: u, perfil: p }) : remove.mutate({ perfilId: p.id, userId: u.id })}
-                          ><X className="h-3 w-3" /></button>
+                          ><X className="h-3 w-3" /></button>}
                         </Badge>
                       ))}
                       {u.isActive ? (
@@ -217,7 +219,7 @@ function UsersPage() {
                             <Button variant="outline" size="icon" className="h-6 w-6" aria-label="Adicionar perfil"><Plus className="h-3 w-3" /></Button>
                           </PopoverTrigger>
                           <PopoverContent className="w-56 p-1">
-                            {(perfis.data ?? []).filter((p) => p.ativo && !u.perfis.some((x) => x.id === p.id)).map((p) => (
+                            {(perfis.data ?? []).filter((p) => p.sistema && p.ativo && !u.perfis.some((x) => x.id === p.id)).map((p) => (
                               <button key={p.id} type="button" className="block w-full rounded px-2 py-1.5 text-left text-sm hover:bg-muted"
                                 onClick={() => add.mutate({ perfilId: p.id, userId: u.id })}>{p.nome}</button>
                             ))}

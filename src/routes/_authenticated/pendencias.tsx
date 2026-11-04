@@ -40,7 +40,7 @@ function PendenciasPage() {
     <main className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-8">
       <header className="mb-6">
         <h1 className="text-3xl font-bold text-foreground">Pendências</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Itens que aguardam sua resposta.</p>
+        <p className="mt-1 text-sm text-muted-foreground">{me.data?.can("pendencias.liderados") ? "Suas pendências e as dos seus liderados." : "Itens que aguardam sua resposta."}</p>
       </header>
       {q.isLoading && <p className="text-sm text-muted-foreground">Carregando…</p>}
       {q.error && <p className="rounded-lg border border-destructive/40 bg-card p-4 text-sm text-destructive">{q.error.message}</p>}

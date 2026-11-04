@@ -11,6 +11,7 @@ export const PERMISSOES = [
   { codigo: "conteudo.editar", nome: "Editar conteúdos", descricao: "Cadastrar benefícios, parceiros, recompensas e textos do portal." },
   { codigo: "documentos.gerenciar", nome: "Gerenciar documentos", descricao: "Incluir, editar e remover links na página Documentos." },
   { codigo: "formularios.gerenciar", nome: "Gerenciar formulários", descricao: "Adicionar e editar links na página Formulários." },
+  { codigo: "pendencias.liderados", nome: "Visualizar pendências dos liderados", descricao: "Consultar pendências dos níveis abaixo na hierarquia do departamento, conforme o SharePoint." },
 ] as const;
 
 export type Permissao = (typeof PERMISSOES)[number]["codigo"];

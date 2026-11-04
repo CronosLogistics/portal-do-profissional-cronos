@@ -1,0 +1,1 @@
+DO $$ DECLARE definicao text; BEGIN SELECT pg_get_functiondef('public.aplicar_departamentos(jsonb)'::regprocedure) INTO definicao; definicao := replace(definicao, 'DECLARE d jsonb;', E'<<aplicar_departamentos>>\nDECLARE d jsonb;'); EXECUTE definicao; END $$;

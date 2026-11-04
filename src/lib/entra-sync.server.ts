@@ -71,6 +71,8 @@ async function doSync(
         }
       }
     }
+    const { sincronizarDepartamentos } = await import("./departamentos.server");
+    await sincronizarDepartamentos(true);
     await supabaseAdmin.from("status_sincronizacao").upsert({ id: true, executado_em: now, sucesso: true, erro: null, alterados, ...meta });
     return { sucesso: true, alterados, erro: null as string | null };
   } catch (e) {

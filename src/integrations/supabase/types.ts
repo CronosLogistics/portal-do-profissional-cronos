@@ -308,6 +308,88 @@ export type Database = {
           },
         ]
       }
+      departamento_liderados: {
+        Row: {
+          departamento_id: string
+          lider_id: string
+          liderado_id: string
+        }
+        Insert: {
+          departamento_id: string
+          lider_id: string
+          liderado_id: string
+        }
+        Update: {
+          departamento_id?: string
+          lider_id?: string
+          liderado_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "departamento_liderados_departamento_id_fkey"
+            columns: ["departamento_id"]
+            isOneToOne: false
+            referencedRelation: "departamentos_portal"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "departamento_liderados_lider_id_fkey"
+            columns: ["lider_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "departamento_liderados_liderado_id_fkey"
+            columns: ["liderado_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      departamentos_portal: {
+        Row: {
+          atualizado_em: string
+          id: string
+          nome: string
+        }
+        Insert: {
+          atualizado_em?: string
+          id: string
+          nome: string
+        }
+        Update: {
+          atualizado_em?: string
+          id?: string
+          nome?: string
+        }
+        Relationships: []
+      }
+      departamentos_sincronizacao: {
+        Row: {
+          ativada: boolean
+          atualizado_em: string | null
+          em_execucao_desde: string | null
+          erro: string | null
+          id: boolean
+        }
+        Insert: {
+          ativada?: boolean
+          atualizado_em?: string | null
+          em_execucao_desde?: string | null
+          erro?: string | null
+          id?: boolean
+        }
+        Update: {
+          ativada?: boolean
+          atualizado_em?: string | null
+          em_execucao_desde?: string | null
+          erro?: string | null
+          id?: boolean
+        }
+        Relationships: []
+      }
       documentos: {
         Row: {
           atualizado_em: string
@@ -798,24 +880,30 @@ export type Database = {
         Row: {
           ativo: boolean
           criado_em: string
+          departamento_sp_id: string | null
           descricao: string
           id: string
+          nivel_departamento: string | null
           nome: string
           sistema: boolean
         }
         Insert: {
           ativo?: boolean
           criado_em?: string
+          departamento_sp_id?: string | null
           descricao?: string
           id?: string
+          nivel_departamento?: string | null
           nome: string
           sistema?: boolean
         }
         Update: {
           ativo?: boolean
           criado_em?: string
+          departamento_sp_id?: string | null
           descricao?: string
           id?: string
+          nivel_departamento?: string | null
           nome?: string
           sistema?: boolean
         }
@@ -865,6 +953,39 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      profissional_departamento: {
+        Row: {
+          atualizado_em: string
+          departamento_id: string | null
+          usuario_id: string
+        }
+        Insert: {
+          atualizado_em?: string
+          departamento_id?: string | null
+          usuario_id: string
+        }
+        Update: {
+          atualizado_em?: string
+          departamento_id?: string | null
+          usuario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profissional_departamento_departamento_id_fkey"
+            columns: ["departamento_id"]
+            isOneToOne: false
+            referencedRelation: "departamentos_portal"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profissional_departamento_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reward_programs: {
         Row: {
@@ -1092,6 +1213,7 @@ export type Database = {
           ultimo_acesso: string
         }[]
       }
+      aplicar_departamentos: { Args: { _snapshot: Json }; Returns: number }
       aviso_vigente: {
         Args: { _arquivado: string; _expira: string; _publicar: string }
         Returns: boolean
@@ -1223,6 +1345,7 @@ export type Database = {
           is_active: boolean
         }[]
       }
+      meu_escopo_departamento: { Args: never; Returns: Json }
       meus_perfis_remetentes: {
         Args: never
         Returns: {
@@ -1262,6 +1385,7 @@ export type Database = {
         Args: { _html: string; _mes_ano: string; _titulo: string }
         Returns: string
       }
+      reservar_departamentos: { Args: never; Returns: boolean }
       reservar_insider: {
         Args: { _mes: string; _token: string }
         Returns: boolean

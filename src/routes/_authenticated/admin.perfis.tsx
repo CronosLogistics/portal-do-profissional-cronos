@@ -78,7 +78,7 @@ function PerfisPage() {
       <h1 className="mb-6 text-2xl font-bold">Perfis de acesso</h1>
       <AdminTabs />
       <p className="mt-4 max-w-3xl text-sm text-muted-foreground">
-        Todo profissional ativo já tem o acesso básico ao portal. Os perfis liberam o que vai além disso; quem tem mais de um perfil soma as permissões.
+        Acessos por departamento e nível de liderança. Administrador de sistema permanece independente.
       </p>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[280px_1fr]">
@@ -170,7 +170,7 @@ function PerfilDetalhe({ perfil, onChange, onDeleted }: { perfil: PerfilResumo; 
             <h2 className="text-lg font-semibold">{perfil.nome}</h2>
             {perfil.sistema ? <Badge><ShieldCheck className="mr-1 h-3 w-3" /> Perfil de sistema</Badge> : null}
           </div>
-          {!perfil.sistema ? (
+          {!perfil.sistema && !perfil.departamento_sp_id ? (
             <div className="flex items-center gap-3">
               <label className="flex items-center gap-2 text-sm">
                 <Switch checked={perfil.ativo} disabled={ativo.isPending} onCheckedChange={(v) => ativo.mutate(v)} aria-label="Perfil ativo" />
@@ -184,6 +184,8 @@ function PerfilDetalhe({ perfil, onChange, onDeleted }: { perfil: PerfilResumo; 
         </div>
         {perfil.sistema ? (
           <p className="mt-2 text-sm text-muted-foreground">Tem todas as permissões, não pode ser excluído e precisa de pelo menos um membro ativo.</p>
+        ) : perfil.departamento_sp_id ? (
+          <p className="mt-2 text-sm text-muted-foreground">Departamento · {perfil.descricao}</p>
         ) : (
           <div className="mt-4 grid gap-3 md:grid-cols-2">
             <div className="space-y-1.5">
@@ -214,7 +216,7 @@ function PerfilDetalhe({ perfil, onChange, onDeleted }: { perfil: PerfilResumo; 
                 <Checkbox
                   id={`perm-${p.codigo}`}
                   checked={checked}
-                  disabled={perfil.sistema || perm.isPending}
+                  disabled={perfil.sistema || !!perfil.departamento_sp_id || perm.isPending}
                   onCheckedChange={(v) => perm.mutate({ codigo: p.codigo, marcado: v === true })}
                   className="mt-0.5"
                 />
@@ -231,7 +233,7 @@ function PerfilDetalhe({ perfil, onChange, onDeleted }: { perfil: PerfilResumo; 
 
       <div className="rounded-lg border bg-card p-5">
         <h3 className="mb-3 text-sm font-semibold">Pessoas no perfil</h3>
-        <BuscaAtivos excluir={(membros.data ?? []).map((m) => m.id)} onPick={(id) => add.mutate(id)} />
+        {!perfil.departamento_sp_id && <BuscaAtivos excluir={(membros.data ?? []).map((m) => m.id)} onPick={(id) => add.mutate(id)} />}
         {membros.isPending ? <Skeleton className="mt-3 h-10" /> : (membros.data ?? []).length === 0 ? (
           <p className="mt-3 text-sm text-muted-foreground">Nenhuma pessoa neste perfil.</p>
         ) : (
@@ -239,10 +241,10 @@ function PerfilDetalhe({ perfil, onChange, onDeleted }: { perfil: PerfilResumo; 
             {(membros.data ?? []).map((m) => (
               <Badge key={m.id} variant="secondary" className="gap-1 py-1 pr-1">
                 {m.full_name || m.email}{!m.is_active ? " (inativo)" : ""}
-                <button type="button" aria-label={`Remover ${m.full_name || m.email}`} className="rounded-sm opacity-70 hover:opacity-100"
+                {!perfil.departamento_sp_id && <button type="button" aria-label={`Remover ${m.full_name || m.email}`} className="rounded-sm opacity-70 hover:opacity-100"
                   onClick={() => perfil.sistema ? setRemoving({ id: m.id, nome: m.full_name || m.email }) : remove.mutate(m.id)}>
                   <X className="h-3 w-3" />
-                </button>
+                </button>}
               </Badge>
             ))}
           </div>

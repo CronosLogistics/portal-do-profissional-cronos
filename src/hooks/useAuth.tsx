@@ -4,11 +4,13 @@ import { useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import type { PortalRole } from "@/lib/portal-modules";
 import type { Permissao } from "@/lib/permissions";
+import { meuDepartamento } from "@/lib/departamentos.functions";
 
 export type CurrentUser = {
   id: string;
   email: string;
   fullName: string;
+  departamento: string | null;
   roles: PortalRole[];
   permissions: Permissao[];
   can: (p: Permissao) => boolean;
@@ -22,6 +24,7 @@ async function fetchCurrentUser(): Promise<CurrentUser | null> {
   const { data } = await supabase.auth.getUser();
   const user = data.user;
   if (!user) return null;
+  const setor = await meuDepartamento();
   const [{ data: profile }, { data: perms }] = await Promise.all([
     supabase.from("profiles").select("full_name, email").eq("id", user.id).maybeSingle(),
     supabase.rpc("minhas_permissoes"),
@@ -35,6 +38,7 @@ async function fetchCurrentUser(): Promise<CurrentUser | null> {
     id: user.id,
     email: profile?.email ?? user.email ?? "",
     fullName: profile?.full_name ?? "",
+    departamento: setor.departamento,
     roles,
     permissions,
     can,
