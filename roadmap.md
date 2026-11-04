@@ -1,4 +1,7 @@
 # Atualização visual do Portal do Profissional
+## Documentos Cronos no SharePoint
+- [ ] Identificar as pastas enviadas e listar seus documentos no padrão de Formulários, mantendo links cadastrados.
+- [ ] Validar consulta autenticada, busca, navegação de pastas e apresentação.
 ## Destinatários dos avisos
 - [x] Selecionar todos os profissionais ou um ou mais departamentos sincronizados no campo Para, com busca e prévia.
 - [x] Aplicar destinatários na central, sino, leituras e acompanhamento; 30 testes passam. Envio, edição, entrega a Tecnologia e bloqueio fora do departamento verificados na tela, sem erros; avisos temporários arquivados.
