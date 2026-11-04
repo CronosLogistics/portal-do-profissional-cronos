@@ -1,8 +1,8 @@
 # Atualização visual do Portal do Profissional
 ## Formulários internos
-- [ ] Criar menu separado, questionários com perguntas sequenciais e gestão por formularios.gerenciar.
-- [ ] Manter questionários pendentes até resposta; anonimato oculta identidades de respostas e pendentes dos gestores.
-- [ ] Registrar perguntas e respostas no SharePoint indicado e validar fluxo, permissões e anonimato.
+- [x] Criar menu separado, questionários com perguntas sequenciais e gestão por formularios.gerenciar.
+- [x] Manter questionários pendentes até resposta; anonimato oculta identidades de respostas e pendentes dos gestores.
+- [x] Registrar perguntas e respostas na lista Registro Padrão para Formulários via conexão Microsoft SharePoint; 27 testes passam, criação/resposta/resultados anônimos verificados na tela e quatro registros confirmados no SharePoint. Registros de teste removidos.
 ## Setores e liderança
 - [x] Usar Departamento Atual de Profissionais Brasil, com contratação como alternativa quando vazio; 16 testes passam e sincronização real concluída sem erro. Conta Cloud acessou pendências, mas não possui setor no SharePoint; ingresso de um novo contratado real não exercitado.
 - [x] Confirmar substituição dos perfis atuais, preservando Administrador de sistema, e consulta própria/liderados por nível autorizado.
