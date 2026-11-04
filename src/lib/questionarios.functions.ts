@@ -39,3 +39,17 @@ export const editarQuestionario = createServerFn({ method: "POST" }).middleware(
   try { const { registrarQuestionarioSharePoint } = await import("./questionarios.server"); await registrarQuestionarioSharePoint(data.id); } catch { registrado = false; }
   return { registrado };
 });
+export const excluirQuestionario = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth]).inputValidator(input => idQuestionarioSchema.parse(input)).handler(async ({ data, context }) => {
+  const inicio = await context.supabase.rpc("iniciar_exclusao_questionario", { _id: data.id });
+  if (inicio.error) throw new Error("Não foi possível iniciar a exclusão. Confira sua permissão ou tente novamente após a sincronização.");
+  try {
+    const { excluirQuestionarioSharePoint } = await import("./questionarios.server");
+    await excluirQuestionarioSharePoint(data.id);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const fim = await supabaseAdmin.rpc("finalizar_exclusao_questionario", { _id: data.id });
+    if (fim.error) throw new Error("Falha ao finalizar exclusão");
+    return { excluido: true };
+  } catch {
+    throw new Error("Exclusão ainda não concluída. O formulário está bloqueado para novas respostas. Clique em Tentar excluir novamente.");
+  }
+});

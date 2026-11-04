@@ -1019,10 +1019,12 @@ export type Database = {
           criado_em: string
           criador_id: string
           descricao: string
+          excluindo: boolean
           id: string
           perguntas: Json
           revisao: number
           sharepoint_registrado: boolean
+          sincronizacao_ate: string | null
           titulo: string
         }
         Insert: {
@@ -1030,10 +1032,12 @@ export type Database = {
           criado_em?: string
           criador_id: string
           descricao?: string
+          excluindo?: boolean
           id?: string
           perguntas: Json
           revisao?: number
           sharepoint_registrado?: boolean
+          sincronizacao_ate?: string | null
           titulo: string
         }
         Update: {
@@ -1041,10 +1045,12 @@ export type Database = {
           criado_em?: string
           criador_id?: string
           descricao?: string
+          excluindo?: boolean
           id?: string
           perguntas?: Json
           revisao?: number
           sharepoint_registrado?: boolean
+          sincronizacao_ate?: string | null
           titulo?: string
         }
         Relationships: []
@@ -1396,6 +1402,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      finalizar_exclusao_questionario: {
+        Args: { _id: string }
+        Returns: undefined
+      }
       gere_aviso: {
         Args: { _autor: string; _perfil: string }
         Returns: boolean
@@ -1407,6 +1417,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      iniciar_exclusao_questionario: {
+        Args: { _id: string }
+        Returns: undefined
       }
       insider_vigente: {
         Args: never
@@ -1422,6 +1436,10 @@ export type Database = {
       interacoes_compilado: { Args: { _aviso_id: string }; Returns: Json }
       is_active_user: { Args: { _user_id: string }; Returns: boolean }
       is_editor: { Args: { _user_id: string }; Returns: boolean }
+      liberar_registro_questionario: {
+        Args: { _id: string }
+        Returns: undefined
+      }
       limpar_html_aviso: { Args: { _html: string }; Returns: string }
       listar_avisos: {
         Args: {
@@ -1528,6 +1546,10 @@ export type Database = {
       reservar_departamentos: { Args: never; Returns: boolean }
       reservar_insider: {
         Args: { _mes: string; _token: string }
+        Returns: boolean
+      }
+      reservar_registro_questionario: {
+        Args: { _id: string }
         Returns: boolean
       }
       reservar_sincronizacao: { Args: never; Returns: boolean }

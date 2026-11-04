@@ -21,6 +21,9 @@ async function registrar(chave: string, fields: Record<string, string>) {
 /** Caller must authenticate and authorize the exact questionnaire before invoking this helper. */
 export async function registrarQuestionarioSharePoint(id: string, respostaId?: string) {
   const { supabaseAdmin: db } = await import("@/integrations/supabase/client.server");
+  const lease = await db.rpc("reservar_registro_questionario", { _id: id });
+  if (lease.error || !lease.data) throw new Error("Formulário em exclusão ou sincronização. Tente novamente.");
+  try {
   const { data: q, error } = await db.from("questionarios_internos").select("id,titulo,anonimo,perguntas,criador_id,sharepoint_registrado,revisao").eq("id", id).single();
   if (error || !q) throw new Error("Questionário não encontrado.");
   const perguntas = q.perguntas as string[];
@@ -58,4 +61,25 @@ export async function registrarQuestionarioSharePoint(id: string, respostaId?: s
     } else path = undefined;
   }
   for (const legacyId of legacy) await graph(`/items/${legacyId}`, { method: "DELETE" });
+  } finally { await db.rpc("liberar_registro_questionario", { _id: id }); }
+}
+
+/** Only call after the permission-checked iniciar_exclusao_questionario RPC. */
+export async function excluirQuestionarioSharePoint(id: string) {
+  let path: string | undefined = "/items?$expand=fields($select=Title)&$select=id,fields&$top=200";
+  const ids: string[] = [];
+  while (path) {
+    const page = await graph(path);
+    for (const item of page.value ?? []) {
+      const key = item.fields?.Title ?? "";
+      if (key === `Q:${id}` || key.startsWith(`Q:${id}:`) || key.startsWith(`R:${id}:`)) ids.push(item.id);
+    }
+    const next = page["@odata.nextLink"];
+    if (next) {
+      const url = new URL(next), base = `/v1.0/sites/${SITE}/lists/${LISTA}`;
+      if (url.hostname !== "graph.microsoft.com" || !url.pathname.startsWith(`${base}/items`)) throw new Error("Paginação Microsoft inválida.");
+      path = url.pathname.slice(base.length) + url.search;
+    } else path = undefined;
+  }
+  for (const itemId of ids) await graph(`/items/${itemId}`, { method: "DELETE" });
 }

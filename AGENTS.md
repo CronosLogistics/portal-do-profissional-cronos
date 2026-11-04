@@ -11,6 +11,7 @@
 
 ## Architecture rules
 - Internal questionnaires use permission-checked RPCs, separate participation and response tables, and server-only SharePoint writes with stable per-submission record keys and immutable answer question snapshots; anonymous projections omit identity and timestamps. Why: prevent duplicate submissions and protect anonymity without exposing integration credentials.
+- Questionnaire deletion blocks new responses and sync via a persistent lease, removes only matching SharePoint record keys, then atomically removes local records; managers can retry incomplete deletion. Why: prevent orphaned answers and false success during external failures.
 - Subdirectories have their own `AGENTS.md` (e.g. `src/lib/`); read it before changing files there.
 - Browser IDs use `criarIdCliente` (UUID secure-random fallback). Why: browsers lacking `crypto.randomUUID`.
 - Portal pages live under `src/routes/_authenticated/`; only `/auth` and `/definir-senha` are public. Why: internal access.

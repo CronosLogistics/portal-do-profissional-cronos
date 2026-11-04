@@ -211,6 +211,13 @@
       "when": 1793803435174,
       "tag": "0029_questionarios_edicao_resposta_unica",
       "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1793803834371,
+      "tag": "0030_questionarios_exclusao_segura",
+      "breakpoints": true
     }
   ]
 }
