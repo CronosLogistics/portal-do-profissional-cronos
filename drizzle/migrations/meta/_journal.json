@@ -197,6 +197,13 @@
       "when": 1793801832579,
       "tag": "0027_questionarios_internos",
       "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1793802605678,
+      "tag": "0028_administracao_exclusiva_sistema",
+      "breakpoints": true
     }
   ]
 }

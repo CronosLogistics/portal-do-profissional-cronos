@@ -210,13 +210,14 @@ function PerfilDetalhe({ perfil, onChange, onDeleted }: { perfil: PerfilResumo; 
         <h3 className="mb-3 text-sm font-semibold">Permissões</h3>
         <ul className="space-y-3">
           {PERMISSOES.map((p) => {
-            const checked = perfil.sistema || perfil.permissoes.includes(p.codigo);
+            const exclusivaAdmin = p.codigo.startsWith("admin.");
+            const checked = perfil.sistema || (!exclusivaAdmin && perfil.permissoes.includes(p.codigo));
             return (
               <li key={p.codigo} className="flex items-start gap-3">
                 <Checkbox
                   id={`perm-${p.codigo}`}
                   checked={checked}
-                  disabled={perfil.sistema || !!perfil.departamento_sp_id || perm.isPending}
+                  disabled={perfil.sistema || exclusivaAdmin || !!perfil.departamento_sp_id || perm.isPending}
                   onCheckedChange={(v) => perm.mutate({ codigo: p.codigo, marcado: v === true })}
                   className="mt-0.5"
                 />

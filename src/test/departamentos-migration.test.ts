@@ -24,7 +24,7 @@ beforeAll(async () => {
     INSERT INTO perfis(id,nome,sistema) VALUES('${legacy}','Antigo',false),('${sistema}','Administrador',true);
     INSERT INTO perfil_permissoes VALUES('${legacy}','conteudo.editar');
     INSERT INTO usuario_perfis VALUES('${admin}','${sistema}'),('${ana}','${legacy}');`);
-  for (const file of ["0024_departamentos_hierarquia_acesso.sql", "0025_departamentos_corrigir_variavel_perfil.sql", "0026_departamentos_escopo_email_e_avisos.sql"]) await db.exec(readFileSync(new URL(`../../drizzle/migrations/${file}`, import.meta.url), "utf8"));
+  for (const file of ["0024_departamentos_hierarquia_acesso.sql", "0025_departamentos_corrigir_variavel_perfil.sql", "0026_departamentos_escopo_email_e_avisos.sql", "0028_administracao_exclusiva_sistema.sql"]) await db.exec(readFileSync(new URL(`../../drizzle/migrations/${file}`, import.meta.url), "utf8"));
   await db.exec(`CREATE OR REPLACE FUNCTION public.tem_permissao(text) RETURNS boolean LANGUAGE sql AS $$ SELECT usuario_tem_permissao(auth.uid(),$1) $$; SELECT set_config('request.jwt.claim.role','service_role',false); SELECT reservar_departamentos();`);
   await db.query("SELECT aplicar_departamentos($1::jsonb)", [JSON.stringify(snapshot)]);
 }, 30000);
@@ -49,6 +49,14 @@ it("sincronização é idempotente e retira acessos removidos da planilha", asyn
   const atualizado = { ...snapshot, departamentos: [{ ...snapshot.departamentos[0], perfis: [{ nivel: "coordenador", permissoes: [] }, { nivel: "supervisor", permissoes: [] }] }], hierarquia: [] };
   await db.query("SELECT aplicar_departamentos($1::jsonb)", [JSON.stringify(atualizado)]);
   expect((await db.query<{ permitido: boolean }>("SELECT usuario_tem_permissao($1,'pendencias.liderados') as permitido", [ana])).rows[0]?.permitido).toBe(false);
+});
+it("nem a sincronização concede administração aos departamentos", async () => {
+  const ampliado = { ...snapshot, departamentos: [{ ...snapshot.departamentos[0], perfis: [{ nivel: "coordenador", permissoes: ["admin.usuarios", "admin.perfis", "formularios.gerenciar"] }, { nivel: "supervisor", permissoes: [] }] }] };
+  await db.query("SELECT aplicar_departamentos($1::jsonb)", [JSON.stringify(ampliado)]);
+  expect((await db.query<{ permitido: boolean }>("SELECT usuario_tem_permissao($1,'admin.usuarios') as permitido", [ana])).rows[0]?.permitido).toBe(false);
+  expect((await db.query<{ permitido: boolean }>("SELECT usuario_tem_permissao($1,'admin.perfis') as permitido", [ana])).rows[0]?.permitido).toBe(false);
+  expect((await db.query<{ permitido: boolean }>("SELECT usuario_tem_permissao($1,'formularios.gerenciar') as permitido", [ana])).rows[0]?.permitido).toBe(true);
+  expect((await db.query("SELECT pp.* FROM perfil_permissoes pp JOIN perfis p ON p.id=pp.perfil_id WHERE NOT p.sistema AND pp.permissao LIKE 'admin.%'")).rows).toHaveLength(0);
 });
 it("usuário comum não aplica permissões nem altera perfil automático", async () => {
   await db.exec("SELECT set_config('request.jwt.claim.role','authenticated',false); SET ROLE authenticated;");

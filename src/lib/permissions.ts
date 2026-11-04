@@ -25,7 +25,7 @@ export function permissoesEfetivas(usuarioAtivo: boolean, perfis: PerfilAtribuid
   for (const p of perfis) {
     if (!p.ativo) continue;
     if (p.sistema) PERMISSOES.forEach((c) => set.add(c.codigo));
-    else p.permissoes.forEach((c) => set.add(c));
+    else p.permissoes.filter((c) => !c.startsWith("admin.")).forEach((c) => set.add(c));
   }
   return PERMISSOES.map((c) => c.codigo).filter((c) => set.has(c));
 }

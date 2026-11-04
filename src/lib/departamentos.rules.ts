@@ -7,7 +7,6 @@ const COLUNAS = { lider: "Permiss_x00f5_esdoL_x00ed_der", coordenador: "Permiss_
 const MAPA: Record<string, string> = {
   "Publicar avisos": "avisos.publicar", "Gerenciar avisos": "avisos.gerenciar", "Publicar o Cronos Insider": "avisos.insider",
   "Editar conteúdos": "conteudo.editar", "Gerenciar documentos": "documentos.gerenciar", "Gerenciar formulários": "formularios.gerenciar",
-  "Gerenciar usuários": "admin.usuarios", "Gerenciar perfis": "admin.perfis",
 };
 export const normalizarEmail = (email: string) => email.trim().toLowerCase();
 const valores = (v: unknown): string[] => Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : [];

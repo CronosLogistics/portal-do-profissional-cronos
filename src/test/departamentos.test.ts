@@ -53,7 +53,7 @@ describe("setores e hierarquia do SharePoint", () => {
     expect(montarDepartamentos([departamento], [profissional, profissional], usuarios).pessoas.find(p => p.email === "pessoa@cronos.test")?.vinculos).toEqual([]);
   });
   it("permissões desconhecidas não concedem acesso", () => {
-    expect(permissoesDepartamento({ Permiss_x00f5_esdosLiderados: ["Visualização", "Gerenciar usuários", "Inventada"] }, "liderado")).toEqual(["admin.usuarios"]);
+    expect(permissoesDepartamento({ Permiss_x00f5_esdosLiderados: ["Visualização", "Gerenciar usuários", "Inventada"] }, "liderado")).toEqual([]);
   });
   it("não duplica a mesma pendência por responsável e gestor", () => {
     expect(unirPendencias(["matheus", "ana"], () => [{ id: "10", nome: "Item" }])).toEqual([{ id: "10", nome: "Item" }]);

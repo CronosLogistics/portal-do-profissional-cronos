@@ -1,4 +1,7 @@
 # Atualização visual do Portal do Profissional
+## Administração exclusiva
+- [x] Auditar todos os perfis e bloquear permissões administrativas fora de Administrador de sistema, incluindo futuras sincronizações; removidas dos quatro perfis departamentais encontrados.
+- [x] Validar Qualidade e Administrador na tela, sem erros; 24 testes passam, incluindo proteção da sincronização e preservação das permissões operacionais.
 ## Formulários internos
 - [x] Criar menu separado, questionários com perguntas sequenciais e gestão por formularios.gerenciar.
 - [x] Manter questionários pendentes até resposta; anonimato oculta identidades de respostas e pendentes dos gestores.
