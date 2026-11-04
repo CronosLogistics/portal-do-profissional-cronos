@@ -4,7 +4,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { ExternalLink } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useCurrentUser } from "@/hooks/useAuth";
-import { minhasPendencias } from "@/lib/pendencias.functions";
+import { minhasPendencias, type ListasQualidade } from "@/lib/pendencias.functions";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { minhasPendenciasPessoas } from "@/lib/pendencias-pessoas.functions";
 import { LISTAS_PESSOAS, type TipoPendenciaPessoas, type PendenciaPessoas } from "@/lib/pendencias-pessoas.rules";
 import type { PendenciaNC, PendenciaNPS, PendenciaRevisao } from "@/lib/pendencias.rules";
@@ -25,24 +26,54 @@ export const Route = createFileRoute("/_authenticated/pendencias")({
   component: PendenciasPage,
 });
 
+type Modo = "proprias" | "liderados";
+const totalQualidade = (l?: ListasQualidade) => l ? l.analiseNC.length + l.analiseNCMaior.length + l.planoAcao.length + l.analiseSM.length + l.planoAcaoSM.length + l.nps.length + l.revisoes.length : 0;
+
 function PendenciasPage() {
   const me = useCurrentUser();
-  const buscar = useServerFn(minhasPendencias);
-  const q = useQuery({ queryKey: [...pendenciasKey, me.data?.id], queryFn: () => buscar(), enabled: !!me.data?.id, staleTime: 60_000 });
-  const analise = q.data?.analiseNC ?? [];
-  const maior = q.data?.analiseNCMaior ?? [];
-  const plano = q.data?.planoAcao ?? [];
-  const sm = q.data?.analiseSM ?? [];
-  const planoSM = q.data?.planoAcaoSM ?? [];
-  const nps = q.data?.nps ?? [];
-  const revisoes = q.data?.revisoes ?? [];
+  const lider = !!me.data?.can("pendencias.liderados");
+  const buscarQ = useServerFn(minhasPendencias);
+  const buscarP = useServerFn(minhasPendenciasPessoas);
+  const q = useQuery({ queryKey: [...pendenciasKey, me.data?.id], queryFn: () => buscarQ(), enabled: !!me.data?.id, staleTime: 60_000 });
+  const p = useQuery({ queryKey: [...pendenciasPessoasKey, me.data?.id], queryFn: () => buscarP(), enabled: !!me.data?.id, staleTime: 60_000 });
+  const tipos = Object.keys(LISTAS_PESSOAS) as TipoPendenciaPessoas[];
+  const total = (modo: Modo) => totalQualidade(q.data?.[modo]) + tipos.reduce((s, t) => s + ((modo === "proprias" ? p.data?.listas : p.data?.liderados)?.[t]?.length ?? 0), 0);
 
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-8">
       <header className="mb-6">
         <h1 className="text-3xl font-bold text-foreground">Pendências</h1>
-        <p className="mt-1 text-sm text-muted-foreground">{me.data?.can("pendencias.liderados") ? "Suas pendências e as dos seus liderados." : "Itens que aguardam sua resposta."}</p>
+        <p className="mt-1 text-sm text-muted-foreground">Itens que aguardam sua resposta.</p>
       </header>
+      {lider ? (
+        <Tabs defaultValue="proprias">
+          <TabsList className="mb-4">
+            <TabsTrigger value="proprias">Minhas pendências ({total("proprias")})</TabsTrigger>
+            <TabsTrigger value="liderados">Pendências dos liderados ({total("liderados")})</TabsTrigger>
+          </TabsList>
+          <TabsContent value="proprias"><Conteudo modo="proprias" /></TabsContent>
+          <TabsContent value="liderados"><Conteudo modo="liderados" /></TabsContent>
+        </Tabs>
+      ) : <Conteudo modo="proprias" />}
+    </main>
+  );
+}
+
+function Conteudo({ modo }: { modo: Modo }) {
+  const me = useCurrentUser();
+  const buscar = useServerFn(minhasPendencias);
+  const q = useQuery({ queryKey: [...pendenciasKey, me.data?.id], queryFn: () => buscar(), enabled: !!me.data?.id, staleTime: 60_000 });
+  const l = q.data?.[modo];
+  const analise = l?.analiseNC ?? [];
+  const maior = l?.analiseNCMaior ?? [];
+  const plano = l?.planoAcao ?? [];
+  const sm = l?.analiseSM ?? [];
+  const planoSM = l?.planoAcaoSM ?? [];
+  const nps = l?.nps ?? [];
+  const revisoes = l?.revisoes ?? [];
+
+  return (
+    <>
       {q.isLoading && <p className="text-sm text-muted-foreground">Carregando…</p>}
       {q.error && <p className="rounded-lg border border-destructive/40 bg-card p-4 text-sm text-destructive">{q.error.message}</p>}
       {q.data?.erro && <p className="rounded-lg border border-destructive/40 bg-card p-4 text-sm text-destructive">{q.data.erro}</p>}
@@ -89,26 +120,27 @@ function PendenciasPage() {
             </Grupo>
           </>
         )}
-        <PendenciasGestaoPessoas qualidadeVazia={q.isSuccess && !q.isFetching && !q.data.erro && !temPendencias(analise.length, maior.length, plano.length, sm.length, planoSM.length, nps.length, revisoes.length)} />
+        <PendenciasGestaoPessoas modo={modo} qualidadeVazia={q.isSuccess && !q.isFetching && !q.data.erro && !temPendencias(analise.length, maior.length, plano.length, sm.length, planoSM.length, nps.length, revisoes.length)} />
       </div>
-    </main>
+    </>
   );
 }
 
-function PendenciasGestaoPessoas({ qualidadeVazia }: { qualidadeVazia: boolean }) {
+function PendenciasGestaoPessoas({ qualidadeVazia, modo }: { qualidadeVazia: boolean; modo: Modo }) {
   const buscar = useServerFn(minhasPendenciasPessoas);
   const me = useCurrentUser();
   const q = useQuery({ queryKey: [...pendenciasPessoasKey, me.data?.id], queryFn: () => buscar(), enabled: !!me.data?.id, staleTime: 60_000 });
   if (q.isLoading) return <p className="text-sm text-muted-foreground">Carregando…</p>;
   if (q.error) return <p className="rounded-lg border border-destructive/40 bg-card p-4 text-sm text-destructive">{q.error.message}</p>;
   const tipos = Object.keys(LISTAS_PESSOAS) as TipoPendenciaPessoas[];
-  const visiveis = tipos.filter(tipo => temPendencias(q.data?.listas[tipo]?.length ?? 0));
+  const listas = modo === "proprias" ? q.data?.listas : q.data?.liderados;
+  const visiveis = tipos.filter(tipo => temPendencias(listas?.[tipo]?.length ?? 0));
   return <>
-    {qualidadeVazia && q.isSuccess && !q.isFetching && !tipos.some(tipo => q.data.erros[tipo]) && visiveis.length === 0 && <p role="status" className="py-12 text-center text-sm text-muted-foreground">Você não tem pendências no momento.</p>}
+    {qualidadeVazia && q.isSuccess && !q.isFetching && !tipos.some(tipo => q.data.erros[tipo]) && visiveis.length === 0 && <p role="status" className="py-12 text-center text-sm text-muted-foreground">{modo === "proprias" ? "Você não tem pendências no momento." : "Seus liderados não têm pendências no momento."}</p>}
     {tipos.filter(tipo => q.data?.erros[tipo]).map(tipo => <p key={tipo} role="alert" className="py-4 text-sm text-destructive">{LISTAS_PESSOAS[tipo].titulo}: {q.data?.erros[tipo]}</p>)}
     {visiveis.length > 0 && <Accordion type="multiple" className="rounded-lg border bg-card">
-      {visiveis.map((tipo, indice) => <Secao key={tipo} valor={tipo} titulo={LISTAS_PESSOAS[tipo].titulo} total={q.data?.listas[tipo]?.length ?? 0} ultimo={indice === visiveis.length - 1}>
-        <ListaPessoas tipo={tipo} itens={q.data?.listas[tipo] ?? []} />
+      {visiveis.map((tipo, indice) => <Secao key={tipo} valor={tipo} titulo={LISTAS_PESSOAS[tipo].titulo} total={listas?.[tipo]?.length ?? 0} ultimo={indice === visiveis.length - 1}>
+        <ListaPessoas tipo={tipo} itens={listas?.[tipo] ?? []} />
       </Secao>)}
     </Accordion>}
   </>;

@@ -26,7 +26,8 @@ export function useTotalPendencias(userId: string | undefined) {
     staleTime: 60_000,
   });
   return useMemo(() => {
-    const q = qualidade.data;
+    // Badge conta apenas pendências pessoais; as dos liderados ficam na aba própria.
+    const q = qualidade.data?.proprias;
     const p = pessoas.data;
     const tipos = Object.keys(LISTAS_PESSOAS) as TipoPendenciaPessoas[];
     return somarPendencias(
