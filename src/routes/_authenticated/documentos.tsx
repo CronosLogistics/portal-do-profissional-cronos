@@ -18,10 +18,14 @@ export const Route = createFileRoute("/_authenticated/documentos")({
 const documentos = [
   {
     titulo: "Qualidade",
+    descricao:
+      "Repositório dos documentos institucionais e estratégicos da Cronos, que estabelecem diretrizes, políticas e orientações gerais aplicáveis a toda a empresa, incluindo documentos do Sistema de Gestão da Qualidade e demais referências corporativas.",
     url: "https://cronoslogisticscombr.sharepoint.com/sites/CronosLogistics-Principal/Qualidade/Forms/AllItems.aspx?id=%2Fsites%2FCronosLogistics-Principal%2FQualidade%2FQualidade&viewid=36d8fdb7-3836-47a6-8923-d2b071c6f62d&newTargetListUrl=%2Fsites%2FCronosLogistics-Principal%2FQualidade&viewpath=%2Fsites%2FCronosLogistics-Principal%2FQualidade%2FForms%2FAllItems.aspx",
   },
   {
     titulo: "Modelo documental",
+    descricao:
+      "Repositório de modelos padronizados de documentos da Cronos, disponíveis para consulta, download e edição. Devem ser utilizados como referência para a elaboração de documentos, respeitando os padrões de estrutura e identidade documental estabelecidos pela empresa.",
     url: "https://cronoslogisticscombr.sharepoint.com/:f:/s/CronosLogistics-Principal/IgAPDfRFrN4hSL_lTlt7l0VMAawrJeZ4LyYLFVtzJYFUL7M?e=1IjAYm",
   },
 ];
@@ -34,7 +38,8 @@ function DocumentosPage() {
       </header>
       {documentos.map((documento) => (
         <section key={documento.titulo} className="mt-8">
-          <h2 className="mb-3 text-lg font-bold text-primary">{documento.titulo}</h2>
+          <h2 className="text-lg font-bold text-primary">{documento.titulo}</h2>
+          <p className="mb-3 mt-1 text-sm text-muted-foreground">{documento.descricao}</p>
           <a
             href={documento.url}
             target="_blank"
