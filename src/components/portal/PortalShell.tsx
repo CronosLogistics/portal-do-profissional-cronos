@@ -169,7 +169,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
                     aria-current={matchesPath(pathname, child.to) ? "page" : undefined}
                     onClick={closeMobile}
                   >
-                    {child.label}
+                    <span className="min-w-0">{child.label}</span>
                     {child.to === "/avisos" && naoLidos > 0 && <span className="portal-count-badge portal-nav-badge">{naoLidos > 99 ? "99+" : naoLidos}</span>}
                   </Link>
                 ))}
