@@ -1,7 +1,20 @@
 import { describe, expect, it } from "vitest";
-import { dataEventoInput, formatarDataEvento, devePrepararHoje, montarConteudoInsider, primeiroDiaUtil, type ProfissionalInsider } from "@/lib/insider.rules";
+import { bannersInsider, caminhosImagensInsider, conteudoInsiderSchema, dataEventoInput, formatarDataEvento, devePrepararHoje, montarConteudoInsider, primeiroDiaUtil, type ProfissionalInsider } from "@/lib/insider.rules";
 const pessoa = (id: string, status: string, nasc: string, adm: string): ProfissionalInsider => ({ id, fields: { Title: id, field_1: status, DATADENASC_x002e_: nasc, field_4: adm } });
 describe("Cronos Insider mensal", () => {
+  it.each(bannersInsider)("permite salvar e carregar o banner %s de cada edição", (key) => {
+    const base = montarConteudoInsider([], "2026-11");
+    const path = "20000000-0000-0000-0000-000000000001/30000000-0000-0000-0000-000000000001.png";
+    const parsed = conteudoInsiderSchema.parse({ ...base, [key]: path });
+    expect(parsed[key]).toBe(path);
+    expect(caminhosImagensInsider(parsed)).toEqual([path]);
+    expect(conteudoInsiderSchema.safeParse({ ...base, [key]: "https://fora.test/banner.png" }).success).toBe(false);
+  });
+  it("preserva edições antigas sem banners personalizados", () => {
+    const base = montarConteudoInsider([], "2026-11");
+    expect(conteudoInsiderSchema.parse(base)).toEqual(base);
+    expect(caminhosImagensInsider(base)).toEqual([]);
+  });
   it("converte datas dos eventos sem deslocar o dia e preserva textos antigos", () => {
     expect(dataEventoInput("02/11/2026")).toBe("2026-11-02");
     expect(dataEventoInput("2026-11-02")).toBe("2026-11-02");

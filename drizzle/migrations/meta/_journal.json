@@ -267,6 +267,13 @@
       "when": 1793970051200,
       "tag": "0037_rotulos_links_conteudo",
       "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1793988589105,
+      "tag": "0038_insider_banners_editaveis_apresentacao",
+      "breakpoints": true
     }
   ]
 }

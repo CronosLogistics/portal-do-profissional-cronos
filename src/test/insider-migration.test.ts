@@ -2,6 +2,7 @@
 import { readFileSync } from "node:fs";
 import { PGlite } from "@electric-sql/pglite";
 import { beforeAll, beforeEach, afterAll, it, expect } from "vitest";
+import { bannersInsider } from "@/lib/insider.rules";
 let db: PGlite;
 const uid = "10000000-0000-0000-0000-000000000001", eid = "20000000-0000-0000-0000-000000000001";
 async function viewer(insider = true, sender = true, active = true) {
@@ -19,14 +20,18 @@ beforeAll(async () => {
     CREATE FUNCTION public.gere_aviso(uuid,uuid) RETURNS boolean LANGUAGE sql AS $$ SELECT false $$;
     CREATE FUNCTION public.aviso_vigente(timestamptz,timestamptz,timestamptz) RETURNS boolean LANGUAGE sql AS $$ SELECT $1<=now() AND $3 IS NULL $$;
     CREATE TABLE public.avisos(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),titulo text,mensagem text,perfil_id uuid,autor_id uuid,publicar_em timestamptz,tipo text,expira_em timestamptz,arquivado_em timestamptz,editado_em timestamptz);
+    CREATE TABLE public.perfis(id uuid PRIMARY KEY,nome text); INSERT INTO public.perfis VALUES('${uid}','Gestão de Pessoas');
+    CREATE FUNCTION public.aviso_para_usuario(uuid,uuid) RETURNS boolean LANGUAGE sql AS $$ SELECT current_setting('test.audience',true) IS DISTINCT FROM 'false' $$;
     CREATE TABLE storage.objects(id uuid,name text,bucket_id text); ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
     CREATE FUNCTION storage.extension(text) RETURNS text LANGUAGE sql AS $$ SELECT split_part($1,'.',2) $$;`);
   await db.exec(readFileSync(new URL("../../drizzle/migrations/0017_insider_edicoes_mensais.sql", import.meta.url), "utf8"));
   await db.exec(readFileSync(new URL("../../drizzle/migrations/0018_insider_validacao_editorial.sql", import.meta.url), "utf8"));
+  await db.exec(readFileSync(new URL("../../drizzle/migrations/0038_insider_banners_editaveis_apresentacao.sql", import.meta.url), "utf8"));
 }, 30000);
 beforeEach(async () => {
   await db.exec(`RESET ROLE; TRUNCATE insider_edicoes,insider_preparacoes,avisos; INSERT INTO insider_edicoes(id,mes_ano,titulo,conteudo) VALUES('${eid}','2026-11','Insider','{"abertura":"Original","eventos":[],"aniversariantes":[],"tempoCasa":[]}');`);
   await viewer();
+  await db.query("SELECT set_config('test.audience','true',false)");
 });
 afterAll(async () => { await db.close(); });
 it("esconde rascunhos de profissionais e nega edição sem Insider", async () => {
@@ -69,4 +74,21 @@ it("reserva o mês apenas uma vez e não sobrescreve edição existente", async 
 it("rejeita foto de outra edição mesmo quando o RPC é chamado diretamente", async () => {
   const conteudo = { eventos: [], aniversariantes: [{ foto: `${uid}/${uid}.jpg` }], tempoCasa: [] };
   await expect(db.query("SELECT salvar_edicao_insider($1,1,'Insider',$2::jsonb)", [eid, JSON.stringify(conteudo)])).rejects.toThrow("Imagem de outra edição");
+});
+it.each(bannersInsider)("valida caminho do banner %s também no banco", async (key) => {
+  const conteudo = { eventos: [], aniversariantes: [], tempoCasa: [], [key]: `${eid}/${uid}.png` };
+  await db.query("SELECT salvar_edicao_insider($1,1,'Insider',$2::jsonb)", [eid, JSON.stringify(conteudo)]);
+  expect((await db.query<{conteudo:Record<string,string>}>("SELECT conteudo FROM insider_edicoes")).rows[0]?.conteudo[key]).toBe(`${eid}/${uid}.png`);
+  await expect(db.query("SELECT salvar_edicao_insider($1,2,'Insider',$2::jsonb)", [eid, JSON.stringify({ ...conteudo, [key]: `${uid}/${uid}.png` })])).rejects.toThrow('Banner inválido');
+});
+it("mantém só a edição oficial antiga no carrossel sem alterar sua publicação", async () => {
+  await db.exec('RESET ROLE');
+  const oficial = '9652005f-b517-4a3c-a382-9c259988fe95';
+  await db.query("INSERT INTO avisos(id,titulo,tipo,perfil_id,publicar_em) VALUES($1,'Oficial','insider',$2,'2026-10-29 20:34:58.809637+00'),($3,'Outra antiga','insider',$2,'2026-10-29 12:32:03+00')", [oficial, uid, eid]);
+  expect((await db.query('SELECT id,publicar_em FROM insider_vigente()')).rows).toEqual([{ id: oficial, publicar_em: new Date('2026-10-29T20:34:58.809Z') }]);
+  await db.query("SELECT set_config('test.audience','false',false)");
+  expect((await db.query('SELECT * FROM insider_vigente()')).rows).toEqual([]);
+  await db.query("SELECT set_config('test.audience','true',false)");
+  await db.query('UPDATE avisos SET arquivado_em=now() WHERE id=$1', [oficial]);
+  expect((await db.query('SELECT * FROM insider_vigente()')).rows).toEqual([]);
 });

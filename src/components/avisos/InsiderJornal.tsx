@@ -27,7 +27,7 @@ export function InsiderJornal({ conteudo, mesAno }: { conteudo: ConteudoInsider;
   const urls = imgs.data ?? {};
   return <article className="mx-auto w-full max-w-[820px] bg-card py-4 text-card-foreground">
     {imgs.error && <p role="alert" className="px-4 text-sm text-destructive">Não foi possível carregar as fotos. Reabra a edição para tentar novamente.</p>}
-    <img src={banner.url} alt="Cronos Insider" className="h-auto w-full px-4 sm:px-10" />
+    <img src={urls[conteudo.bannerCabecalho ?? ""] ?? banner.url} alt="Cronos Insider" className="h-auto w-full px-4 sm:px-10" />
     <p className="px-4 pt-4 text-sm font-bold capitalize text-accent sm:px-10">{nomeMes(mesAno)}</p>
     <Texto value={conteudo.abertura} />
     {conteudo.bannerMes && urls[conteudo.bannerMes] ? <img src={urls[conteudo.bannerMes]} alt="Destaques do mês" className="h-auto w-full px-4 sm:px-10" /> : <h2 className="mx-4 bg-primary px-6 py-5 text-2xl font-bold capitalize text-primary-foreground sm:mx-10">{nomeMes(mesAno).split(" de ")[0]}</h2>}
@@ -36,13 +36,13 @@ export function InsiderJornal({ conteudo, mesAno }: { conteudo: ConteudoInsider;
       {e.imagem && urls[e.imagem] && <img src={urls[e.imagem]} alt={e.titulo} className="mx-auto mb-3 aspect-square w-full max-w-44 rounded-md object-contain" />}
       <h3 className="break-words font-bold">{e.titulo}</h3><p className="mt-2 break-words text-sm font-bold text-accent">{formatarDataEvento(e.data)}</p><p className="whitespace-pre-line break-words text-sm">{e.descricao}</p>
     </article>)}</div>
-    <img src={aniv.url} alt="Aniversariantes" className="h-auto w-full px-4 sm:px-10" />
+    <img src={urls[conteudo.bannerAniversariantes ?? ""] ?? aniv.url} alt="Aniversariantes" className="h-auto w-full px-4 sm:px-10" />
     <Texto value={conteudo.antesAniversarios} /><Pessoas pessoas={conteudo.aniversariantes} urls={urls} mesAno={mesAno} />
-    <img src={tempo.url} alt="Tempo de empresa" className="h-auto w-full px-4 sm:px-10" />
+    <img src={urls[conteudo.bannerTempoCasa ?? ""] ?? tempo.url} alt="Tempo de empresa" className="h-auto w-full px-4 sm:px-10" />
     <Texto value={conteudo.antesTempoCasa} /><Pessoas pessoas={conteudo.tempoCasa} urls={urls} mesAno={mesAno} />
     <Texto value={conteudo.encerramento} />
-    <img src={assinatura.url} alt="Assinatura People Management" className="h-auto w-full px-4 sm:px-10" />
-    <img src={rodape.url} alt="Cronos Logistics - certificações e escritórios" className="h-auto w-full px-4 pt-4 sm:px-10" />
+    <img src={urls[conteudo.bannerAssinatura ?? ""] ?? assinatura.url} alt="Assinatura People Management" className="h-auto w-full px-4 sm:px-10" />
+    <img src={urls[conteudo.bannerRodape ?? ""] ?? rodape.url} alt="Cronos Logistics - certificações e escritórios" className="h-auto w-full px-4 pt-4 sm:px-10" />
   </article>;
 }
 export function InsiderPublicado({ avisoId, fallback }: { avisoId: string; fallback: React.ReactNode }) {

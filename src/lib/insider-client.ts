@@ -1,6 +1,6 @@
 import { criarIdCliente } from "@/lib/client-id";
 import { supabase } from "@/integrations/supabase/client";
-import { conteudoInsiderSchema, type ConteudoInsider } from "./insider.rules";
+import { caminhosImagensInsider, conteudoInsiderSchema, type ConteudoInsider } from "./insider.rules";
 
 export type EdicaoInsider = { id: string; mes_ano: string; titulo: string; conteudo: ConteudoInsider; aviso_id: string | null; revisao: number; criado_em: string; atualizado_em: string; origem: string };
 export const insiderKey = ["insider-edicoes"] as const;
@@ -31,7 +31,7 @@ export async function enviarImagemInsider(id: string, file: File) {
   return path;
 }
 export async function imagensInsider(conteudo: ConteudoInsider): Promise<Record<string, string>> {
-  const paths = [...new Set([conteudo.bannerMes, ...conteudo.eventos.map(e => e.imagem), ...conteudo.aniversariantes.map(p => p.foto), ...conteudo.tempoCasa.map(p => p.foto)].filter(Boolean))];
+  const paths = caminhosImagensInsider(conteudo);
   if (!paths.length) return {};
   const { data, error } = await supabase.storage.from("insider").createSignedUrls(paths, 3600);
   if (error) throw new Error(error.message);

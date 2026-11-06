@@ -1,4 +1,6 @@
 ## Server integration rules (src/lib)
+- Insider image paths are collected centrally for every banner, event and portrait and validated against the edition ID in both the server function and database; missing banner overrides keep original assets. Why: monthly visual changes remain private and backward-compatible.
+- The Insider carousel RPC temporarily prioritizes the verified official-presentation edition without changing its publication date, still enforcing audience, archive and expiry; other editions retain the three-Brazil-day window. Why: restore the presentation without expanding general visibility.
 - Notification RPCs project current celebrations with separate per-user mural reads, without creating duplicate announcements. Why: preserve original posts and mandatory acknowledgment rules.
 - EditorTexto shares formatting and link dialogs across announcements and reward programs; reward display sanitizes allowlisted HTML and preserves legacy plain text. Why: safe, consistent rich-text rendering.
 - Vacation consultation filters active collaborators by nonblank SharePoint vacation-week status server-side and substitutes the extra-days return when populated; it never exposes HR notes or entitlement data. Why: show scheduled absences without leaking personnel information.

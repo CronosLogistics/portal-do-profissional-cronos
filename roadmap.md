@@ -1,4 +1,8 @@
 # Atualização visual do Portal do Profissional
+## Banners e apresentação do Insider
+- [x] Permitir substituir todos os banners por edição, mantendo as imagens anteriores como padrão.
+- [x] Restaurar a edição de Maria Gerotti de 29/10/2026 ao carrossel para apresentação, preservando data original e edição teste arquivada.
+- [x] Validar 34 testes e fluxo autenticado: abertura pelo carrossel, envio/salvamento/releitura de banner e janela no celular; imagem padrão restaurada após teste, sem erros.
 ## Apresentação dos feedbacks
 - [x] Usar cartões abertos em Feedback do gestor, seguindo Elogios, sem status ou link para o item.
 - [x] Remover etiqueta de status dos Elogios.

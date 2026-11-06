@@ -16,13 +16,30 @@ export function formatarDataEvento(valor: string): string {
 export const mesSchema = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/);
 const caminho = z.string().max(250).regex(/^(|[a-f0-9-]{36}\/[a-f0-9-]{36}\.(jpg|jpeg|png|webp))$/);
 export const pessoaInsiderSchema = z.object({ id: z.string().max(80), nome: z.string().min(1).max(200), departamento: z.string().max(200), escritorio: z.string().max(100), dia: z.number().int().min(1).max(31), anos: z.number().int().min(1).max(100).optional(), foto: caminho });
+export const bannersInsider = [
+  ["bannerCabecalho", "Cabeçalho — Cronos Insider"],
+  ["bannerMes", "Destaques do mês"],
+  ["bannerAniversariantes", "Aniversariantes"],
+  ["bannerTempoCasa", "Tempo de empresa"],
+  ["bannerAssinatura", "Assinatura — Gestão de Pessoas"],
+  ["bannerRodape", "Rodapé — Cronos Logistics"],
+] as const;
 export const conteudoInsiderSchema = z.object({
   abertura: z.string().max(20000), antesEventos: z.string().max(10000), antesAniversarios: z.string().max(10000), antesTempoCasa: z.string().max(10000), encerramento: z.string().max(10000), bannerMes: caminho,
+  bannerCabecalho: caminho.optional(), bannerAniversariantes: caminho.optional(), bannerTempoCasa: caminho.optional(), bannerAssinatura: caminho.optional(), bannerRodape: caminho.optional(),
   eventos: z.array(z.object({ id: z.string().max(80), titulo: z.string().max(200), data: z.string().max(100), descricao: z.string().max(5000), imagem: caminho })).max(30),
   aniversariantes: z.array(pessoaInsiderSchema).max(1000), tempoCasa: z.array(pessoaInsiderSchema).max(1000),
 });
 export type ConteudoInsider = z.infer<typeof conteudoInsiderSchema>;
 export type PessoaInsider = z.infer<typeof pessoaInsiderSchema>;
+export function caminhosImagensInsider(conteudo: ConteudoInsider): string[] {
+  return [...new Set([
+    ...bannersInsider.map(([key]) => conteudo[key]),
+    ...conteudo.eventos.map(e => e.imagem),
+    ...conteudo.aniversariantes.map(p => p.foto),
+    ...conteudo.tempoCasa.map(p => p.foto),
+  ].filter((path): path is string => Boolean(path)))];
+}
 export type ProfissionalInsider = { id: string; fields: { Title?: string; field_1?: string; field_4?: string; DATADENASC_x002e_?: string; DEPARTAMENTOATUAL?: string; field_3?: string } };
 
 export function mesBrasilia(agora = new Date()) {
