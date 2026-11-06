@@ -12,9 +12,9 @@ import { FormularioEditor } from "@/components/portal/FormularioEditor";
 export const Route = createFileRoute("/_authenticated/formularios")({
   head: () => ({
     meta: [
-      { title: "Formulários | Portal do Profissional Cronos" },
+      { title: "Lista de Formulários Internos | Portal do Profissional Cronos" },
       { name: "description", content: "Central de formulários e canais de solicitação da Cronos Logistics, por setor." },
-      { property: "og:title", content: "Formulários | Portal do Profissional Cronos" },
+      { property: "og:title", content: "Lista de Formulários Internos | Portal do Profissional Cronos" },
       { property: "og:description", content: "Acesso rápido aos formulários oficiais da Cronos Logistics." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -37,7 +37,7 @@ function FormulariosPage() {
 
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-8">
-      <header className="flex flex-wrap items-center justify-between gap-3"><h1 className="text-3xl font-bold text-foreground">Formulários</h1>{pode && <Button onClick={() => setEditor({})}><Plus />Novo formulário</Button>}</header>
+      <header className="flex flex-wrap items-center justify-between gap-3"><h1 className="min-w-0 text-3xl font-bold text-foreground">Lista de Formulários Internos</h1>{pode && <Button onClick={() => setEditor({})}><Plus />Novo formulário</Button>}</header>
       <p className="mt-1 text-sm text-muted-foreground">
         Clique no formulário desejado (abre em nova aba). Formulários com código RQ são registros controlados do SGQ.
       </p>

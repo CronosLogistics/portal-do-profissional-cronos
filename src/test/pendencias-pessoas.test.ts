@@ -25,6 +25,15 @@ describe("Pendências de Gestão de Pessoas", () => {
     expect(ver("feedback", "rh@cronos.com")).toHaveLength(0);
     expect(ver("feedback", "gp@cronos.com", true)).toHaveLength(1);
   });
+  it("a pendência do autor mantém o link de resposta no SharePoint", () => {
+    const pendencias = ver("feedback", "autor@cronos.com");
+    expect(pendencias.map(p => p.id)).toEqual(["10"]);
+    expect(pendencias[0]?.link).toBe("https://cronoslogisticscombr.sharepoint.com/sites/peoplemanagementteamgroup/Lists/Feedbacks%20Gestores/EditForm.aspx?ID=10");
+  });
+  it("feedback respondido deixa de ser pendência do autor", () => {
+    const finalizado = { ...item, fields: { ...item.fields, FinalizadoFeeback_x003f_: "Sim" } };
+    expect(pessoasDoUsuario("feedback", [finalizado], "autor@cronos.com", false, users, agora)).toEqual([]);
+  });
   it("GP exige perfil ativo e não é inferido de Administrador", () => {
     expect(ehGestaoPessoas([{ nome: "Gestão de Pessoas", ativo: true }])).toBe(true);
     expect(ehGestaoPessoas([{ nome: "Gestão de Pessoas", ativo: false }, { nome: "Administrador", ativo: true }])).toBe(false);

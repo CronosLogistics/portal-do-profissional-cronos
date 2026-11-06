@@ -1,4 +1,8 @@
 # Atualização visual do Portal do Profissional
+## Nomes dos menus e tarefas de feedback
+- [x] Renomear questionários para Pesquisas e links para Lista de Formulários Internos.
+- [x] Remover Para responder de Feedback do gestor; tarefas do autor permanecem na categoria de feedback já existente em Pendências e na contagem, sem duplicação.
+- [x] Validar 17 testes e navegação autenticada nos quatro menus, incluindo celular sem transbordamento ou erros; conta testada sem tarefas de feedback, portanto abertura de tarefa real não exercitada.
 ## Notificações e edição de informações
 - [x] Notificar posts vigentes de aniversário e tempo de casa em Avisos e no sino, com leitura individual e abertura no mural.
 - [x] Adicionar formatação em Programas de Recompensas e janela interna para links com texto de exibição, compartilhada com Novo aviso.
