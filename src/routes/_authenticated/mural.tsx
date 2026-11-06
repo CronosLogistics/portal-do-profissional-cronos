@@ -12,10 +12,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { avisosKey } from "@/lib/avisos-client";
 import { useCurrentUser } from "@/hooks/useAuth";
 import {
   apagarComentario, comentar, editarComentario, EMOJIS_MURAL, excluirPost, listarMural, muralKey, reagirPost, salvarPost, urlImagem,
-  type ComentarioMural, type EmojiMural, type PostMural, type TipoMural,
+  marcarMuralLido, type ComentarioMural, type EmojiMural, type PostMural, type TipoMural,
 } from "@/lib/mural-client";
 
 export const Route = createFileRoute("/_authenticated/mural")({
@@ -66,6 +67,10 @@ function MuralPage() {
 
 function PostCard({ post, emFoco, meuId, podeEditar, onEditar }: { post: PostMural; emFoco: boolean; meuId: string | undefined; podeEditar: boolean; onEditar: () => void }) {
   const qc = useQueryClient();
+  useEffect(() => {
+    if (!emFoco || post.tipo === "geral") return;
+    void marcarMuralLido(post.id).then(() => qc.invalidateQueries({ queryKey: avisosKey })).catch(() => toast.error("Não foi possível registrar a leitura."));
+  }, [emFoco, post.id, post.tipo, qc]);
   const ref = useRef<HTMLLIElement>(null);
   const campo = useRef<HTMLTextAreaElement>(null);
   const [img, setImg] = useState<string | null>(null);
@@ -113,7 +118,7 @@ function PostCard({ post, emFoco, meuId, podeEditar, onEditar }: { post: PostMur
   });
   const excluir = useMutation({
     mutationFn: () => excluirPost(post.id),
-    onSuccess: () => { toast.success("Post removido."); setConfirmExcluir(false); atualizar(); },
+    onSuccess: () => { toast.success("Post removido."); setConfirmExcluir(false); atualizar(); qc.invalidateQueries({ queryKey: avisosKey }); },
     onError: () => toast.error("Não foi possível excluir o post."),
   });
   const reagir = useMutation({
@@ -236,7 +241,7 @@ function PostForm({ post, onClose }: { post: PostMural | null; onClose: () => vo
   const [anos, setAnos] = useState(post?.anos_casa ? String(post.anos_casa) : "");
   const salvar = useMutation({
     mutationFn: () => salvarPost(post?.id ?? null, { titulo, texto, data_post: data, visivel_ate: null, tipo, anos_casa: anos ? Number(anos) : null, arquivo, imagem_path: post?.imagem_path ?? null }),
-    onSuccess: () => { toast.success("Post publicado."); qc.invalidateQueries({ queryKey: muralKey }); onClose(); },
+    onSuccess: () => { toast.success("Post publicado."); qc.invalidateQueries({ queryKey: muralKey }); qc.invalidateQueries({ queryKey: avisosKey }); onClose(); },
     onError: (e: Error) => toast.error(e.message),
   });
   return (

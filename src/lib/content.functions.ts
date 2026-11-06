@@ -37,6 +37,8 @@ export type RewardProgram = {
   title: string;
   summary: string;
   description: string;
+  website: string | null;
+  materials_url: string | null;
   how_to_join: string;
   rules: string;
   contacts: string;
@@ -52,7 +54,7 @@ export type RewardProgram = {
 const BENEFIT_COLUMNS =
   "id, slug, title, summary, intro, values_info, how_to_use, rules, website, materials_url, contacts, icon, needs_content, sort_order, intro_title, values_title, how_to_use_title, rules_title, contacts_title";
 const PROGRAM_COLUMNS =
-  "id, slug, title, summary, description, how_to_join, rules, contacts, icon, needs_content, sort_order, description_title, how_to_join_title, rules_title, contacts_title";
+  "id, slug, title, summary, website, materials_url, description, how_to_join, rules, contacts, icon, needs_content, sort_order, description_title, how_to_join_title, rules_title, contacts_title";
 
 
 export const listBenefits = createServerFn({ method: "GET" })

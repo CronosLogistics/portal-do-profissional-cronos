@@ -662,6 +662,32 @@ export type Database = {
           },
         ]
       }
+      mural_leituras: {
+        Row: {
+          lido_em: string
+          post_id: string
+          usuario_id: string
+        }
+        Insert: {
+          lido_em?: string
+          post_id: string
+          usuario_id?: string
+        }
+        Update: {
+          lido_em?: string
+          post_id?: string
+          usuario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mural_leituras_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "mural_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mural_posts: {
         Row: {
           anos_casa: number | null
@@ -1196,6 +1222,7 @@ export type Database = {
           icon: string
           id: string
           is_active: boolean
+          materials_url: string | null
           needs_content: boolean
           rules: string
           rules_title: string
@@ -1204,6 +1231,7 @@ export type Database = {
           summary: string
           title: string
           updated_at: string
+          website: string | null
         }
         Insert: {
           contacts?: string
@@ -1216,6 +1244,7 @@ export type Database = {
           icon?: string
           id?: string
           is_active?: boolean
+          materials_url?: string | null
           needs_content?: boolean
           rules?: string
           rules_title?: string
@@ -1224,6 +1253,7 @@ export type Database = {
           summary?: string
           title: string
           updated_at?: string
+          website?: string | null
         }
         Update: {
           contacts?: string
@@ -1236,6 +1266,7 @@ export type Database = {
           icon?: string
           id?: string
           is_active?: boolean
+          materials_url?: string | null
           needs_content?: boolean
           rules?: string
           rules_title?: string
@@ -1244,6 +1275,7 @@ export type Database = {
           summary?: string
           title?: string
           updated_at?: string
+          website?: string | null
         }
         Relationships: []
       }
@@ -1490,6 +1522,7 @@ export type Database = {
       }
       confirmar_leitura_aviso: { Args: { _aviso_id: string }; Returns: string }
       contar_nao_lidos: { Args: never; Returns: number }
+      contar_notificacoes: { Args: never; Returns: number }
       criar_questionario: {
         Args: {
           _anonimo: boolean
@@ -1650,7 +1683,32 @@ export type Database = {
           visivel_ate: string
         }[]
       }
+      listar_notificacoes: {
+        Args: {
+          _aviso_id?: string
+          _deslocamento?: number
+          _limite?: number
+          _priorizar?: boolean
+          _so_nao_lidos?: boolean
+          _so_obrigatorios?: boolean
+        }
+        Returns: {
+          confirmado_em: string
+          editado_em: string
+          exige_confirmacao: boolean
+          expira_em: string
+          id: string
+          lido: boolean
+          mensagem: string
+          perfil_nome: string
+          publicar_em: string
+          tipo: string
+          titulo: string
+        }[]
+      }
       listar_questionarios: { Args: never; Returns: Json }
+      marcar_mural_lido: { Args: { _post_id: string }; Returns: undefined }
+      marcar_todas_notificacoes_lidas: { Args: never; Returns: number }
       marcar_todos_avisos_lidos: { Args: never; Returns: number }
       marcar_tour_visto: { Args: never; Returns: undefined }
       membros_perfil: {
@@ -1683,6 +1741,22 @@ export type Database = {
           id: string
           imagem_path: string
           texto: string
+          tipo: string
+          titulo: string
+        }[]
+      }
+      notificacoes_mural: {
+        Args: never
+        Returns: {
+          confirmado_em: string
+          editado_em: string
+          exige_confirmacao: boolean
+          expira_em: string
+          id: string
+          lido: boolean
+          mensagem: string
+          perfil_nome: string
+          publicar_em: string
           tipo: string
           titulo: string
         }[]

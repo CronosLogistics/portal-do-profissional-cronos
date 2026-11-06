@@ -1,5 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { limparTextoFormatado, linkPermitido, textoParaEditor } from "@/lib/rich-text";
+import { ArrowLeft, FileText, Globe } from "lucide-react";
 
 import { Navbar } from "@/components/clube/Navbar";
 import { Footer } from "@/components/clube/Footer";
@@ -55,12 +57,12 @@ function Fallback({ title }: { title: string }) {
   );
 }
 
-function Block({ title, children }: { title: string; children: React.ReactNode }) {
+function Block({ title, children }: { title: string; children: string }) {
   return (
     <section className="glass-card rounded-2xl p-6">
       <h2 className="font-display text-base font-semibold text-accent">{title}</h2>
       <div className="mt-3 whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
-        {children}
+        <div className="aviso-html" dangerouslySetInnerHTML={{ __html: limparTextoFormatado(textoParaEditor(children)) }} />
       </div>
     </section>
   );
@@ -100,6 +102,10 @@ function ProgramPage() {
           {program.how_to_join ? <Block title={program.how_to_join_title || "Como participar"}>{program.how_to_join}</Block> : null}
           {program.rules ? <Block title={program.rules_title || "Regras"}>{program.rules}</Block> : null}
           {program.contacts ? <Block title={program.contacts_title || "Contato"}>{program.contacts}</Block> : null}
+          {(program.website || program.materials_url) && <section className="flex flex-wrap gap-3">
+            {program.website && linkPermitido(program.website) && <Button asChild variant="outline"><a href={program.website} target="_blank" rel="noopener noreferrer"><Globe />Visitar site</a></Button>}
+            {program.materials_url && linkPermitido(program.materials_url) && <Button asChild variant="outline"><a href={program.materials_url} target="_blank" rel="noopener noreferrer"><FileText />Materiais / passo a passo</a></Button>}
+          </section>}
         </div>
       </main>
 

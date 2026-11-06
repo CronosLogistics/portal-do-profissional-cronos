@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { EditorTexto } from "@/components/portal/EditorTexto";
 import { Switch } from "@/components/ui/switch";
 import { IconPicker } from "@/components/clube/IconPicker";
 import { slugify } from "@/lib/categories";
@@ -24,6 +24,8 @@ type FormState = {
   rules_title: string;
   contacts: string;
   contacts_title: string;
+  website: string;
+  materials_url: string;
   icon: string;
   needs_content: boolean;
   sort_order: number;
@@ -42,6 +44,8 @@ const empty: FormState = {
   rules_title: "Regras",
   contacts: "",
   contacts_title: "Contato",
+  website: "",
+  materials_url: "",
   icon: "Trophy",
   needs_content: false,
   sort_order: 99,
@@ -97,6 +101,8 @@ function ProgramForm() {
         how_to_join_title: data.how_to_join_title || "Como participar",
         rules: data.rules,
         rules_title: data.rules_title || "Regras",
+        website: data.website ?? "",
+        materials_url: data.materials_url ?? "",
         contacts: data.contacts,
         contacts_title: data.contacts_title || "Contato",
         icon: data.icon,
@@ -126,6 +132,8 @@ function ProgramForm() {
       how_to_join_title: form.how_to_join_title.trim(),
       rules: form.rules.trim(),
       rules_title: form.rules_title.trim(),
+      website: form.website.trim() || null,
+      materials_url: form.materials_url.trim() || null,
       contacts: form.contacts.trim(),
       contacts_title: form.contacts_title.trim(),
       icon: form.icon,
@@ -234,43 +242,28 @@ function ProgramForm() {
             <div className="grid gap-2">
               <Label htmlFor="description">Título da seção e texto</Label>
               <Input aria-label="Título da seção" className="font-semibold text-accent" placeholder="Como funciona" value={form.description_title} onChange={(event) => update("description_title", event.target.value)} />
-              <Textarea
-                id="description"
-                rows={5}
-                value={form.description}
-                onChange={(event) => update("description", event.target.value)}
-              />
+              <EditorTexto id="description" label={form.description_title} initial={form.description} onChange={html => update("description", html)} />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="join">Título da seção e texto</Label>
               <Input aria-label="Título da seção" className="font-semibold text-accent" placeholder="Como participar" value={form.how_to_join_title} onChange={(event) => update("how_to_join_title", event.target.value)} />
-              <Textarea
-                id="join"
-                rows={4}
-                value={form.how_to_join}
-                onChange={(event) => update("how_to_join", event.target.value)}
-              />
+              <EditorTexto id="join" label={form.how_to_join_title} initial={form.how_to_join} onChange={html => update("how_to_join", html)} />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="rules">Título da seção e texto</Label>
               <Input aria-label="Título da seção" className="font-semibold text-accent" placeholder="Regras" value={form.rules_title} onChange={(event) => update("rules_title", event.target.value)} />
-              <Textarea
-                id="rules"
-                rows={3}
-                value={form.rules}
-                onChange={(event) => update("rules", event.target.value)}
-              />
+              <EditorTexto id="rules" label={form.rules_title} initial={form.rules} onChange={html => update("rules", html)} />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="contacts">Título da seção e texto</Label>
               <Input aria-label="Título da seção" className="font-semibold text-accent" placeholder="Contato" value={form.contacts_title} onChange={(event) => update("contacts_title", event.target.value)} />
-              <Textarea
-                id="contacts"
-                rows={2}
-                value={form.contacts}
-                onChange={(event) => update("contacts", event.target.value)}
-              />
+              <EditorTexto id="contacts" label={form.contacts_title} initial={form.contacts} onChange={html => update("contacts", html)} />
             </div>
+          </section>
+
+          <section className="glass-card grid gap-4 rounded-2xl p-6 sm:grid-cols-2">
+            <div className="grid gap-2"><Label htmlFor="website">Site (opcional)</Label><Input id="website" type="url" placeholder="https://" value={form.website} onChange={e => update("website", e.target.value)} /></div>
+            <div className="grid gap-2"><Label htmlFor="materials">Materiais / passo a passo (opcional)</Label><Input id="materials" type="url" placeholder="https://" value={form.materials_url} onChange={e => update("materials_url", e.target.value)} /></div>
           </section>
 
           <section className="glass-card grid gap-4 rounded-2xl p-6">

@@ -46,7 +46,8 @@ export function AvisosBell({ naoLidos }: { naoLidos: number }) {
                 className={`aviso-bell-item ${a.lido ? "" : "is-unread"}`}
                 onClick={() => {
                   setOpen(false);
-                  void navigate({ to: "/avisos", search: { aviso: a.id } });
+                  if (a.tipo === "mural") void navigate({ to: "/mural", search: { post: a.id } });
+                  else void navigate({ to: "/avisos", search: { aviso: a.id } });
                 }}
               >
                 <span className="flex flex-wrap items-center gap-1.5">

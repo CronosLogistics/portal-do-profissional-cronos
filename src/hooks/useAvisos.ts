@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocation, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { avisosKey, contarNaoLidos } from "@/lib/avisos-client";
+import { avisosKey, contarNaoLidos, listarAvisos } from "@/lib/avisos-client";
 import { tituloComContador } from "@/lib/avisos-rules";
 
 export const naoLidosKey = [...avisosKey, "nao-lidos"] as const;
@@ -38,6 +38,15 @@ export function useAvisosAoVivo(meId: string | undefined, naoLidos: number) {
           duration: 10_000,
           action: { label: "Abrir", onClick: () => void navigate({ to: "/avisos", search: { aviso: novo.id } }) },
         });
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "mural_posts" }, async (payload) => {
+        void qc.invalidateQueries({ queryKey: avisosKey });
+        if (payload.eventType !== "INSERT") return;
+        const novo = payload.new as { id: string; titulo: string; autor_id: string; tipo: string };
+        if (novo.autor_id === meId || !["aniversario", "tempo_casa"].includes(novo.tipo)) return;
+        const acessivel = await listarAvisos(true, 1, 0, false, novo.id).catch(() => []);
+        if (!acessivel.length) return;
+        toast(novo.titulo, { description: "Nova comemoração no mural", duration: 10_000, action: { label: "Abrir", onClick: () => void navigate({ to: "/mural", search: { post: novo.id } }) } });
       })
       .subscribe();
     return () => {

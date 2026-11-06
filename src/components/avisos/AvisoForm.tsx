@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { EditorTexto } from "@/components/portal/EditorTexto";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Bold, Eye, Italic, Link2, List, ListOrdered, Pencil } from "lucide-react";
+import { Eye, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -14,53 +15,6 @@ import { avisosKey, departamentosDestinatarios, perfisRemetentes, salvarAviso, t
 import { brasiliaParaUtc, statusAviso, TITULO_MAX, utcParaBrasilia } from "@/lib/avisos-rules";
 import { AvisoHtml } from "./AvisoLeitura";
 import { formatarDataBrasilia } from "@/lib/avisos-rules";
-
-function EditorSimples({ initial, onChange }: { initial: string; onChange: (html: string) => void }) {
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (ref.current && ref.current.innerHTML !== initial) ref.current.innerHTML = initial;
-  }, [initial]);
-  const cmd = (c: string, v?: string) => {
-    ref.current?.focus();
-    document.execCommand(c, false, v);
-    onChange(ref.current?.innerHTML ?? "");
-  };
-  const tools = [
-    { icon: Bold, label: "Negrito", run: () => cmd("bold") },
-    { icon: Italic, label: "Itálico", run: () => cmd("italic") },
-    { icon: List, label: "Lista", run: () => cmd("insertUnorderedList") },
-    { icon: ListOrdered, label: "Lista numerada", run: () => cmd("insertOrderedList") },
-    {
-      icon: Link2,
-      label: "Link",
-      run: () => {
-        const url = window.prompt("Endereço do link (https://...)");
-        if (url && /^(https?:|mailto:)/i.test(url.trim())) cmd("createLink", url.trim());
-        else if (url) toast.error("Use um endereço começando com https://");
-      },
-    },
-  ];
-  return (
-    <div className="rounded-md border border-input">
-      <div className="flex gap-1 border-b p-1">
-        {tools.map((t) => (
-          <Button key={t.label} type="button" variant="ghost" size="icon" className="h-8 w-8" title={t.label} aria-label={t.label} onMouseDown={(e) => e.preventDefault()} onClick={t.run}>
-            <t.icon />
-          </Button>
-        ))}
-      </div>
-      <div
-        ref={ref}
-        contentEditable
-        role="textbox"
-        aria-multiline="true"
-        aria-label="Mensagem"
-        className="aviso-html min-h-[160px] px-3 py-2 text-sm outline-none"
-        onInput={(e) => onChange((e.target as HTMLDivElement).innerHTML)}
-      />
-    </div>
-  );
-}
 
 export function AvisoForm({ open, onClose, aviso }: { open: boolean; onClose: () => void; aviso?: AvisoEnviado | null }) {
   const qc = useQueryClient();
@@ -165,7 +119,7 @@ export function AvisoForm({ open, onClose, aviso }: { open: boolean; onClose: ()
             </div>
             <div className="grid gap-2">
               <Label>Mensagem</Label>
-              <EditorSimples initial={mensagem} onChange={setMensagem} />
+              <EditorTexto initial={mensagem} onChange={setMensagem} />
             </div>
             {!publicado && (
               <div className="grid gap-2">

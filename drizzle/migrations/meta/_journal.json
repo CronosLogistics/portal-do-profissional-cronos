@@ -246,6 +246,20 @@
       "when": 1793818803324,
       "tag": "0034_auditoria_logs",
       "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1793967432977,
+      "tag": "0035_notificacoes_mural_links_recompensas",
+      "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1793967543810,
+      "tag": "0036_mural_notificacoes_tempo_real",
+      "breakpoints": true
     }
   ]
 }

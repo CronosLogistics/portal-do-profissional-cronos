@@ -127,7 +127,7 @@ function Recebidos() {
         <ul className="grid gap-2">
           {avisosFiltrados.map((a) => (
             <li key={a.id}>
-              <Button type="button" variant="ghost" className={`aviso-item !h-auto w-full !flex-wrap !justify-start !whitespace-normal !text-left hover:!bg-muted hover:!text-foreground sm:!flex-nowrap ${a.lido ? "" : "is-unread"}`} onClick={() => void navigate({ search: { aviso: a.id } })}>
+              <Button type="button" variant="ghost" className={`aviso-item !h-auto w-full !flex-wrap !justify-start !whitespace-normal !text-left hover:!bg-muted hover:!text-foreground sm:!flex-nowrap ${a.lido ? "" : "is-unread"}`} onClick={() => a.tipo === "mural" ? void navigate({ to: "/mural", search: { post: a.id } }) : void navigate({ search: { aviso: a.id } })}>
                 <span className="aviso-dot" aria-hidden="true" />
                 <span className="min-w-0 flex-1">
                   <span className="flex flex-wrap items-center gap-2">

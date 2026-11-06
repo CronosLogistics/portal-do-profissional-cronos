@@ -93,3 +93,8 @@ export async function reagirPost(postId: string, emoji: EmojiMural, atual: strin
   );
   if (error) throw error;
 }
+
+export async function marcarMuralLido(postId: string) {
+  const { error } = await supabase.rpc("marcar_mural_lido", { _post_id: postId });
+  if (error) throw error;
+}
