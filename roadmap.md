@@ -1,4 +1,8 @@
 # Atualização visual do Portal do Profissional
+## Notificações e edição de informações
+- [ ] Notificar novos posts de aniversário e tempo de casa em Avisos e no sino.
+- [ ] Adicionar formatação em Mais informações e janela interna para links com texto de exibição.
+- [ ] Validar publicação, notificação, edição e links.
 ## Destinatários dos avisos
 - [x] Selecionar todos os profissionais ou um ou mais departamentos sincronizados no campo Para, com busca e prévia.
 - [x] Aplicar destinatários na central, sino, leituras e acompanhamento; 30 testes passam. Envio, edição, entrega a Tecnologia e bloqueio fora do departamento verificados na tela, sem erros; avisos temporários arquivados.
