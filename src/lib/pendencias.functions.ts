@@ -12,7 +12,7 @@ export type ListasQualidade = {
   nps: PendenciaNPS[];
   revisoes: PendenciaRevisao[];
 };
-type Resultado = { proprias: ListasQualidade; liderados: ListasQualidade; erro: string | null };
+type Resultado = { proprias: ListasQualidade; liderados: ListasQualidade; temLiderados?: boolean; erro: string | null };
 const listasVazias = (): ListasQualidade => ({ analiseNC: [], analiseNCMaior: [], planoAcao: [], analiseSM: [], planoAcaoSM: [], nps: [], revisoes: [] });
 const vazio = (erro: string | null): Resultado => ({ proprias: listasVazias(), liderados: listasVazias(), erro });
 
@@ -62,7 +62,7 @@ export const minhasPendencias = createServerFn({ method: "GET" })
       // Itens que já são do próprio gestor não se repetem na aba dos liderados.
       const sem = <T extends { id: string }>(lista: T[], minhas: T[]) => { const s = new Set(minhas.map(p => p.id)); return lista.filter(p => !s.has(p.id)); };
       const liderados = Object.fromEntries((Object.keys(equipe) as (keyof ListasQualidade)[]).map(k => [k, sem(equipe[k] as { id: string }[], proprias[k] as { id: string }[])])) as ListasQualidade;
-      return { proprias, liderados, erro: null };
+      return { proprias, liderados, temLiderados: outros.length > 0, erro: null };
     } catch (e) {
       console.error(e);
       return vazio(e instanceof Error ? e.message : "Falha ao carregar as pendências.");

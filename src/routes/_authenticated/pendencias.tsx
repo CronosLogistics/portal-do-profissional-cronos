@@ -31,10 +31,11 @@ const totalQualidade = (l?: ListasQualidade) => l ? l.analiseNC.length + l.anali
 
 function PendenciasPage() {
   const me = useCurrentUser();
-  const lider = !!me.data?.can("pendencias.liderados");
   const buscarQ = useServerFn(minhasPendencias);
   const buscarP = useServerFn(minhasPendenciasPessoas);
   const q = useQuery({ queryKey: [...pendenciasKey, me.data?.id], queryFn: () => buscarQ(), enabled: !!me.data?.id, staleTime: 60_000 });
+  // A aba de liderados só aparece para quem tem equipe vinculada no SharePoint.
+  const lider = !!me.data?.can("pendencias.liderados") && q.data?.temLiderados === true;
   const p = useQuery({ queryKey: [...pendenciasPessoasKey, me.data?.id], queryFn: () => buscarP(), enabled: !!me.data?.id, staleTime: 60_000 });
   const tipos = Object.keys(LISTAS_PESSOAS) as TipoPendenciaPessoas[];
   const total = (modo: Modo) => totalQualidade(q.data?.[modo]) + tipos.reduce((s, t) => s + ((modo === "proprias" ? p.data?.listas : p.data?.liderados)?.[t]?.length ?? 0), 0);
