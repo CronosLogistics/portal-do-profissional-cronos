@@ -1,5 +1,25 @@
 import type { ItemAnaliseNC } from "./pendencias.rules";
 import type { PessoaSharePoint } from "./pendencias-pessoas.rules";
+import { normalizarEmail, type SnapshotDepartamentos } from "./departamentos.rules";
+
+/** Feedback visibility is narrower than the all-descendants priority scope. */
+export function emailsFeedbacksLiderados(snapshot: SnapshotDepartamentos, email: string): string[] {
+  const proprio = normalizarEmail(email);
+  const pessoa = snapshot.pessoas.find(p => normalizarEmail(p.email) === proprio);
+  if (!pessoa) return [];
+  const alvos = pessoa.vinculos.flatMap(vinculo => {
+    const membros = snapshot.pessoas.filter(p => p.vinculos.some(v => v.departamento === vinculo.departamento));
+    const temCoordenador = membros.some(p => p.vinculos.some(v => v.departamento === vinculo.departamento && v.nivel === "coordenador"));
+    return membros.filter(p => p.departamento !== null && p.vinculos.some(v => {
+      if (v.departamento !== vinculo.departamento) return false;
+      if (vinculo.nivel === "lider") return v.nivel === (temCoordenador ? "coordenador" : "supervisor");
+      if (vinculo.nivel === "coordenador") return v.nivel === "supervisor" || v.nivel === "liderado";
+      if (vinculo.nivel === "supervisor") return v.nivel === "liderado";
+      return false;
+    })).map(p => normalizarEmail(p.email));
+  });
+  return [...new Set(alvos)].filter(alvo => alvo && alvo !== proprio);
+}
 
 export type FeedbackGestor = { id: string; profissional: string; gestor: string; data: string; classificacao: string; status: string; mensagem: string; link: string };
 

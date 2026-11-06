@@ -3,6 +3,8 @@ import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { MessageSquare, RefreshCw, UserRound } from "lucide-react";
 import { meusFeedbacksGestor } from "@/lib/feedback-gestor.functions";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { FeedbackGestor } from "@/lib/feedback-gestor.rules";
 
 const feedbacksQuery = queryOptions({ queryKey: ["feedbacks-gestor-recebidos"], queryFn: () => meusFeedbacksGestor(), staleTime: 60_000 });
 
@@ -29,14 +31,31 @@ function FeedbackGestorPage() {
       <header className="mb-6 flex items-start justify-between gap-4">
         <div>
         <h1 className="text-3xl font-bold text-foreground">Feedback do gestor</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Seus feedbacks recebidos.</p>
+        <p className="mt-1 text-sm text-muted-foreground">Feedbacks recebidos e acompanhamento dos seus liderados.</p>
         </div>
         <Button variant="outline" size="icon" title="Atualizar feedbacks" aria-label="Atualizar feedbacks" disabled={q.isFetching} onClick={() => void q.refetch()}><RefreshCw className={q.isFetching ? "animate-spin" : ""} /></Button>
       </header>
-      {q.data.erro ? <p role="alert" className="border-l-2 border-destructive p-4 text-sm text-destructive">{q.data.erro}</p> : <>
-      {q.data.feedbacks.length === 0 ? <div className="py-12 text-center text-muted-foreground"><MessageSquare className="mx-auto mb-3 h-8 w-8" /><p className="text-sm">Nenhum feedback recebido por enquanto.</p></div> : (
+      <Tabs defaultValue="liderados">
+        <TabsList className="mb-4 h-auto w-full flex-wrap justify-start gap-1 sm:w-auto">
+          <TabsTrigger value="liderados">Feedbacks dos liderados</TabsTrigger>
+          <TabsTrigger value="recebidos">Feedbacks recebidos</TabsTrigger>
+        </TabsList>
+        <TabsContent value="liderados">
+          {q.data.erro || q.data.erroLiderados ? <p role="alert" className="border-l-2 border-destructive p-4 text-sm text-destructive">{q.data.erro || q.data.erroLiderados}</p> : <ListaFeedbacks feedbacks={q.data.liderados} liderados />}
+        </TabsContent>
+        <TabsContent value="recebidos">
+          {q.data.erro ? <p role="alert" className="border-l-2 border-destructive p-4 text-sm text-destructive">{q.data.erro}</p> : <ListaFeedbacks feedbacks={q.data.feedbacks} />}
+        </TabsContent>
+      </Tabs>
+    </main>
+  );
+}
+
+function ListaFeedbacks({ feedbacks, liderados = false }: { feedbacks: FeedbackGestor[]; liderados?: boolean }) {
+  return feedbacks.length === 0 ? <div className="py-12 text-center text-muted-foreground"><MessageSquare className="mx-auto mb-3 h-8 w-8" /><p className="text-sm">{liderados ? "Nenhum feedback dos seus liderados por enquanto." : "Nenhum feedback recebido por enquanto."}</p></div> : (
         <div className="space-y-3">
-          {q.data.feedbacks.map(f => <article key={f.id} className="rounded-lg border bg-card p-5">
+          {feedbacks.map(f => <article key={f.id} className="rounded-lg border bg-card p-5">
+            {liderados && <h2 className="mb-3 break-words text-base font-semibold text-foreground">{f.profissional}</h2>}
             <div className="mb-2 flex flex-wrap items-center gap-2 text-xs">
               <MessageSquare className="h-4 w-4 shrink-0 text-primary" />
               {f.data && <span className="font-semibold text-foreground">{new Date(f.data).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" })}</span>}
@@ -48,8 +67,5 @@ function FeedbackGestorPage() {
             </dl>
           </article>)}
         </div>
-      )}
-      </>}
-    </main>
-  );
+      );
 }

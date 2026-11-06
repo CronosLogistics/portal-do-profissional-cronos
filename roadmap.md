@@ -1,4 +1,7 @@
 # Atualização visual do Portal do Profissional
+## Feedbacks por hierarquia
+- [x] Separar Feedbacks dos liderados e Feedbacks recebidos, com escopo por nível de liderança do SharePoint e sem alterar pendências.
+- [x] Validar 27 testes e as duas abas autenticadas sem erros; a conta disponível não tem feedbacks próprios ou de liderados, portanto cartões reais de equipe não foram exercitados.
 ## Correção de liderança de supervisores
 - [x] Reconhecer SupervisorLookupId simples e múltiplo, preservando a hierarquia e permissões; 48 testes passaram.
 - [x] Atualizar vínculos reais e verificar na conta de Natan: 2 pendências pessoais e 16 dos liderados (7 de Mateus e 9 de Vitor), com contador pessoal separado e sem erros na tela.
