@@ -20,6 +20,15 @@ const hierarquia = (coordenador: string | null = "2") => montarDepartamentos([
   { id: "externo", fields: { Title: "Outro setor" } },
 ], cadastro, pessoasHierarquia);
 describe("Escopo de feedback por hierarquia", () => {
+  it("mantém equipe identificada mesmo quando os liderados ainda não receberam feedbacks", () => {
+    const emails = emailsFeedbacksLiderados(hierarquia(), "supervisor@cronos.com");
+    expect(emails.length > 0).toBe(true);
+    expect(emails.flatMap(email => feedbacksDoProfissional([], cadastro, pessoasHierarquia, email))).toEqual([]);
+  });
+  it("não identifica equipe para profissional comum ou administrador sem vínculo de liderança", () => {
+    expect(emailsFeedbacksLiderados(hierarquia(), "profissional@cronos.com").length > 0).toBe(false);
+    expect(emailsFeedbacksLiderados(hierarquia(), "admin@cronos.com").length > 0).toBe(false);
+  });
   it("Líder Direto vê coordenadores, não supervisores nem equipe abaixo", () => {
     expect(emailsFeedbacksLiderados(hierarquia(), "lider@cronos.com")).toEqual(["coordenador@cronos.com"]);
   });

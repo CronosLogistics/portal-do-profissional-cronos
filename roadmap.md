@@ -1,4 +1,7 @@
 # Atualização visual do Portal do Profissional
+## Feedbacks sem equipe vinculada
+- [x] Mostrar diretamente recebidos sem abas para profissionais sem liderados; preservar abas para quem possui equipe, mesmo sem feedbacks.
+- [x] Validar 14 testes e tela autenticada de Maria sem abas; conta sem feedbacks recebidos, portanto nenhum cartão real foi exercitado nesta verificação.
 ## Feedbacks por hierarquia
 - [x] Separar Feedbacks dos liderados e Feedbacks recebidos, com escopo por nível de liderança do SharePoint e sem alterar pendências.
 - [x] Validar 27 testes e as duas abas autenticadas sem erros; a conta disponível não tem feedbacks próprios ou de liderados, portanto cartões reais de equipe não foram exercitados.

@@ -31,11 +31,11 @@ function FeedbackGestorPage() {
       <header className="mb-6 flex items-start justify-between gap-4">
         <div>
         <h1 className="text-3xl font-bold text-foreground">Feedback do gestor</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Feedbacks recebidos e acompanhamento dos seus liderados.</p>
+        <p className="mt-1 text-sm text-muted-foreground">{q.data.temLiderados ? "Feedbacks recebidos e acompanhamento dos seus liderados." : "Seus feedbacks recebidos."}</p>
         </div>
         <Button variant="outline" size="icon" title="Atualizar feedbacks" aria-label="Atualizar feedbacks" disabled={q.isFetching} onClick={() => void q.refetch()}><RefreshCw className={q.isFetching ? "animate-spin" : ""} /></Button>
       </header>
-      <Tabs defaultValue="liderados">
+      {q.data.temLiderados ? <Tabs defaultValue="recebidos">
         <TabsList className="mb-4 h-auto w-full flex-wrap justify-start gap-1 sm:w-auto">
           <TabsTrigger value="liderados">Feedbacks dos liderados</TabsTrigger>
           <TabsTrigger value="recebidos">Feedbacks recebidos</TabsTrigger>
@@ -46,7 +46,10 @@ function FeedbackGestorPage() {
         <TabsContent value="recebidos">
           {q.data.erro ? <p role="alert" className="border-l-2 border-destructive p-4 text-sm text-destructive">{q.data.erro}</p> : <ListaFeedbacks feedbacks={q.data.feedbacks} />}
         </TabsContent>
-      </Tabs>
+      </Tabs> : <>
+        {q.data.erroLiderados && <p role="alert" className="mb-4 border-l-2 border-destructive p-4 text-sm text-destructive">{q.data.erroLiderados}</p>}
+        {q.data.erro ? <p role="alert" className="border-l-2 border-destructive p-4 text-sm text-destructive">{q.data.erro}</p> : <ListaFeedbacks feedbacks={q.data.feedbacks} />}
+      </>}
     </main>
   );
 }

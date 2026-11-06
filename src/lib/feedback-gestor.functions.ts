@@ -5,7 +5,7 @@ import { unirPendencias } from "./departamentos.rules";
 
 export const meusFeedbacksGestor = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }): Promise<{ feedbacks: FeedbackGestor[]; liderados: FeedbackGestor[]; erro: string | null; erroLiderados: string | null }> => {
+  .handler(async ({ context }): Promise<{ feedbacks: FeedbackGestor[]; liderados: FeedbackGestor[]; temLiderados: boolean; erro: string | null; erroLiderados: string | null }> => {
     const { data: perfil, error } = await context.supabase.from("profiles").select("email,is_active").eq("id", context.userId).maybeSingle();
     if (error || !perfil?.email || perfil.is_active !== true) throw new Error("Profissional não disponível.");
     try {
@@ -20,9 +20,9 @@ export const meusFeedbacksGestor = createServerFn({ method: "GET" })
       ]);
       const feedbacks = feedbacksDoProfissional(d.itens, d.profissionais, d.usuarios, perfil.email);
       const emails = hierarquia.snapshot ? emailsFeedbacksLiderados(hierarquia.snapshot, perfil.email) : [];
-      return { feedbacks, liderados: unirPendencias(emails, email => feedbacksDoProfissional(d.itens, d.profissionais, d.usuarios, email)), erro: null, erroLiderados: hierarquia.erro };
+      return { feedbacks, liderados: unirPendencias(emails, email => feedbacksDoProfissional(d.itens, d.profissionais, d.usuarios, email)), temLiderados: emails.length > 0, erro: null, erroLiderados: hierarquia.erro };
     } catch (error) {
       console.error("Feedback do gestor:", error);
-      return { feedbacks: [], liderados: [], erro: "Não foi possível carregar seus feedbacks do SharePoint. Tente novamente.", erroLiderados: null };
+      return { feedbacks: [], liderados: [], temLiderados: false, erro: "Não foi possível carregar seus feedbacks do SharePoint. Tente novamente.", erroLiderados: null };
     }
   });
