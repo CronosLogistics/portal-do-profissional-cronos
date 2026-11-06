@@ -1,7 +1,7 @@
 # Atualização visual do Portal do Profissional
 ## Correção de liderança de supervisores
-- [ ] Reconhecer SupervisorLookupId simples e múltiplo, preservando a hierarquia e permissões.
-- [ ] Atualizar vínculos reais e verificar pendências pessoais/liderados de Natan, Mateus e Vitor.
+- [x] Reconhecer SupervisorLookupId simples e múltiplo, preservando a hierarquia e permissões; 48 testes passaram.
+- [x] Atualizar vínculos reais e verificar na conta de Natan: 2 pendências pessoais e 16 dos liderados (7 de Mateus e 9 de Vitor), com contador pessoal separado e sem erros na tela.
 ## Banners e apresentação do Insider
 - [x] Permitir substituir todos os banners por edição, mantendo as imagens anteriores como padrão.
 - [x] Restaurar a edição de Maria Gerotti de 29/10/2026 ao carrossel para apresentação, preservando data original e edição teste arquivada.
