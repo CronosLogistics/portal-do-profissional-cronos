@@ -35,7 +35,7 @@ export const PORTAL_MODULES: PortalModule[] = [
   { to: "/recompensas", label: "Programas de Recompensas" },
   { to: "/treinamentos", label: "Treinamentos" },
   { to: "/formularios-internos", label: "Pesquisas", group: "formularios" },
-  { to: "/formularios", label: "Lista de Formulários Internos", group: "formularios" },
+  { to: "/formularios", label: "Central de Formulários Internos", group: "formularios" },
   { to: "/documentos", label: "Documentos Cronos" },
   { to: "/feedback", label: "Elogios", menuLabel: "Elogios", group: "feedbacks" },
   { to: "/feedback-gestor", label: "Feedback do gestor", group: "feedbacks" },
