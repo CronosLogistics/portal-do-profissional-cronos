@@ -61,7 +61,6 @@ function Cartao({ e }: { e: Elogio }) {
         <Award className="h-4 w-4 text-primary" />
         <span className="font-semibold text-foreground">{fmt(e.data)}</span>
         {e.departamento && <span className="rounded-full bg-secondary px-2 py-0.5 text-secondary-foreground">{e.departamento}</span>}
-        {e.status && <span className="rounded-full border px-2 py-0.5 text-muted-foreground">{e.status}</span>}
       </div>
       <p className="whitespace-pre-line text-sm text-foreground">{e.detalhamento || "Sem detalhamento."}</p>
       <dl className="mt-3 grid gap-1 text-xs text-muted-foreground sm:grid-cols-2">

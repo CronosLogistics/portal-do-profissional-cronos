@@ -1,8 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
-import { MessageSquare, ExternalLink, RefreshCw, UserRound } from "lucide-react";
+import { MessageSquare, RefreshCw, UserRound } from "lucide-react";
 import { meusFeedbacksGestor } from "@/lib/feedback-gestor.functions";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 
 const feedbacksQuery = queryOptions({ queryKey: ["feedbacks-gestor-recebidos"], queryFn: () => meusFeedbacksGestor(), staleTime: 60_000 });
@@ -36,22 +35,19 @@ function FeedbackGestorPage() {
       </header>
       {q.data.erro ? <p role="alert" className="border-l-2 border-destructive p-4 text-sm text-destructive">{q.data.erro}</p> : <>
       {q.data.feedbacks.length === 0 ? <div className="py-12 text-center text-muted-foreground"><MessageSquare className="mx-auto mb-3 h-8 w-8" /><p className="text-sm">Nenhum feedback recebido por enquanto.</p></div> : (
-        <Accordion type="multiple" className="w-full">
-          {q.data.feedbacks.map(f => <AccordionItem key={f.id} value={f.id}>
-            <AccordionTrigger className="gap-4 hover:no-underline">
-              <span className="flex min-w-0 flex-1 flex-wrap items-center gap-x-4 gap-y-2">
-                <span className="flex min-w-0 items-center gap-2 text-foreground"><UserRound className="h-4 w-4 shrink-0 text-primary" /><span className="break-words">{f.gestor}</span></span>
-                {f.data && <span className="text-xs text-muted-foreground">{new Date(f.data).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" })}</span>}
-                {f.classificacao && <span className="text-xs font-semibold text-primary">{f.classificacao}</span>}
-                {f.status && <span className="text-xs text-muted-foreground">{f.status}</span>}
-              </span>
-            </AccordionTrigger>
-            <AccordionContent>
-              <p className="whitespace-pre-line break-words py-2 text-sm leading-relaxed text-foreground">{f.mensagem || "Sem comentário registrado."}</p>
-              <Button asChild variant="link" className="mt-3 px-0"><a href={f.link} target="_blank" rel="noopener noreferrer">Link para o item <ExternalLink /></a></Button>
-            </AccordionContent>
-          </AccordionItem>)}
-        </Accordion>
+        <div className="space-y-3">
+          {q.data.feedbacks.map(f => <article key={f.id} className="rounded-lg border bg-card p-5">
+            <div className="mb-2 flex flex-wrap items-center gap-2 text-xs">
+              <MessageSquare className="h-4 w-4 shrink-0 text-primary" />
+              {f.data && <span className="font-semibold text-foreground">{new Date(f.data).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" })}</span>}
+              {f.classificacao && <span className="rounded-full bg-secondary px-2 py-0.5 text-secondary-foreground">{f.classificacao}</span>}
+            </div>
+            <p className="whitespace-pre-line break-words text-sm text-foreground">{f.mensagem || "Sem comentário registrado."}</p>
+            <dl className="mt-3 grid gap-1 text-xs text-muted-foreground sm:grid-cols-2">
+              <div className="flex min-w-0 gap-1"><UserRound className="h-3.5 w-3.5 shrink-0" /><span className="break-words">Gestor(a): {f.gestor}</span></div>
+            </dl>
+          </article>)}
+        </div>
       )}
       </>}
     </main>

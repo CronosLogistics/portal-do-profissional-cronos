@@ -1,4 +1,8 @@
 # Atualização visual do Portal do Profissional
+## Apresentação dos feedbacks
+- [x] Usar cartões abertos em Feedback do gestor, seguindo Elogios, sem status ou link para o item.
+- [x] Remover etiqueta de status dos Elogios.
+- [x] Validar 13 testes e Elogios com registro real em computador/celular; Feedback do gestor carregou sem erros, mas a conta disponível não tem mensagens recebidas para conferir um cartão real.
 ## Nomes dos menus e tarefas de feedback
 - [x] Renomear questionários para Pesquisas e links para Lista de Formulários Internos.
 - [x] Remover Para responder de Feedback do gestor; tarefas do autor permanecem na categoria de feedback já existente em Pendências e na contagem, sem duplicação.
