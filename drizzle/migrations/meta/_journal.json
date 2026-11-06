@@ -260,6 +260,13 @@
       "when": 1793967543810,
       "tag": "0036_mural_notificacoes_tempo_real",
       "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1793970051200,
+      "tag": "0037_rotulos_links_conteudo",
+      "breakpoints": true
     }
   ]
 }
