@@ -52,6 +52,10 @@ export function montarDepartamentos(departamentos: ItemAnaliseNC[], profissionai
     };
     atribuir(identidade(d.fields['L_x00ed_derDiretoLookupId']), "lider");
     atribuir(identidade(d.fields['CoordenadorLookupId']), "coordenador");
+    const lookup = d.fields['SupervisorLookupId'];
+    for (const id of Array.isArray(lookup) ? lookup : [lookup]) {
+      if (typeof id === "string" || typeof id === "number") atribuir(identidade(id), "supervisor");
+    }
     for (const supervisor of Array.isArray(d.fields['Supervisor']) ? d.fields['Supervisor'] : []) {
       if (supervisor && typeof supervisor === "object" && "LookupId" in supervisor) atribuir(identidade(supervisor.LookupId), "supervisor");
     }

@@ -9,6 +9,24 @@ const usuarios = new Map([
 const departamento = { id: "30", fields: { Title: "ADMINISTRATIVO ESCRITÓRIO CAXIAS DO SUL", L_x00ed_derDiretoLookupId: "43", CoordenadorLookupId: "56", Supervisor: [{ LookupId: 53 }], Permiss_x00f5_esdoL_x00ed_der: ["Visualização", "Visualizar pendências dos liderados"], Permiss_x00e3_odoCoordenador: ["Visualização", "Visualizar pendências"], Permiss_x00f5_esdoSupervisor: ["Visualização"], Permiss_x00f5_esdosLiderados: ["Visualização"] } };
 const profissional = { id: "1", fields: { field_1: "ATIVO", SETORLookupId: "30", E_x002d_MAILCORPORATIVOLookupId: "80" } };
 describe("setores e hierarquia do SharePoint", () => {
+  it.each(["18", 18])("reconhece Natan como supervisor pelo lookup simples %s e vincula Mateus e Vitor", supervisor => {
+    const users = new Map([
+      ["18", { email: "natan.boos@cronoslogistics.com.br", nome: "Natan" }],
+      ["81", { email: "mateus@cronos.test", nome: "Mateus" }],
+      ["82", { email: "vitor@cronos.test", nome: "Vitor" }],
+    ]);
+    const d = { id: "10", fields: { Title: "TECNOLOGIA", SupervisorLookupId: supervisor, Permiss_x00f5_esdoSupervisor: ["Visualizar pendências"] } };
+    const profissionais = ["81", "82"].map(id => ({ id, fields: { field_1: "ATIVO", DEPARTAMENTOATUALLookupId: "10", E_x002d_MAILCORPORATIVOLookupId: id } }));
+    const s = montarDepartamentos([d], profissionais, users);
+    expect(s.pessoas.find(p => p.email === "natan.boos@cronoslogistics.com.br")?.vinculos).toEqual([{ departamento: "10", nivel: "supervisor" }]);
+    expect(s.hierarquia.filter(h => h.lider === "natan.boos@cronoslogistics.com.br").map(h => h.liderado).sort()).toEqual(["mateus@cronos.test", "vitor@cronos.test"]);
+  });
+  it("reconhece vários supervisores pelo array de lookup IDs sem duplicar vínculos", () => {
+    const d = { ...departamento, fields: { ...departamento.fields, Supervisor: [], SupervisorLookupId: ["53", "53"], Permiss_x00f5_esdoSupervisor: ["Visualizar pendências"] } };
+    const s = montarDepartamentos([d], [profissional], usuarios);
+    expect(s.pessoas.find(p => p.email === "alexey@cronos.test")?.vinculos).toEqual([{ departamento: "30", nivel: "supervisor" }]);
+    expect(s.hierarquia.filter(h => h.lider === "alexey@cronos.test").map(h => h.liderado)).toEqual(["pessoa@cronos.test"]);
+  });
   it("tag de confirmação concede somente a permissão correspondente por nível", () => {
     expect(permissoesDepartamento({ Permiss_x00f5_esdosLiderados: ["Permitir envio de confirmação de leitura"] }, "liderado")).toEqual(["avisos.confirmacao"]);
     expect(permissoesDepartamento({ Permiss_x00e3_odoCoordenador: ["Publicar avisos com confirmação de leitura"] }, "coordenador")).toEqual(["avisos.confirmacao"]);
