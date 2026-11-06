@@ -25,7 +25,9 @@ type FormState = {
   rules: string;
   rules_title: string;
   website: string;
+  website_label: string;
   materials_url: string;
+  materials_label: string;
   contacts: string;
   contacts_title: string;
   icon: string;
@@ -55,7 +57,9 @@ const empty: FormState = {
   rules: "",
   rules_title: "Regras e condições",
   website: "",
+  website_label: "Visitar site",
   materials_url: "",
+  materials_label: "Materiais e passo a passo",
   contacts: "",
   contacts_title: "Canais de contato",
   icon: "Gift",
@@ -120,7 +124,9 @@ function BenefitForm() {
         rules: data.rules,
         rules_title: data.rules_title || "Regras e condições",
         website: data.website ?? "",
+        website_label: data.website_label || "Visitar site",
         materials_url: data.materials_url ?? "",
+        materials_label: data.materials_label || "Materiais e passo a passo",
         contacts: data.contacts,
         contacts_title: data.contacts_title || "Canais de contato",
         icon: data.icon,
@@ -159,7 +165,9 @@ function BenefitForm() {
       rules: form.rules.trim(),
       rules_title: form.rules_title.trim(),
       website: form.website.trim() || null,
+      website_label: form.website_label.trim() || "Visitar site",
       materials_url: form.materials_url.trim() || null,
+      materials_label: form.materials_label.trim() || "Materiais e passo a passo",
       contacts: form.contacts.trim(),
       contacts_title: form.contacts_title.trim(),
       icon: form.icon,
@@ -399,12 +407,30 @@ function BenefitForm() {
               />
             </div>
             <div className="grid gap-2">
+              <Label htmlFor="website_label">Texto do link do site</Label>
+              <Input
+                id="website_label"
+                placeholder="Visitar site"
+                value={form.website_label}
+                onChange={(event) => update("website_label", event.target.value)}
+              />
+            </div>
+            <div className="grid gap-2">
               <Label htmlFor="materials">Materiais / passo a passo (opcional)</Label>
               <Input
                 id="materials"
                 placeholder="https://"
                 value={form.materials_url}
                 onChange={(event) => update("materials_url", event.target.value)}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="materials_label">Texto do link de materiais</Label>
+              <Input
+                id="materials_label"
+                placeholder="Materiais e passo a passo"
+                value={form.materials_label}
+                onChange={(event) => update("materials_label", event.target.value)}
               />
             </div>
           </section>

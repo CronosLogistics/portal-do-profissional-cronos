@@ -147,7 +147,7 @@ function BenefitPage() {
                       rel="noreferrer noopener"
                       className="text-muted-foreground hover:text-foreground hover:underline"
                     >
-                      {benefit.website.replace(/^https?:\/\//, "")}
+                      {benefit.website_label || "Visitar site"}
                     </a>
                   </li>
                 ) : null}
@@ -160,7 +160,7 @@ function BenefitPage() {
                       rel="noreferrer noopener"
                       className="text-muted-foreground hover:text-foreground hover:underline"
                     >
-                      Materiais e passo a passo
+                      {benefit.materials_label || "Materiais e passo a passo"}
                     </a>
                   </li>
                 ) : null}

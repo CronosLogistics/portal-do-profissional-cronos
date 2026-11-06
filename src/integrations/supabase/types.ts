@@ -281,6 +281,7 @@ export type Database = {
           intro: string
           intro_title: string
           is_active: boolean
+          materials_label: string
           materials_url: string | null
           needs_content: boolean
           rules: string
@@ -293,6 +294,7 @@ export type Database = {
           values_info: string
           values_title: string
           website: string | null
+          website_label: string
         }
         Insert: {
           contacts?: string
@@ -305,6 +307,7 @@ export type Database = {
           intro?: string
           intro_title?: string
           is_active?: boolean
+          materials_label?: string
           materials_url?: string | null
           needs_content?: boolean
           rules?: string
@@ -317,6 +320,7 @@ export type Database = {
           values_info?: string
           values_title?: string
           website?: string | null
+          website_label?: string
         }
         Update: {
           contacts?: string
@@ -329,6 +333,7 @@ export type Database = {
           intro?: string
           intro_title?: string
           is_active?: boolean
+          materials_label?: string
           materials_url?: string | null
           needs_content?: boolean
           rules?: string
@@ -341,6 +346,7 @@ export type Database = {
           values_info?: string
           values_title?: string
           website?: string | null
+          website_label?: string
         }
         Relationships: []
       }
@@ -920,6 +926,7 @@ export type Database = {
           summary: string
           updated_at: string
           website: string | null
+          website_label: string
           whatsapp: string | null
         }
         Insert: {
@@ -942,6 +949,7 @@ export type Database = {
           summary?: string
           updated_at?: string
           website?: string | null
+          website_label?: string
           whatsapp?: string | null
         }
         Update: {
@@ -964,6 +972,7 @@ export type Database = {
           summary?: string
           updated_at?: string
           website?: string | null
+          website_label?: string
           whatsapp?: string | null
         }
         Relationships: [
@@ -1222,6 +1231,7 @@ export type Database = {
           icon: string
           id: string
           is_active: boolean
+          materials_label: string
           materials_url: string | null
           needs_content: boolean
           rules: string
@@ -1232,6 +1242,7 @@ export type Database = {
           title: string
           updated_at: string
           website: string | null
+          website_label: string
         }
         Insert: {
           contacts?: string
@@ -1244,6 +1255,7 @@ export type Database = {
           icon?: string
           id?: string
           is_active?: boolean
+          materials_label?: string
           materials_url?: string | null
           needs_content?: boolean
           rules?: string
@@ -1254,6 +1266,7 @@ export type Database = {
           title: string
           updated_at?: string
           website?: string | null
+          website_label?: string
         }
         Update: {
           contacts?: string
@@ -1266,6 +1279,7 @@ export type Database = {
           icon?: string
           id?: string
           is_active?: boolean
+          materials_label?: string
           materials_url?: string | null
           needs_content?: boolean
           rules?: string
@@ -1276,6 +1290,7 @@ export type Database = {
           title?: string
           updated_at?: string
           website?: string | null
+          website_label?: string
         }
         Relationships: []
       }

@@ -16,6 +16,7 @@ export type PublicPartner = {
   rules: string;
   address: string | null;
   website: string | null;
+  website_label: string;
   instagram: string | null;
   whatsapp: string | null;
   logo_url: string | null;
@@ -35,7 +36,7 @@ export type PublicAttachment = {
 };
 
 const PUBLIC_COLUMNS =
-  "id, slug, name, category_slug, summary, benefit_description, discount, how_to_use, rules, address, website, instagram, whatsapp, logo_url, is_featured, created_at, all_offices, partner_offices(office_id), partner_categories!inner(name, icon, is_active)";
+  "id, slug, name, category_slug, summary, benefit_description, discount, how_to_use, rules, address, website, website_label, instagram, whatsapp, logo_url, is_featured, created_at, all_offices, partner_offices(office_id), partner_categories!inner(name, icon, is_active)";
 
 
 type Row = Record<string, unknown> & {

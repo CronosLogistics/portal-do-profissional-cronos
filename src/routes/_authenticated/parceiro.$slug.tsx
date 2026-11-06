@@ -149,7 +149,7 @@ function PartnerPage() {
                       rel="noreferrer noopener"
                       className="text-muted-foreground hover:text-foreground hover:underline"
                     >
-                      {partner.website.replace(/^https?:\/\//, "")}
+                      {partner.website_label || "Visitar site"}
                     </a>
                   </li>
                 ) : null}

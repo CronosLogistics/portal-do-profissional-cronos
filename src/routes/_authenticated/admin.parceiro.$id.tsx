@@ -25,6 +25,7 @@ type FormState = {
   rules: string;
   address: string;
   website: string;
+  website_label: string;
   instagram: string;
   whatsapp: string;
   logo_url: string;
@@ -45,6 +46,7 @@ const empty: FormState = {
   rules: "",
   address: "",
   website: "",
+  website_label: "Visitar site",
   instagram: "",
   whatsapp: "",
   logo_url: "",
@@ -120,6 +122,7 @@ function PartnerForm() {
         rules: data.rules ?? "",
         address: data.address ?? "",
         website: data.website ?? "",
+        website_label: data.website_label || "Visitar site",
         instagram: data.instagram ?? "",
         whatsapp: data.whatsapp ?? "",
         logo_url: data.logo_url ?? "",
@@ -168,6 +171,7 @@ function PartnerForm() {
       rules: form.rules.trim(),
       address: form.address.trim() || null,
       website: form.website.trim() || null,
+      website_label: form.website_label.trim() || "Visitar site",
       instagram: form.instagram.trim() || null,
       whatsapp: form.whatsapp.trim() || null,
       logo_url: form.logo_url.trim() || null,
@@ -376,6 +380,15 @@ function PartnerForm() {
                 placeholder="https://"
                 value={form.website}
                 onChange={(event) => update("website", event.target.value)}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="website_label">Texto do link do site</Label>
+              <Input
+                id="website_label"
+                placeholder="Visitar site"
+                value={form.website_label}
+                onChange={(event) => update("website_label", event.target.value)}
               />
             </div>
             <div className="grid gap-2">

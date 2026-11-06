@@ -103,8 +103,8 @@ function ProgramPage() {
           {program.rules ? <Block title={program.rules_title || "Regras"}>{program.rules}</Block> : null}
           {program.contacts ? <Block title={program.contacts_title || "Contato"}>{program.contacts}</Block> : null}
           {(program.website || program.materials_url) && <section className="flex flex-wrap gap-3">
-            {program.website && linkPermitido(program.website) && <Button asChild variant="outline"><a href={program.website} target="_blank" rel="noopener noreferrer"><Globe />Visitar site</a></Button>}
-            {program.materials_url && linkPermitido(program.materials_url) && <Button asChild variant="outline"><a href={program.materials_url} target="_blank" rel="noopener noreferrer"><FileText />Materiais / passo a passo</a></Button>}
+            {program.website && linkPermitido(program.website) && <Button asChild variant="outline"><a href={program.website} target="_blank" rel="noopener noreferrer"><Globe />{program.website_label || "Visitar site"}</a></Button>}
+            {program.materials_url && linkPermitido(program.materials_url) && <Button asChild variant="outline"><a href={program.materials_url} target="_blank" rel="noopener noreferrer"><FileText />{program.materials_label || "Materiais / passo a passo"}</a></Button>}
           </section>}
         </div>
       </main>

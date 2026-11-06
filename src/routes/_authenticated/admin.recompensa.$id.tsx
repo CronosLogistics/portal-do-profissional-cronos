@@ -25,7 +25,9 @@ type FormState = {
   contacts: string;
   contacts_title: string;
   website: string;
+  website_label: string;
   materials_url: string;
+  materials_label: string;
   icon: string;
   needs_content: boolean;
   sort_order: number;
@@ -45,7 +47,9 @@ const empty: FormState = {
   contacts: "",
   contacts_title: "Contato",
   website: "",
+  website_label: "Visitar site",
   materials_url: "",
+  materials_label: "Materiais / passo a passo",
   icon: "Trophy",
   needs_content: false,
   sort_order: 99,
@@ -102,7 +106,9 @@ function ProgramForm() {
         rules: data.rules,
         rules_title: data.rules_title || "Regras",
         website: data.website ?? "",
+        website_label: data.website_label || "Visitar site",
         materials_url: data.materials_url ?? "",
+        materials_label: data.materials_label || "Materiais / passo a passo",
         contacts: data.contacts,
         contacts_title: data.contacts_title || "Contato",
         icon: data.icon,
@@ -133,7 +139,9 @@ function ProgramForm() {
       rules: form.rules.trim(),
       rules_title: form.rules_title.trim(),
       website: form.website.trim() || null,
+      website_label: form.website_label.trim() || "Visitar site",
       materials_url: form.materials_url.trim() || null,
+      materials_label: form.materials_label.trim() || "Materiais / passo a passo",
       contacts: form.contacts.trim(),
       contacts_title: form.contacts_title.trim(),
       icon: form.icon,
@@ -262,8 +270,22 @@ function ProgramForm() {
           </section>
 
           <section className="glass-card grid gap-4 rounded-2xl p-6 sm:grid-cols-2">
-            <div className="grid gap-2"><Label htmlFor="website">Site (opcional)</Label><Input id="website" type="url" placeholder="https://" value={form.website} onChange={e => update("website", e.target.value)} /></div>
-            <div className="grid gap-2"><Label htmlFor="materials">Materiais / passo a passo (opcional)</Label><Input id="materials" type="url" placeholder="https://" value={form.materials_url} onChange={e => update("materials_url", e.target.value)} /></div>
+            <div className="grid gap-2">
+              <Label htmlFor="website">Site (opcional)</Label>
+              <Input id="website" type="url" placeholder="https://" value={form.website} onChange={e => update("website", e.target.value)} />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="website_label">Texto do botão do site</Label>
+              <Input id="website_label" placeholder="Visitar site" value={form.website_label} onChange={e => update("website_label", e.target.value)} />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="materials">Materiais / passo a passo (opcional)</Label>
+              <Input id="materials" type="url" placeholder="https://" value={form.materials_url} onChange={e => update("materials_url", e.target.value)} />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="materials_label">Texto do botão de materiais</Label>
+              <Input id="materials_label" placeholder="Materiais / passo a passo" value={form.materials_label} onChange={e => update("materials_label", e.target.value)} />
+            </div>
           </section>
 
           <section className="glass-card grid gap-4 rounded-2xl p-6">
