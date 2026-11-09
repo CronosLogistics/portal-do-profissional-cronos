@@ -1,3 +1,4 @@
+import { criarIdCliente } from "./client-id";
 import { z } from "zod";
 import { htmlComConteudo, limparTextoFormatado, textoPlano } from "./rich-text";
 
@@ -125,7 +126,7 @@ export function camposRegistro(
   };
 }
 
-export function perguntaPadrao(tipo: TipoPergunta = "texto", id = crypto.randomUUID()): PerguntaQuestionario {
+export function perguntaPadrao(tipo: TipoPergunta = "texto", id: string = criarIdCliente()): PerguntaQuestionario {
   if (tipo === "bloco") return { id, tipo, enunciado: "" };
   if (tipo === "radio" || tipo === "checkbox") return { id, tipo, enunciado: "", opcoes: ["", ""] };
   return { id, tipo: "texto", enunciado: "" };
