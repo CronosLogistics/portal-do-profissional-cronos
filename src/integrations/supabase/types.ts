@@ -1538,6 +1538,7 @@ export type Database = {
       confirmar_leitura_aviso: { Args: { _aviso_id: string }; Returns: string }
       contar_nao_lidos: { Args: never; Returns: number }
       contar_notificacoes: { Args: never; Returns: number }
+      contar_questionarios_pendentes: { Args: never; Returns: number }
       criar_questionario: {
         Args: {
           _anonimo: boolean
@@ -1835,6 +1836,10 @@ export type Database = {
       usuario_tem_permissao: {
         Args: { _permissao: string; _user_id: string }
         Returns: boolean
+      }
+      validar_perguntas_questionario: {
+        Args: { _perguntas: Json }
+        Returns: undefined
       }
     }
     Enums: {

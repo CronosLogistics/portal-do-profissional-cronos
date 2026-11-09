@@ -66,8 +66,8 @@ describe("navegação do portal", () => {
       id: "formularios",
       label: "Formulários",
       children: [
-        { to: "/formularios-internos", label: "Formulários Internos" },
-        { to: "/formularios", label: "Formulários SharePoint" },
+        { to: "/formularios-internos", label: "Pesquisas" },
+        { to: "/formularios", label: "Central de Formulários Internos" },
       ],
     });
     expect(nav.some((entry) => entry.type === "link" && (entry.to === "/formularios" || entry.to === "/formularios-internos"))).toBe(false);
