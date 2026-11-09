@@ -1,8 +1,21 @@
 // @vitest-environment node
 import { afterEach, expect, it, vi } from "vitest";
 const fixture = vi.hoisted(() => ({
-  q: { id: "form", titulo: "Pesquisa", anonimo: true, perguntas: ["Primeira?", "Segunda?"], criador_id: "gestor", sharepoint_registrado: false, revisao: 1 },
-  resposta: { id: "resposta", perguntas: ["Primeira?", "Segunda?"], respostas: ["Um", "Dois"], respondente_id: null },
+  q: {
+    id: "form",
+    titulo: "Pesquisa",
+    anonimo: true,
+    perguntas: [{ id: "p1", tipo: "texto", enunciado: "Primeira?" }, { id: "p2", tipo: "texto", enunciado: "Segunda?" }],
+    criador_id: "gestor",
+    sharepoint_registrado: false,
+    revisao: 1,
+  },
+  resposta: {
+    id: "resposta",
+    perguntas: [{ id: "p1", tipo: "texto", enunciado: "Primeira?" }, { id: "p2", tipo: "texto", enunciado: "Segunda?" }],
+    respostas: ["Um", "Dois"],
+    respondente_id: null,
+  },
 }));
 vi.mock("@/integrations/supabase/client.server", () => ({ supabaseAdmin: {
   rpc: async (name: string) => ({ data: name === "reservar_registro_questionario" ? true : null, error: null }),

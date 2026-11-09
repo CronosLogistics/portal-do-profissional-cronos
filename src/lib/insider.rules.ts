@@ -1,5 +1,8 @@
 import { z } from "zod";
 import { format, isValid, parse } from "date-fns";
+import { limparTextoFormatado } from "./rich-text";
+
+const textoRico = (max: number) => z.string().max(max).transform(valor => limparTextoFormatado(valor));
 
 /** Accept older Brazilian date strings without changing saved editorial text. */
 export function dataEventoInput(valor: string): string {
@@ -25,9 +28,9 @@ export const bannersInsider = [
   ["bannerRodape", "Rodapé — Cronos Logistics"],
 ] as const;
 export const conteudoInsiderSchema = z.object({
-  abertura: z.string().max(20000), antesEventos: z.string().max(10000), antesAniversarios: z.string().max(10000), antesTempoCasa: z.string().max(10000), encerramento: z.string().max(10000), bannerMes: caminho,
+  abertura: textoRico(20000), antesEventos: textoRico(10000), antesAniversarios: textoRico(10000), antesTempoCasa: textoRico(10000), encerramento: textoRico(10000), bannerMes: caminho,
   bannerCabecalho: caminho.optional(), bannerAniversariantes: caminho.optional(), bannerTempoCasa: caminho.optional(), bannerAssinatura: caminho.optional(), bannerRodape: caminho.optional(),
-  eventos: z.array(z.object({ id: z.string().max(80), titulo: z.string().max(200), data: z.string().max(100), descricao: z.string().max(5000), imagem: caminho })).max(30),
+  eventos: z.array(z.object({ id: z.string().max(80), titulo: z.string().max(200), data: z.string().max(100), descricao: textoRico(5000), imagem: caminho })).max(30),
   aniversariantes: z.array(pessoaInsiderSchema).max(1000), tempoCasa: z.array(pessoaInsiderSchema).max(1000),
 });
 export type ConteudoInsider = z.infer<typeof conteudoInsiderSchema>;

@@ -1,14 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
 import { imagensInsider, insiderKey, lerEdicaoPorAviso } from "@/lib/insider-client";
 import { formatarDataEvento, nomeMes, type ConteudoInsider, type PessoaInsider } from "@/lib/insider.rules";
+import { limparTextoFormatado, textoParaEditor } from "@/lib/rich-text";
 import banner from "@/assets/banner_cronos_insider.webp.asset.json";
 import aniv from "@/assets/aniv_cronos_insider.webp.asset.json";
 import tempo from "@/assets/tempo_casa_cronos_insider.webp.asset.json";
 import assinatura from "@/assets/ass_cronos_insider.webp.asset.json";
 import rodape from "@/assets/rodape_cronos_insider.webp.asset.json";
 
-function Texto({ value }: { value: string }) {
-  return value ? <p className="whitespace-pre-line break-words px-4 py-5 text-base leading-relaxed sm:px-10">{value}</p> : null;
+function Texto({ value, className = "px-4 py-5 text-base leading-relaxed sm:px-10" }: { value: string; className?: string }) {
+  if (!value) return null;
+  return <div className={`aviso-html break-words ${className}`} dangerouslySetInnerHTML={{ __html: limparTextoFormatado(textoParaEditor(value)) }} />;
 }
 function Pessoas({ pessoas, urls, mesAno }: { pessoas: PessoaInsider[]; urls: Record<string, string>; mesAno: string }) {
   const mesNome = nomeMes(mesAno).split(" de ")[0];
@@ -34,7 +36,7 @@ export function InsiderJornal({ conteudo, mesAno }: { conteudo: ConteudoInsider;
     <Texto value={conteudo.antesEventos} />
     <div className="grid grid-cols-1 gap-6 px-4 py-5 sm:grid-cols-3 sm:px-10">{conteudo.eventos.map(e => <article key={e.id} className="min-w-0 text-center">
       {e.imagem && urls[e.imagem] && <img src={urls[e.imagem]} alt={e.titulo} className="mx-auto mb-3 aspect-square w-full max-w-44 rounded-md object-contain" />}
-      <h3 className="break-words font-bold">{e.titulo}</h3><p className="mt-2 break-words text-sm font-bold text-accent">{formatarDataEvento(e.data)}</p><p className="whitespace-pre-line break-words text-sm">{e.descricao}</p>
+      <h3 className="break-words font-bold">{e.titulo}</h3><p className="mt-2 break-words text-sm font-bold text-accent">{formatarDataEvento(e.data)}</p><Texto value={e.descricao} className="text-sm" />
     </article>)}</div>
     <img src={urls[conteudo.bannerAniversariantes ?? ""] ?? aniv.url} alt="Aniversariantes" className="h-auto w-full px-4 sm:px-10" />
     <Texto value={conteudo.antesAniversarios} /><Pessoas pessoas={conteudo.aniversariantes} urls={urls} mesAno={mesAno} />

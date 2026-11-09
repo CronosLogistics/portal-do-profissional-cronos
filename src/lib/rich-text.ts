@@ -17,3 +17,12 @@ export function textoParaEditor(texto: string) {
 export function linkPermitido(url: string) {
   try { return ["https:", "http:", "mailto:"].includes(new URL(url.trim()).protocol); } catch { return false; }
 }
+
+/** Plain text for exports/SharePoint; strips allowlisted markup after sanitize. */
+export function textoPlano(html: string) {
+  return sanitizeHtml(limparTextoFormatado(html), { allowedTags: [], allowedAttributes: {} }).replace(/\s+/g, " ").trim();
+}
+
+export function htmlComConteudo(html: string) {
+  return Boolean(textoPlano(html));
+}

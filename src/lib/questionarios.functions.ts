@@ -1,11 +1,15 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { novoQuestionarioSchema, editarQuestionarioSchema, respostaQuestionarioSchema, idQuestionarioSchema, type Questionario, type GestaoQuestionario } from "./questionarios.rules";
+import { novoQuestionarioSchema, editarQuestionarioSchema, respostaQuestionarioSchema, idQuestionarioSchema, normalizarPerguntas, type Questionario, type GestaoQuestionario, type PerguntaQuestionario } from "./questionarios.rules";
+
+function projetarQuestionario(raw: Questionario): Questionario {
+  return { ...raw, perguntas: normalizarPerguntas(raw.perguntas) };
+}
 
 export const listarQuestionarios = createServerFn({ method: "GET" }).middleware([requireSupabaseAuth]).handler(async ({ context }): Promise<Questionario[]> => {
   const result = await context.supabase.rpc("listar_questionarios");
   if (result.error) throw new Error("Não foi possível consultar os formulários.");
-  return result.data as unknown as Questionario[];
+  return (result.data as unknown as Questionario[]).map(projetarQuestionario);
 });
 export const criarQuestionario = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth]).inputValidator(input => novoQuestionarioSchema.parse(input)).handler(async ({ data, context }) => {
   const result = await context.supabase.rpc("criar_questionario", { _titulo: data.titulo, _descricao: data.descricao, _anonimo: data.anonimo, _perguntas: data.perguntas });
@@ -24,7 +28,11 @@ export const responderQuestionario = createServerFn({ method: "POST" }).middlewa
 export const consultarGestaoQuestionario = createServerFn({ method: "GET" }).middleware([requireSupabaseAuth]).inputValidator(input => idQuestionarioSchema.parse(input)).handler(async ({ data, context }): Promise<GestaoQuestionario> => {
   const result = await context.supabase.rpc("gestao_questionario", { _id: data.id });
   if (result.error) throw new Error("Não foi possível consultar as respostas. Confira sua permissão.");
-  return result.data as unknown as GestaoQuestionario;
+  const gestao = result.data as unknown as GestaoQuestionario;
+  return {
+    ...gestao,
+    respostas: gestao.respostas.map(r => ({ ...r, perguntas: normalizarPerguntas(r.perguntas as unknown as PerguntaQuestionario[]) })),
+  };
 });
 export const reenviarQuestionarioSharePoint = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth]).inputValidator(input => idQuestionarioSchema.parse(input)).handler(async ({ data, context }) => {
   const acesso = await context.supabase.rpc("gestao_questionario", { _id: data.id });

@@ -1,4 +1,4 @@
-import { camposRegistro } from "./questionarios.rules";
+import { camposRegistro, normalizarPerguntas, type RespostaItem } from "./questionarios.rules";
 
 const SITE = "cronoslogisticscombr.sharepoint.com,dc6d3de3-d3ee-4d0d-b0ba-b86afc2f715c,6caaae7c-2a4d-4322-82a8-354fe45cfde2";
 const LISTA = "235c52ca-69c5-43e8-a5e8-0f7d4e36275a";
@@ -26,7 +26,7 @@ export async function registrarQuestionarioSharePoint(id: string, respostaId?: s
   try {
   const { data: q, error } = await db.from("questionarios_internos").select("id,titulo,anonimo,perguntas,criador_id,sharepoint_registrado,revisao").eq("id", id).single();
   if (error || !q) throw new Error("Questionário não encontrado.");
-  const perguntas = q.perguntas as string[];
+  const perguntas = normalizarPerguntas(q.perguntas);
   const criador = await db.from("profiles").select("full_name").eq("id", q.criador_id).single();
   if (!q.sharepoint_registrado) {
     await registrar(`Q:${id}`, camposRegistro(q, perguntas, [], criador.data?.full_name ?? "", ""));
@@ -40,8 +40,7 @@ export async function registrarQuestionarioSharePoint(id: string, respostaId?: s
   for (const resposta of respostas ?? []) {
     let nome = "";
     if (!q.anonimo && resposta.respondente_id) { const profile = await db.from("profiles").select("full_name,email").eq("id", resposta.respondente_id).single(); nome = `${profile.data?.full_name ?? ""} (${profile.data?.email ?? ""})`; }
-    const textos = resposta.respostas as string[];
-    await registrar(`R:${id}:${resposta.id}`, camposRegistro(q, (resposta.perguntas ?? perguntas) as string[], textos, criador.data?.full_name ?? "", nome));
+    await registrar(`R:${id}:${resposta.id}`, camposRegistro(q, normalizarPerguntas(resposta.perguntas ?? perguntas), resposta.respostas as RespostaItem[], criador.data?.full_name ?? "", nome));
     const updated = await db.from("questionarios_respostas").update({ sharepoint_registrado: true }).eq("id", resposta.id);
     if (updated.error) throw new Error("Não foi possível confirmar o registro da resposta.");
   }
