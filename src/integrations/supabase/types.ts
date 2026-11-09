@@ -1538,7 +1538,6 @@ export type Database = {
       confirmar_leitura_aviso: { Args: { _aviso_id: string }; Returns: string }
       contar_nao_lidos: { Args: never; Returns: number }
       contar_notificacoes: { Args: never; Returns: number }
-      contar_questionarios_pendentes: { Args: never; Returns: number }
       criar_questionario: {
         Args: {
           _anonimo: boolean
