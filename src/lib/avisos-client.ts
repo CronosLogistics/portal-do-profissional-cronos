@@ -15,7 +15,14 @@ export type AvisoRecebido = {
   confirmado_em?: string | null;
 };
 
-export type TipoAviso = "comum" | "insider" | "compilado" | "mural";
+export type TipoAviso = "comum" | "insider" | "compilado" | "mural" | "questionario";
+
+/** Destino ao abrir um item do feed unificado de notificações. */
+export function destinoNotificacao(a: { id: string; tipo: TipoAviso }): { to: "/mural"; search: { post: string } } | { to: "/formularios-internos"; search: { pesquisa: string } } | { to: "/avisos"; search: { aviso: string } } {
+  if (a.tipo === "mural") return { to: "/mural", search: { post: a.id } };
+  if (a.tipo === "questionario") return { to: "/formularios-internos", search: { pesquisa: a.id } };
+  return { to: "/avisos", search: { aviso: a.id } };
+}
 
 export type AvisoEnviado = {
   departamentos_ids: string[];

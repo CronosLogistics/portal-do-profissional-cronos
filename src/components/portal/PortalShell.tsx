@@ -5,6 +5,7 @@ import { TourBoasVindas } from "@/components/portal/TourBoasVindas";
 import { AvisosBell } from "@/components/avisos/AvisosBell";
 import { useAvisosAoVivo, useNaoLidos } from "@/hooks/useAvisos";
 import { useAlertaPendenciasLogin, useTotalPendencias } from "@/hooks/usePendencias";
+import { useQuestionariosPendentes } from "@/hooks/useQuestionarios";
 import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,11 @@ import { useCurrentUser, useSignOut } from "@/hooks/useAuth";
 import { principalNav, visibleModules, type PortalModule, type PortalNavGroup } from "@/lib/portal-modules";
 import { useOffice } from "@/components/clube/OfficeContext";
 import logo from "@/assets/cronos-full-logo.png.asset.json";
+
+function ContadorNav({ valor }: { valor: number }) {
+  if (valor <= 0) return null;
+  return <span className="portal-count-badge portal-nav-badge">{valor > 99 ? "99+" : valor}</span>;
+}
 
 const moduleIcons: Record<PortalModule["to"], LucideIcon> = {
   "/avisos": Megaphone,
@@ -47,6 +53,7 @@ function SidebarBranch({
   onOpenChange,
   iconOnly,
   onNavigate,
+  badge,
   children,
 }: {
   label: string;
@@ -58,6 +65,7 @@ function SidebarBranch({
   onOpenChange: (open: boolean) => void;
   iconOnly: boolean;
   onNavigate: () => void;
+  badge?: number;
   children: ReactNode;
 }) {
   if (iconOnly) {
@@ -65,6 +73,7 @@ function SidebarBranch({
       <Button asChild variant="ghost" className={`portal-nav-item ${sectionActive ? "is-active" : ""}`}>
         <Link to={parentTo} title={label} onClick={onNavigate}>
           <Icon />
+          <ContadorNav valor={badge ?? 0} />
         </Link>
       </Button>
     );
@@ -80,6 +89,7 @@ function SidebarBranch({
       >
         <Icon />
         <span className="sidebar-label">{label}</span>
+        <ContadorNav valor={badge ?? 0} />
         <ChevronRight className="portal-nav-chevron-icon" aria-hidden="true" />
       </button>
       <div className="portal-submenu" inert={!open} aria-hidden={!open}>
@@ -99,6 +109,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const signOut = useSignOut();
   const naoLidos = useNaoLidos().data ?? 0;
+  const pesquisasPendentes = useQuestionariosPendentes(me.data?.id).data ?? 0;
   const { total: totalPendencias, pronto: pendenciasProntas } = useTotalPendencias(me.data?.id);
   useAlertaPendenciasLogin(me.data?.id, totalPendencias, pendenciasProntas);
   useAvisosAoVivo(me.data?.id, naoLidos);
@@ -139,8 +150,9 @@ export function PortalShell({ children }: { children: ReactNode }) {
                   <Link to={entry.to} title={entry.label} onClick={closeMobile}>
                     <Icon />
                     <span className="sidebar-label">{entry.label}</span>
-                    {entry.to === "/avisos" && naoLidos > 0 && <span className="portal-count-badge portal-nav-badge">{naoLidos > 99 ? "99+" : naoLidos}</span>}
-                    {entry.to === "/pendencias" && totalPendencias > 0 && <span className="portal-count-badge portal-nav-badge">{totalPendencias > 99 ? "99+" : totalPendencias}</span>}
+                    {entry.to === "/avisos" && <ContadorNav valor={naoLidos} />}
+                    {entry.to === "/pendencias" && <ContadorNav valor={totalPendencias} />}
+                    {entry.to === "/formularios-internos" && <ContadorNav valor={pesquisasPendentes} />}
                   </Link>
                 </Button>
               );
@@ -160,6 +172,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
                 onOpenChange={(open) => setOpenMenus((state) => ({ ...state, [entry.id]: open }))}
                 iconOnly={iconOnly}
                 onNavigate={closeMobile}
+                badge={entry.id === "formularios" && (iconOnly || !openMenus.formularios) ? pesquisasPendentes : 0}
               >
                 {entry.children.map((child) => (
                   <Link
@@ -170,7 +183,8 @@ export function PortalShell({ children }: { children: ReactNode }) {
                     onClick={closeMobile}
                   >
                     <span className="min-w-0">{child.label}</span>
-                    {child.to === "/avisos" && naoLidos > 0 && <span className="portal-count-badge portal-nav-badge">{naoLidos > 99 ? "99+" : naoLidos}</span>}
+                    {child.to === "/avisos" && <ContadorNav valor={naoLidos} />}
+                    {child.to === "/formularios-internos" && <ContadorNav valor={pesquisasPendentes} />}
                   </Link>
                 ))}
               </SidebarBranch>

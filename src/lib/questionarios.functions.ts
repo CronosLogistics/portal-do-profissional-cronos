@@ -11,6 +11,11 @@ export const listarQuestionarios = createServerFn({ method: "GET" }).middleware(
   if (result.error) throw new Error("Não foi possível consultar os formulários.");
   return (result.data as unknown as Questionario[]).map(projetarQuestionario);
 });
+export const contarQuestionariosPendentes = createServerFn({ method: "GET" }).middleware([requireSupabaseAuth]).handler(async ({ context }): Promise<number> => {
+  const result = await context.supabase.rpc("contar_questionarios_pendentes");
+  if (result.error) throw new Error("Não foi possível consultar as pesquisas pendentes.");
+  return Number(result.data ?? 0);
+});
 export const criarQuestionario = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth]).inputValidator(input => novoQuestionarioSchema.parse(input)).handler(async ({ data, context }) => {
   const result = await context.supabase.rpc("criar_questionario", { _titulo: data.titulo, _descricao: data.descricao, _anonimo: data.anonimo, _perguntas: data.perguntas });
   if (result.error || !result.data) throw new Error("Não foi possível criar o formulário. Confira sua permissão e os campos.");

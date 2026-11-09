@@ -14,7 +14,7 @@ import { AvisoLeitura, type AvisoExibido } from "@/components/avisos/AvisoLeitur
 import { AvisoForm } from "@/components/avisos/AvisoForm";
 import { AvisoAcompanhamento } from "@/components/avisos/AvisoAcompanhamento";
 import { InsiderEditor } from "@/components/avisos/InsiderEditor";
-import { arquivarAviso, avisosEnviados, avisosKey, cancelarAviso, listarAvisos, marcarTodosLidos, POR_PAGINA, type AvisoEnviado } from "@/lib/avisos-client";
+import { arquivarAviso, avisosEnviados, avisosKey, cancelarAviso, destinoNotificacao, listarAvisos, marcarTodosLidos, POR_PAGINA, type AvisoEnviado } from "@/lib/avisos-client";
 import { filtrarAvisosPorBusca, formatarDataBrasilia, statusAviso, type StatusAviso } from "@/lib/avisos-rules";
 
 export const Route = createFileRoute("/_authenticated/avisos")({
@@ -127,7 +127,7 @@ function Recebidos() {
         <ul className="grid gap-2">
           {avisosFiltrados.map((a) => (
             <li key={a.id}>
-              <Button type="button" variant="ghost" className={`aviso-item !h-auto w-full !flex-wrap !justify-start !whitespace-normal !text-left hover:!bg-muted hover:!text-foreground sm:!flex-nowrap ${a.lido ? "" : "is-unread"}`} onClick={() => a.tipo === "mural" ? void navigate({ to: "/mural", search: { post: a.id } }) : void navigate({ search: { aviso: a.id } })}>
+              <Button type="button" variant="ghost" className={`aviso-item !h-auto w-full !flex-wrap !justify-start !whitespace-normal !text-left hover:!bg-muted hover:!text-foreground sm:!flex-nowrap ${a.lido ? "" : "is-unread"}`} onClick={() => { const dest = destinoNotificacao(a); if (dest.to === "/avisos") void navigate({ search: dest.search }); else void navigate(dest); }}>
                 <span className="aviso-dot" aria-hidden="true" />
                 <span className="min-w-0 flex-1">
                   <span className="flex flex-wrap items-center gap-2">

@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { avisosKey, contarNaoLidos, listarAvisos } from "@/lib/avisos-client";
 import { tituloComContador } from "@/lib/avisos-rules";
+import { questionariosPendentesKey } from "@/hooks/useQuestionarios";
 
 export const naoLidosKey = [...avisosKey, "nao-lidos"] as const;
 
@@ -47,6 +48,19 @@ export function useAvisosAoVivo(meId: string | undefined, naoLidos: number) {
         const acessivel = await listarAvisos(true, 1, 0, false, novo.id).catch(() => []);
         if (!acessivel.length) return;
         toast(novo.titulo, { description: "Nova comemoração no mural", duration: 10_000, action: { label: "Abrir", onClick: () => void navigate({ to: "/mural", search: { post: novo.id } }) } });
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "questionarios_internos" }, async (payload) => {
+        void qc.invalidateQueries({ queryKey: avisosKey });
+        void qc.invalidateQueries({ queryKey: questionariosPendentesKey });
+        void qc.invalidateQueries({ queryKey: ["questionarios"] });
+        if (payload.eventType !== "INSERT") return;
+        const novo = payload.new as { id: string; titulo: string; criador_id: string; excluindo?: boolean };
+        if (novo.criador_id === meId || novo.excluindo) return;
+        toast(novo.titulo, {
+          description: "Nova pesquisa disponível",
+          duration: 10_000,
+          action: { label: "Responder", onClick: () => void navigate({ to: "/formularios-internos", search: { pesquisa: novo.id } }) },
+        });
       })
       .subscribe();
     return () => {

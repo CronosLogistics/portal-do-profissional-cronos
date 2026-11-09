@@ -13,6 +13,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { EditorTexto } from "@/components/portal/EditorTexto";
+import { avisosKey } from "@/lib/avisos-client";
 import { criarQuestionario, editarQuestionario, responderQuestionario } from "@/lib/questionarios.functions";
 import { criarIdCliente } from "@/lib/client-id";
 import {
@@ -62,6 +63,7 @@ export function QuestionarioModal({ questionario, edicao = false, onClose }: { q
       : criar({ data: dados }),
     onSuccess: async result => {
       await qc.invalidateQueries({ queryKey: ["questionarios"] });
+      await qc.invalidateQueries({ queryKey: avisosKey });
       toast.success(edicao ? "Formulário atualizado." : respondendo ? "Resposta salva." : "Formulário criado.");
       if (!result.registrado) toast.warning("Salvo no portal; registro no SharePoint pendente. A gestão pode reenviar.");
       onClose();

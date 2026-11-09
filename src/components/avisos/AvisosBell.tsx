@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { avisosKey, listarAvisos, marcarTodosLidos } from "@/lib/avisos-client";
+import { avisosKey, destinoNotificacao, listarAvisos, marcarTodosLidos } from "@/lib/avisos-client";
 import { formatarDataBrasilia } from "@/lib/avisos-rules";
 
 export function AvisosBell({ naoLidos }: { naoLidos: number }) {
@@ -46,8 +46,7 @@ export function AvisosBell({ naoLidos }: { naoLidos: number }) {
                 className={`aviso-bell-item ${a.lido ? "" : "is-unread"}`}
                 onClick={() => {
                   setOpen(false);
-                  if (a.tipo === "mural") void navigate({ to: "/mural", search: { post: a.id } });
-                  else void navigate({ to: "/avisos", search: { aviso: a.id } });
+                  void navigate(destinoNotificacao(a));
                 }}
               >
                 <span className="flex flex-wrap items-center gap-1.5">
