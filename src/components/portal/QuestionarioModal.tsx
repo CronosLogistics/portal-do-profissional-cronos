@@ -128,127 +128,129 @@ export function QuestionarioModal({ questionario, edicao = false, rascunho, onCl
   };
   return (
     <Dialog open onOpenChange={open => { if (!open && !salvar.isPending) onClose(); }}>
-      <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-xl">
-        <DialogHeader>
-          <DialogTitle>{edicao ? "Editar formulário interno" : questionario?.titulo ?? "Novo formulário interno"}</DialogTitle>
+      <DialogContent className="flex max-h-[min(92dvh,100svh)] w-[calc(100%-2rem)] max-w-2xl flex-col gap-4 overflow-hidden p-4 sm:p-6">
+        <DialogHeader className="shrink-0 pr-8">
+          <DialogTitle className="break-words">{edicao ? "Editar formulário interno" : questionario?.titulo ?? "Novo formulário interno"}</DialogTitle>
           <DialogDescription>{edicao ? "Respostas recebidas preservadas; anonimato mantido." : questionario ? questionario.anonimo ? "Resposta anônima" : "Resposta identificada" : "Cadastro de questionário"}</DialogDescription>
         </DialogHeader>
-        <form className="space-y-5" onSubmit={e => { e.preventDefault(); if (valido && !previa && !salvar.isPending) salvar.mutate(); }}>
-          {(respondendo && questionario) || previa ? (
-            <>
-              {previa && <div className="rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground">Pré-visualização: é assim que os profissionais verão o formulário <strong>{titulo || "Sem título"}</strong> ({anonimo ? "resposta anônima" : "resposta identificada"}). As respostas aqui não são enviadas.</div>}
-              <HtmlRico html={previa ? descricao : questionario?.descricao ?? ""} />
-              {(previa ? perguntas : questionario?.perguntas ?? []).map((p, i) => (
-                <div key={p.id} className="space-y-2">
-                  {p.tipo === "bloco" ? <HtmlRico html={p.enunciado} /> : (
-                    <>
-                      <Label htmlFor={`resposta-${i}`}>{i + 1}. {p.enunciado}</Label>
-                      {p.tipo === "texto" && (
-                        <Textarea id={`resposta-${i}`} required maxLength={5000} value={typeof respostas[i] === "string" ? respostas[i] as string : ""} disabled={salvar.isPending}
-                          onChange={e => setRespostas(values => values.map((v, n) => n === i ? e.target.value : v))} />
-                      )}
-                      {p.tipo === "radio" && (
-                        <RadioGroup value={typeof respostas[i] === "string" ? respostas[i] as string : ""} disabled={salvar.isPending}
-                          onValueChange={value => setRespostas(values => values.map((v, n) => n === i ? value : v))}>
-                          {p.opcoes.map(opcao => (
-                            <label key={opcao} className="flex items-center gap-2 text-sm">
-                              <RadioGroupItem value={opcao} id={`resposta-${i}-${opcao}`} />
-                              <span>{opcao}</span>
-                            </label>
-                          ))}
-                        </RadioGroup>
-                      )}
-                      {p.tipo === "checkbox" && (
-                        <div className="space-y-2">
-                          {p.opcoes.map(opcao => {
-                            const marcadas = Array.isArray(respostas[i]) ? respostas[i] as string[] : [];
-                            return (
-                              <label key={opcao} className="flex items-center gap-2 text-sm">
-                                <Checkbox checked={marcadas.includes(opcao)} disabled={salvar.isPending}
-                                  onCheckedChange={checked => setRespostas(values => values.map((v, n) => {
-                                    if (n !== i) return v;
-                                    const atuais = Array.isArray(v) ? v : [];
-                                    return checked ? [...atuais, opcao] : atuais.filter(x => x !== opcao);
-                                  }))} />
-                                <span>{opcao}</span>
+        <form className="flex min-h-0 min-w-0 flex-1 flex-col gap-4" onSubmit={e => { e.preventDefault(); if (valido && !previa && !salvar.isPending) salvar.mutate(); }}>
+          <div className="min-h-0 min-w-0 flex-1 space-y-5 overflow-y-auto overflow-x-hidden overscroll-contain pr-1">
+            {(respondendo && questionario) || previa ? (
+              <>
+                {previa && <div className="rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground">Pré-visualização: é assim que os profissionais verão o formulário <strong>{titulo || "Sem título"}</strong> ({anonimo ? "resposta anônima" : "resposta identificada"}). As respostas aqui não são enviadas.</div>}
+                <HtmlRico html={previa ? descricao : questionario?.descricao ?? ""} />
+                {(previa ? perguntas : questionario?.perguntas ?? []).map((p, i) => (
+                  <div key={p.id} className="min-w-0 space-y-2">
+                    {p.tipo === "bloco" ? <HtmlRico html={p.enunciado} /> : (
+                      <>
+                        <Label htmlFor={`resposta-${i}`} className="break-words">{i + 1}. {p.enunciado}</Label>
+                        {p.tipo === "texto" && (
+                          <Textarea id={`resposta-${i}`} required maxLength={5000} value={typeof respostas[i] === "string" ? respostas[i] as string : ""} disabled={salvar.isPending}
+                            onChange={e => setRespostas(values => values.map((v, n) => n === i ? e.target.value : v))} />
+                        )}
+                        {p.tipo === "radio" && (
+                          <RadioGroup value={typeof respostas[i] === "string" ? respostas[i] as string : ""} disabled={salvar.isPending}
+                            onValueChange={value => setRespostas(values => values.map((v, n) => n === i ? value : v))}>
+                            {p.opcoes.map(opcao => (
+                              <label key={opcao} className="flex min-w-0 items-center gap-2 text-sm">
+                                <RadioGroupItem value={opcao} id={`resposta-${i}-${opcao}`} />
+                                <span className="break-words">{opcao}</span>
                               </label>
-                            );
-                          })}
+                            ))}
+                          </RadioGroup>
+                        )}
+                        {p.tipo === "checkbox" && (
+                          <div className="space-y-2">
+                            {p.opcoes.map(opcao => {
+                              const marcadas = Array.isArray(respostas[i]) ? respostas[i] as string[] : [];
+                              return (
+                                <label key={opcao} className="flex min-w-0 items-center gap-2 text-sm">
+                                  <Checkbox checked={marcadas.includes(opcao)} disabled={salvar.isPending}
+                                    onCheckedChange={checked => setRespostas(values => values.map((v, n) => {
+                                      if (n !== i) return v;
+                                      const atuais = Array.isArray(v) ? v : [];
+                                      return checked ? [...atuais, opcao] : atuais.filter(x => x !== opcao);
+                                    }))} />
+                                  <span className="break-words">{opcao}</span>
+                                </label>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                ))}
+              </>
+            ) : (
+              <>
+                {criando && (
+                  <div className="rounded-md border border-dashed p-3">
+                    {!importando ? (
+                      <Button type="button" variant="outline" size="sm" onClick={() => setImportando(true)} disabled={salvar.isPending}><FileUp />Importar do Microsoft Forms</Button>
+                    ) : (
+                      <div className="space-y-3">
+                        <p className="text-sm text-muted-foreground">No Forms, use <strong>⋯ &gt; Imprimir formulário &gt; Salvar como PDF</strong> e envie o arquivo, ou cole o texto do formulário. As perguntas atuais serão substituídas.</p>
+                        <div className="space-y-1"><Label htmlFor="importar-pdf">Arquivo PDF</Label><Input id="importar-pdf" type="file" accept="application/pdf" disabled={leitura.isPending} onChange={e => setArquivo(e.target.files?.[0] ?? null)} /></div>
+                        <div className="space-y-1"><Label htmlFor="importar-texto">Ou cole o texto</Label><Textarea id="importar-texto" rows={4} maxLength={60000} value={textoImportacao} disabled={leitura.isPending} onChange={e => setTextoImportacao(e.target.value)} /></div>
+                        <div className="flex flex-wrap justify-end gap-2">
+                          <Button type="button" variant="ghost" size="sm" disabled={leitura.isPending} onClick={() => setImportando(false)}>Cancelar</Button>
+                          <Button type="button" size="sm" disabled={leitura.isPending || (!arquivo && !textoImportacao.trim())} onClick={() => leitura.mutate()}><Sparkles />{leitura.isPending ? "Lendo formulário…" : "Ler perguntas"}</Button>
                         </div>
-                      )}
-                    </>
-                  )}
-                </div>
-              ))}
-            </>
-          ) : (
-            <>
-              {criando && (
-                <div className="rounded-md border border-dashed p-3">
-                  {!importando ? (
-                    <Button type="button" variant="outline" size="sm" onClick={() => setImportando(true)} disabled={salvar.isPending}><FileUp />Importar do Microsoft Forms</Button>
-                  ) : (
-                    <div className="space-y-3">
-                      <p className="text-sm text-muted-foreground">No Forms, use <strong>⋯ &gt; Imprimir formulário &gt; Salvar como PDF</strong> e envie o arquivo, ou cole o texto do formulário. As perguntas atuais serão substituídas.</p>
-                      <div className="space-y-1"><Label htmlFor="importar-pdf">Arquivo PDF</Label><Input id="importar-pdf" type="file" accept="application/pdf" disabled={leitura.isPending} onChange={e => setArquivo(e.target.files?.[0] ?? null)} /></div>
-                      <div className="space-y-1"><Label htmlFor="importar-texto">Ou cole o texto</Label><Textarea id="importar-texto" rows={4} maxLength={60000} value={textoImportacao} disabled={leitura.isPending} onChange={e => setTextoImportacao(e.target.value)} /></div>
-                      <div className="flex justify-end gap-2">
-                        <Button type="button" variant="ghost" size="sm" disabled={leitura.isPending} onClick={() => setImportando(false)}>Cancelar</Button>
-                        <Button type="button" size="sm" disabled={leitura.isPending || (!arquivo && !textoImportacao.trim())} onClick={() => leitura.mutate()}><Sparkles />{leitura.isPending ? "Lendo formulário…" : "Ler perguntas"}</Button>
+                      </div>
+                    )}
+                  </div>
+                )}
+                <div className="space-y-2"><Label htmlFor="questionario-titulo">Título</Label><Input id="questionario-titulo" required maxLength={200} value={titulo} onChange={e => setTitulo(e.target.value)} disabled={salvar.isPending} /></div>
+                <div className="space-y-2"><Label>Descrição (opcional)</Label><EditorTexto key={`desc-${versaoEditor}`} id="questionario-descricao" label="Descrição" initial={descricao} onChange={setDescricao} /></div>
+                <div className="flex items-center justify-between gap-3"><Label htmlFor="questionario-anonimo">Formulário anônimo</Label><Switch id="questionario-anonimo" checked={anonimo} onCheckedChange={setAnonimo} disabled={salvar.isPending || edicao} /></div>
+                {perguntas.map((p, i) => (
+                  <div key={p.id} className="min-w-0 space-y-3 rounded-md border p-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <Label>{p.tipo === "bloco" ? `Bloco de texto ${i + 1}` : `${i + 1}ª pergunta`}</Label>
+                      <div className="flex flex-wrap items-center gap-1">
+                        <Select value={p.tipo} onValueChange={v => trocarTipo(i, v as TipoPergunta)} disabled={salvar.isPending}>
+                          <SelectTrigger className="h-8 w-[10.5rem] max-w-full" aria-label={`Tipo do item ${i + 1}`}><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="texto">Texto aberto</SelectItem>
+                            <SelectItem value="radio">Escolha única</SelectItem>
+                            <SelectItem value="checkbox">Múltipla escolha</SelectItem>
+                            <SelectItem value="bloco">Bloco de texto</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        {perguntas.length > 1 && <Button type="button" size="icon" variant="ghost" title="Remover" aria-label={`Remover item ${i + 1}`} disabled={salvar.isPending} onClick={() => setPerguntas(values => values.filter((_, n) => n !== i))}><Trash2 /></Button>}
+                        {i === perguntas.length - 1 && <Button type="button" size="icon" variant="outline" title="Adicionar pergunta" aria-label="Adicionar pergunta" disabled={salvar.isPending || perguntas.length >= 30} onClick={() => setPerguntas(values => [...values, novaPergunta()])}><Plus /></Button>}
                       </div>
                     </div>
-                  )}
-                </div>
-              )}
-              <div className="space-y-2"><Label htmlFor="questionario-titulo">Título</Label><Input id="questionario-titulo" required maxLength={200} value={titulo} onChange={e => setTitulo(e.target.value)} disabled={salvar.isPending} /></div>
-              <div className="space-y-2"><Label>Descrição (opcional)</Label><EditorTexto key={`desc-${versaoEditor}`} id="questionario-descricao" label="Descrição" initial={descricao} onChange={setDescricao} /></div>
-              <div className="flex items-center justify-between gap-3"><Label htmlFor="questionario-anonimo">Formulário anônimo</Label><Switch id="questionario-anonimo" checked={anonimo} onCheckedChange={setAnonimo} disabled={salvar.isPending || edicao} /></div>
-              {perguntas.map((p, i) => (
-                <div key={p.id} className="space-y-3 rounded-md border p-3">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <Label>{p.tipo === "bloco" ? `Bloco de texto ${i + 1}` : `${i + 1}ª pergunta`}</Label>
-                    <div className="flex flex-wrap items-center gap-1">
-                      <Select value={p.tipo} onValueChange={v => trocarTipo(i, v as TipoPergunta)} disabled={salvar.isPending}>
-                        <SelectTrigger className="h-8 w-[10.5rem]" aria-label={`Tipo do item ${i + 1}`}><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="texto">Texto aberto</SelectItem>
-                          <SelectItem value="radio">Escolha única</SelectItem>
-                          <SelectItem value="checkbox">Múltipla escolha</SelectItem>
-                          <SelectItem value="bloco">Bloco de texto</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      {perguntas.length > 1 && <Button type="button" size="icon" variant="ghost" title="Remover" aria-label={`Remover item ${i + 1}`} disabled={salvar.isPending} onClick={() => setPerguntas(values => values.filter((_, n) => n !== i))}><Trash2 /></Button>}
-                      {i === perguntas.length - 1 && <Button type="button" size="icon" variant="outline" title="Adicionar pergunta" aria-label="Adicionar pergunta" disabled={salvar.isPending || perguntas.length >= 30} onClick={() => setPerguntas(values => [...values, novaPergunta()])}><Plus /></Button>}
-                    </div>
+                    {p.tipo === "bloco" ? (
+                      <EditorTexto key={`${p.id}-${versaoEditor}`} id={`pergunta-${i}`} label={`Bloco de texto ${i + 1}`} initial={p.enunciado} onChange={html => atualizar(i, { enunciado: html })} />
+                    ) : (
+                      <Input id={`pergunta-${i}`} required maxLength={1000} value={p.enunciado} disabled={salvar.isPending} placeholder="Enunciado da pergunta"
+                        onChange={e => atualizar(i, { enunciado: e.target.value })} />
+                    )}
+                    {(p.tipo === "radio" || p.tipo === "checkbox") && (
+                      <div className="space-y-2">
+                        <Label>Opções de resposta</Label>
+                        {p.opcoes.map((opcao, oi) => (
+                          <div key={oi} className="flex min-w-0 gap-2">
+                            <Input required maxLength={200} value={opcao} disabled={salvar.isPending} placeholder={`Opção ${oi + 1}`}
+                              onChange={e => atualizar(i, { opcoes: p.opcoes.map((o, n) => n === oi ? e.target.value : o) })} />
+                            {p.opcoes.length > 2 && (
+                              <Button type="button" size="icon" variant="ghost" className="shrink-0" aria-label={`Remover opção ${oi + 1}`} disabled={salvar.isPending}
+                                onClick={() => atualizar(i, { opcoes: p.opcoes.filter((_, n) => n !== oi) })}><Trash2 /></Button>
+                            )}
+                          </div>
+                        ))}
+                        <Button type="button" size="sm" variant="outline" disabled={salvar.isPending || p.opcoes.length >= 20}
+                          onClick={() => atualizar(i, { opcoes: [...p.opcoes, ""] })}><Plus />Opção</Button>
+                      </div>
+                    )}
                   </div>
-                  {p.tipo === "bloco" ? (
-                    <EditorTexto key={`${p.id}-${versaoEditor}`} id={`pergunta-${i}`} label={`Bloco de texto ${i + 1}`} initial={p.enunciado} onChange={html => atualizar(i, { enunciado: html })} />
-                  ) : (
-                    <Input id={`pergunta-${i}`} required maxLength={1000} value={p.enunciado} disabled={salvar.isPending} placeholder="Enunciado da pergunta"
-                      onChange={e => atualizar(i, { enunciado: e.target.value })} />
-                  )}
-                  {(p.tipo === "radio" || p.tipo === "checkbox") && (
-                    <div className="space-y-2">
-                      <Label>Opções de resposta</Label>
-                      {p.opcoes.map((opcao, oi) => (
-                        <div key={oi} className="flex gap-2">
-                          <Input required maxLength={200} value={opcao} disabled={salvar.isPending} placeholder={`Opção ${oi + 1}`}
-                            onChange={e => atualizar(i, { opcoes: p.opcoes.map((o, n) => n === oi ? e.target.value : o) })} />
-                          {p.opcoes.length > 2 && (
-                            <Button type="button" size="icon" variant="ghost" aria-label={`Remover opção ${oi + 1}`} disabled={salvar.isPending}
-                              onClick={() => atualizar(i, { opcoes: p.opcoes.filter((_, n) => n !== oi) })}><Trash2 /></Button>
-                          )}
-                        </div>
-                      ))}
-                      <Button type="button" size="sm" variant="outline" disabled={salvar.isPending || p.opcoes.length >= 20}
-                        onClick={() => atualizar(i, { opcoes: [...p.opcoes, ""] })}><Plus />Opção</Button>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </>
-          )}
-          <DialogFooter>
+                ))}
+              </>
+            )}
+          </div>
+          <DialogFooter className="shrink-0 flex-col-reverse gap-2 border-t pt-4 sm:flex-row sm:flex-wrap sm:justify-end">
             {!respondendo && <Button type="button" variant="ghost" disabled={salvar.isPending} onClick={() => { if (!previa) setRespostas(respostasIniciais(perguntas)); setPrevia(v => !v); }}>{previa ? <><PencilLine />Voltar à edição</> : <><Eye />Pré-visualizar</>}</Button>}
             <Button type="button" variant="outline" disabled={salvar.isPending} onClick={onClose}>Cancelar</Button>
             {criando && <Button type="button" variant="secondary" disabled={salvar.isPending || salvarRascunho.isPending || leitura.isPending} onClick={() => salvarRascunho.mutate()}><FileText />{salvarRascunho.isPending ? "Salvando…" : "Salvar rascunho"}</Button>}
