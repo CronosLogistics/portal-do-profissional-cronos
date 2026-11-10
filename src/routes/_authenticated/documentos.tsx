@@ -20,7 +20,7 @@ const documentos = [
     titulo: "Qualidade",
     descricao:
       "Repositório dos documentos institucionais e estratégicos da Cronos, que estabelecem diretrizes, políticas e orientações gerais aplicáveis a toda a empresa, incluindo documentos do Sistema de Gestão da Qualidade e demais referências corporativas.",
-    url: "https://cronoslogisticscombr.sharepoint.com/sites/CronosLogistics-Principal/Qualidade/Forms/AllItems.aspx?id=%2Fsites%2FCronosLogistics-Principal%2FQualidade%2FQualidade&viewid=36d8fdb7-3836-47a6-8923-d2b071c6f62d&newTargetListUrl=%2Fsites%2FCronosLogistics-Principal%2FQualidade&viewpath=%2Fsites%2FCronosLogistics-Principal%2FQualidade%2FForms%2FAllItems.aspx",
+    url: "https://cronoslogisticscombr.sharepoint.com/sites/CronosLogistics-Principal/Qualidade/Forms/AllItems.aspx?id=%2Fsites%2FCronosLogistics%2DPrincipal%2FQualidade%2FQualidade&viewid=36d8fdb7%2D3836%2D47a6%2D8923%2Dd2b071c6f62d",
   },
   {
     titulo: "Modelo documental",
