@@ -2,7 +2,7 @@ import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Award, Building2, UserRound, Users } from "lucide-react";
+import { Award, ExternalLink, Building2, UserRound, Users } from "lucide-react";
 import { meusElogios } from "@/lib/feedback.functions";
 import type { Elogio } from "@/lib/feedback.rules";
 
@@ -37,6 +37,7 @@ function FeedbackPage() {
         <h1 className="text-3xl font-bold text-foreground">Elogios</h1>
         <p className="mt-1 text-sm text-muted-foreground">Elogios registrados pela Qualidade em que você está envolvida(o).</p>
       </header>
+      <a href="https://cronoslogisticscombr.sharepoint.com/sites/qualityteamgroup/_layouts/15/listforms.aspx?cid=YzE0ZDg2OWQtMjNlOC00Y2YxLWI4MDAtNjE3YTAzMTQxZGIz&nav=MWIzODlkOTctMmUwYy00MjhkLTlhZGQtNDgxMjk5ODQ1NDk0" target="_blank" rel="noreferrer" className="mb-6 flex items-center justify-between gap-4 rounded-lg border bg-card p-4 hover:bg-muted/50"><span className="font-semibold text-foreground">Fazer um elogio</span><ExternalLink className="h-4 w-4 shrink-0 text-primary" /></a>
       {equipe.length > 0 && (
         <div className="mb-4 inline-flex rounded-lg border bg-card p-1">
           {([["meu", `Meus elogios (${meus.length})`], ["equipe", `Minha equipe (${equipe.length})`]] as const).map(([v, l]) => (

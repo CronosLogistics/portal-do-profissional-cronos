@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useCurrentUser } from "@/hooks/useAuth";
 import { listarFormularios, formulariosKey } from "@/lib/formularios-client";
 import { FormularioEditor } from "@/components/portal/FormularioEditor";
+import { feedbacksQuery, LINK_FEEDBACK_GESTOR } from "@/lib/feedback-gestor-query";
 
 export const Route = createFileRoute("/_authenticated/formularios")({
   head: () => ({
@@ -28,6 +29,7 @@ function FormulariosPage() {
   const [setor, setSetor] = useState<string | undefined>();
   const me = useCurrentUser();
   const pode = Boolean(me.data?.can("formularios.gerenciar"));
+  const gestor = useQuery(feedbacksQuery);
   const forms = useQuery({ queryKey: formulariosKey, queryFn: listarFormularios });
   const [editor, setEditor] = useState<{ formulario?: Formulario } | null>(null);
   const todos = forms.data ?? [];
@@ -51,6 +53,10 @@ function FormulariosPage() {
           <Button key={s} size="sm" variant={setor === s ? "default" : "outline"} onClick={() => setSetor(s)}>{s}</Button>
         ))}
       </div>
+      {gestor.data?.temLiderados && <section className="mt-8">
+        <h2 className="mb-3 text-lg font-bold text-primary">Gestores</h2>
+        <div className="rounded-lg border bg-card"><a href={LINK_FEEDBACK_GESTOR} target="_blank" rel="noreferrer" className="flex items-center justify-between gap-4 p-4 hover:bg-muted/50"><p className="font-semibold text-foreground">Feedback do gestor</p><span className="flex shrink-0 items-center gap-1 text-sm font-medium text-primary"><span className="hidden sm:inline">Registrar feedback para liderado</span> <ExternalLink className="h-4 w-4" /></span></a></div>
+      </section>}
       {forms.isPending && <p className="mt-8 text-muted-foreground">Carregando formulários…</p>}
       {forms.error && <p role="alert" className="mt-8 text-destructive">Não foi possível carregar os formulários.</p>}
       {!forms.isPending && !forms.error && lista.length === 0 && <p className="mt-8 rounded-lg border bg-card p-8 text-center text-sm text-muted-foreground">Nenhum formulário encontrado.</p>}

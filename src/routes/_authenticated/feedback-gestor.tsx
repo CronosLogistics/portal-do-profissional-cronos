@@ -1,12 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
-import { MessageSquare, RefreshCw, UserRound } from "lucide-react";
-import { meusFeedbacksGestor } from "@/lib/feedback-gestor.functions";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { ExternalLink, MessageSquare, RefreshCw, UserRound } from "lucide-react";
+import { feedbacksQuery, LINK_FEEDBACK_GESTOR } from "@/lib/feedback-gestor-query";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { FeedbackGestor } from "@/lib/feedback-gestor.rules";
 
-const feedbacksQuery = queryOptions({ queryKey: ["feedbacks-gestor-recebidos"], queryFn: () => meusFeedbacksGestor(), staleTime: 60_000 });
 
 export const Route = createFileRoute("/_authenticated/feedback-gestor")({
   loader: ({ context }) => context.queryClient.ensureQueryData(feedbacksQuery),
@@ -35,6 +34,7 @@ function FeedbackGestorPage() {
         </div>
         <Button variant="outline" size="icon" title="Atualizar feedbacks" aria-label="Atualizar feedbacks" disabled={q.isFetching} onClick={() => void q.refetch()}><RefreshCw className={q.isFetching ? "animate-spin" : ""} /></Button>
       </header>
+      {q.data.temLiderados && <a href={LINK_FEEDBACK_GESTOR} target="_blank" rel="noreferrer" className="mb-6 flex items-center justify-between gap-4 rounded-lg border bg-card p-4 hover:bg-muted/50"><span className="font-semibold text-foreground">Registrar feedback para liderado</span><ExternalLink className="h-4 w-4 shrink-0 text-primary" /></a>}
       {q.data.temLiderados ? <Tabs defaultValue="recebidos">
         <TabsList className="mb-4 h-auto w-full flex-wrap justify-start gap-1 sm:w-auto">
           <TabsTrigger value="liderados">Feedbacks dos liderados</TabsTrigger>
