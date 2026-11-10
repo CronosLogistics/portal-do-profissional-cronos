@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Plus, Trash2, Send, Save, FileUp, Sparkles, FileText } from "lucide-react";
+import { Plus, Trash2, Send, Save, FileUp, Sparkles, FileText, Eye, PencilLine } from "lucide-react";
 import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -59,6 +59,7 @@ export function QuestionarioModal({ questionario, edicao = false, rascunho, onCl
   const [perguntas, setPerguntas] = useState<PerguntaQuestionario[]>(edicao ? questionario?.perguntas ?? [novaPergunta()] : rascunho?.perguntas?.length ? rascunho.perguntas : [novaPergunta()]);
   const [rascunhoId, setRascunhoId] = useState<string | null>(rascunho?.id ?? null);
   const [versaoEditor, setVersaoEditor] = useState(0);
+  const [previa, setPrevia] = useState(false);
   const [importando, setImportando] = useState(false);
   const [arquivo, setArquivo] = useState<File | null>(null);
   const [textoImportacao, setTextoImportacao] = useState("");
@@ -132,11 +133,12 @@ export function QuestionarioModal({ questionario, edicao = false, rascunho, onCl
           <DialogTitle>{edicao ? "Editar formulário interno" : questionario?.titulo ?? "Novo formulário interno"}</DialogTitle>
           <DialogDescription>{edicao ? "Respostas recebidas preservadas; anonimato mantido." : questionario ? questionario.anonimo ? "Resposta anônima" : "Resposta identificada" : "Cadastro de questionário"}</DialogDescription>
         </DialogHeader>
-        <form className="space-y-5" onSubmit={e => { e.preventDefault(); if (valido && !salvar.isPending) salvar.mutate(); }}>
-          {respondendo && questionario ? (
+        <form className="space-y-5" onSubmit={e => { e.preventDefault(); if (valido && !previa && !salvar.isPending) salvar.mutate(); }}>
+          {(respondendo && questionario) || previa ? (
             <>
-              <HtmlRico html={questionario.descricao} />
-              {questionario.perguntas.map((p, i) => (
+              {previa && <div className="rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground">Pré-visualização: é assim que os profissionais verão o formulário <strong>{titulo || "Sem título"}</strong> ({anonimo ? "resposta anônima" : "resposta identificada"}). As respostas aqui não são enviadas.</div>}
+              <HtmlRico html={previa ? descricao : questionario?.descricao ?? ""} />
+              {(previa ? perguntas : questionario?.perguntas ?? []).map((p, i) => (
                 <div key={p.id} className="space-y-2">
                   {p.tipo === "bloco" ? <HtmlRico html={p.enunciado} /> : (
                     <>
@@ -247,9 +249,10 @@ export function QuestionarioModal({ questionario, edicao = false, rascunho, onCl
             </>
           )}
           <DialogFooter>
+            {!respondendo && <Button type="button" variant="ghost" disabled={salvar.isPending} onClick={() => { if (!previa) setRespostas(respostasIniciais(perguntas)); setPrevia(v => !v); }}>{previa ? <><PencilLine />Voltar à edição</> : <><Eye />Pré-visualizar</>}</Button>}
             <Button type="button" variant="outline" disabled={salvar.isPending} onClick={onClose}>Cancelar</Button>
             {criando && <Button type="button" variant="secondary" disabled={salvar.isPending || salvarRascunho.isPending || leitura.isPending} onClick={() => salvarRascunho.mutate()}><FileText />{salvarRascunho.isPending ? "Salvando…" : "Salvar rascunho"}</Button>}
-            <Button type="submit" disabled={!valido || salvar.isPending}>{edicao ? <Save /> : <Send />}{salvar.isPending ? "Salvando…" : edicao ? "Salvar alterações" : respondendo ? "Enviar resposta" : "Publicar formulário"}</Button>
+            <Button type="submit" disabled={!valido || salvar.isPending || previa}>{edicao ? <Save /> : <Send />}{salvar.isPending ? "Salvando…" : edicao ? "Salvar alterações" : respondendo ? "Enviar resposta" : "Publicar formulário"}</Button>
           </DialogFooter>
         </form>
       </DialogContent>
