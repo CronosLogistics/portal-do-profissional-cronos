@@ -1184,6 +1184,39 @@ export type Database = {
           },
         ]
       }
+      questionarios_rascunhos: {
+        Row: {
+          anonimo: boolean
+          atualizado_em: string
+          autor_id: string
+          criado_em: string
+          descricao: string
+          id: string
+          perguntas: Json
+          titulo: string
+        }
+        Insert: {
+          anonimo?: boolean
+          atualizado_em?: string
+          autor_id?: string
+          criado_em?: string
+          descricao?: string
+          id?: string
+          perguntas?: Json
+          titulo?: string
+        }
+        Update: {
+          anonimo?: boolean
+          atualizado_em?: string
+          autor_id?: string
+          criado_em?: string
+          descricao?: string
+          id?: string
+          perguntas?: Json
+          titulo?: string
+        }
+        Relationships: []
+      }
       questionarios_respostas: {
         Row: {
           id: string

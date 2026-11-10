@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Plus, Trash2, Send, Save } from "lucide-react";
+import { Plus, Trash2, Send, Save, FileUp, Sparkles, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,8 @@ import { EditorTexto } from "@/components/portal/EditorTexto";
 import { avisosKey } from "@/lib/avisos-client";
 import { criarQuestionario, editarQuestionario, responderQuestionario } from "@/lib/questionarios.functions";
 import { criarIdCliente } from "@/lib/client-id";
+import { excluirRascunhoQuestionario, importarQuestionarioForms, salvarRascunhoQuestionario } from "@/lib/questionarios-rascunhos.functions";
+import { LIMITE_PDF_BYTES, type RascunhoQuestionario } from "@/lib/questionarios-importacao.rules";
 import {
   novoQuestionarioSchema,
   perguntaPadrao,
@@ -37,14 +39,56 @@ function respostasIniciais(perguntas: PerguntaQuestionario[]): RespostaItem[] {
   return perguntas.map(p => (p.tipo === "checkbox" ? [] : p.tipo === "bloco" ? null : ""));
 }
 
-export function QuestionarioModal({ questionario, edicao = false, onClose }: { questionario?: Questionario; edicao?: boolean; onClose: () => void }) {
+function lerBase64(arquivo: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const leitor = new FileReader();
+    leitor.onload = () => resolve(String(leitor.result).split(",")[1] ?? "");
+    leitor.onerror = () => reject(new Error("Não foi possível ler o arquivo."));
+    leitor.readAsDataURL(arquivo);
+  });
+}
+
+export function QuestionarioModal({ questionario, edicao = false, rascunho, onClose }: { questionario?: Questionario; edicao?: boolean; rascunho?: RascunhoQuestionario; onClose: () => void }) {
   const qc = useQueryClient();
   const criar = useServerFn(criarQuestionario), responder = useServerFn(responderQuestionario), editar = useServerFn(editarQuestionario);
   const respondendo = Boolean(questionario && !edicao);
-  const [titulo, setTitulo] = useState(edicao ? questionario?.titulo ?? "" : "");
-  const [descricao, setDescricao] = useState(edicao ? questionario?.descricao ?? "" : "");
-  const [anonimo, setAnonimo] = useState(edicao ? questionario?.anonimo ?? false : false);
-  const [perguntas, setPerguntas] = useState<PerguntaQuestionario[]>(edicao ? questionario?.perguntas ?? [novaPergunta()] : [novaPergunta()]);
+  const criando = !questionario;
+  const [titulo, setTitulo] = useState(edicao ? questionario?.titulo ?? "" : rascunho?.titulo ?? "");
+  const [descricao, setDescricao] = useState(edicao ? questionario?.descricao ?? "" : rascunho?.descricao ?? "");
+  const [anonimo, setAnonimo] = useState(edicao ? questionario?.anonimo ?? false : rascunho?.anonimo ?? false);
+  const [perguntas, setPerguntas] = useState<PerguntaQuestionario[]>(edicao ? questionario?.perguntas ?? [novaPergunta()] : rascunho?.perguntas?.length ? rascunho.perguntas : [novaPergunta()]);
+  const [rascunhoId, setRascunhoId] = useState<string | null>(rascunho?.id ?? null);
+  const [versaoEditor, setVersaoEditor] = useState(0);
+  const [importando, setImportando] = useState(false);
+  const [arquivo, setArquivo] = useState<File | null>(null);
+  const [textoImportacao, setTextoImportacao] = useState("");
+  const importar = useServerFn(importarQuestionarioForms), guardarRascunho = useServerFn(salvarRascunhoQuestionario), apagarRascunho = useServerFn(excluirRascunhoQuestionario);
+  const leitura = useMutation({
+    mutationFn: async () => {
+      if (arquivo && arquivo.size > LIMITE_PDF_BYTES) throw new Error("O PDF deve ter até 8 MB.");
+      const pdfBase64 = arquivo ? await lerBase64(arquivo) : null;
+      return importar({ data: { pdfBase64, nomeArquivo: arquivo?.name ?? null, texto: textoImportacao.trim() || null } });
+    },
+    onSuccess: r => {
+      if (!r.perguntas.length) { toast.error("Nenhuma pergunta identificada no conteúdo enviado."); return; }
+      if (r.titulo) setTitulo(r.titulo);
+      setDescricao(r.descricao);
+      setPerguntas(r.perguntas);
+      setVersaoEditor(v => v + 1);
+      setImportando(false); setArquivo(null); setTextoImportacao("");
+      toast.success(`${r.perguntas.length} itens importados. Revise antes de publicar.`);
+    },
+    onError: error => toast.error(error.message),
+  });
+  const salvarRascunho = useMutation({
+    mutationFn: () => guardarRascunho({ data: { id: rascunhoId, titulo, descricao, anonimo, perguntas } }),
+    onSuccess: async r => {
+      setRascunhoId(r.id);
+      await qc.invalidateQueries({ queryKey: ["questionarios", "rascunhos"] });
+      toast.success("Rascunho salvo.");
+    },
+    onError: error => toast.error(error.message),
+  });
   const [respostas, setRespostas] = useState<RespostaItem[]>(() => respostasIniciais(questionario?.perguntas ?? []));
   const dados = { titulo, descricao, anonimo, perguntas };
   const valido = respondendo
@@ -60,11 +104,12 @@ export function QuestionarioModal({ questionario, edicao = false, onClose }: { q
       ? edicao
         ? editar({ data: { ...dados, id: questionario.id } })
         : responder({ data: { id: questionario.id, respostas } })
-      : criar({ data: dados }),
+      : criar({ data: dados }).then(async r => { if (rascunhoId) { try { await apagarRascunho({ data: { id: rascunhoId } }); } catch { /* draft cleanup is best-effort */ } } return r; }),
     onSuccess: async result => {
       await qc.invalidateQueries({ queryKey: ["questionarios"] });
       await qc.invalidateQueries({ queryKey: avisosKey });
-      toast.success(edicao ? "Formulário atualizado." : respondendo ? "Resposta salva." : "Formulário criado.");
+      if (criando) await qc.invalidateQueries({ queryKey: ["questionarios", "rascunhos"] });
+      toast.success(edicao ? "Formulário atualizado." : respondendo ? "Resposta salva." : "Formulário publicado.");
       if (!result.registrado) toast.warning("Salvo no portal; registro no SharePoint pendente. A gestão pode reenviar.");
       onClose();
     },
@@ -136,8 +181,25 @@ export function QuestionarioModal({ questionario, edicao = false, onClose }: { q
             </>
           ) : (
             <>
+              {criando && (
+                <div className="rounded-md border border-dashed p-3">
+                  {!importando ? (
+                    <Button type="button" variant="outline" size="sm" onClick={() => setImportando(true)} disabled={salvar.isPending}><FileUp />Importar do Microsoft Forms</Button>
+                  ) : (
+                    <div className="space-y-3">
+                      <p className="text-sm text-muted-foreground">No Forms, use <strong>⋯ &gt; Imprimir formulário &gt; Salvar como PDF</strong> e envie o arquivo, ou cole o texto do formulário. As perguntas atuais serão substituídas.</p>
+                      <div className="space-y-1"><Label htmlFor="importar-pdf">Arquivo PDF</Label><Input id="importar-pdf" type="file" accept="application/pdf" disabled={leitura.isPending} onChange={e => setArquivo(e.target.files?.[0] ?? null)} /></div>
+                      <div className="space-y-1"><Label htmlFor="importar-texto">Ou cole o texto</Label><Textarea id="importar-texto" rows={4} maxLength={60000} value={textoImportacao} disabled={leitura.isPending} onChange={e => setTextoImportacao(e.target.value)} /></div>
+                      <div className="flex justify-end gap-2">
+                        <Button type="button" variant="ghost" size="sm" disabled={leitura.isPending} onClick={() => setImportando(false)}>Cancelar</Button>
+                        <Button type="button" size="sm" disabled={leitura.isPending || (!arquivo && !textoImportacao.trim())} onClick={() => leitura.mutate()}><Sparkles />{leitura.isPending ? "Lendo formulário…" : "Ler perguntas"}</Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
               <div className="space-y-2"><Label htmlFor="questionario-titulo">Título</Label><Input id="questionario-titulo" required maxLength={200} value={titulo} onChange={e => setTitulo(e.target.value)} disabled={salvar.isPending} /></div>
-              <div className="space-y-2"><Label>Descrição (opcional)</Label><EditorTexto id="questionario-descricao" label="Descrição" initial={descricao} onChange={setDescricao} /></div>
+              <div className="space-y-2"><Label>Descrição (opcional)</Label><EditorTexto key={`desc-${versaoEditor}`} id="questionario-descricao" label="Descrição" initial={descricao} onChange={setDescricao} /></div>
               <div className="flex items-center justify-between gap-3"><Label htmlFor="questionario-anonimo">Formulário anônimo</Label><Switch id="questionario-anonimo" checked={anonimo} onCheckedChange={setAnonimo} disabled={salvar.isPending || edicao} /></div>
               {perguntas.map((p, i) => (
                 <div key={p.id} className="space-y-3 rounded-md border p-3">
@@ -158,7 +220,7 @@ export function QuestionarioModal({ questionario, edicao = false, onClose }: { q
                     </div>
                   </div>
                   {p.tipo === "bloco" ? (
-                    <EditorTexto id={`pergunta-${i}`} label={`Bloco de texto ${i + 1}`} initial={p.enunciado} onChange={html => atualizar(i, { enunciado: html })} />
+                    <EditorTexto key={`${p.id}-${versaoEditor}`} id={`pergunta-${i}`} label={`Bloco de texto ${i + 1}`} initial={p.enunciado} onChange={html => atualizar(i, { enunciado: html })} />
                   ) : (
                     <Input id={`pergunta-${i}`} required maxLength={1000} value={p.enunciado} disabled={salvar.isPending} placeholder="Enunciado da pergunta"
                       onChange={e => atualizar(i, { enunciado: e.target.value })} />
@@ -186,7 +248,8 @@ export function QuestionarioModal({ questionario, edicao = false, onClose }: { q
           )}
           <DialogFooter>
             <Button type="button" variant="outline" disabled={salvar.isPending} onClick={onClose}>Cancelar</Button>
-            <Button type="submit" disabled={!valido || salvar.isPending}>{edicao ? <Save /> : <Send />}{salvar.isPending ? "Salvando…" : edicao ? "Salvar alterações" : respondendo ? "Enviar resposta" : "Criar formulário"}</Button>
+            {criando && <Button type="button" variant="secondary" disabled={salvar.isPending || salvarRascunho.isPending || leitura.isPending} onClick={() => salvarRascunho.mutate()}><FileText />{salvarRascunho.isPending ? "Salvando…" : "Salvar rascunho"}</Button>}
+            <Button type="submit" disabled={!valido || salvar.isPending}>{edicao ? <Save /> : <Send />}{salvar.isPending ? "Salvando…" : edicao ? "Salvar alterações" : respondendo ? "Enviar resposta" : "Publicar formulário"}</Button>
           </DialogFooter>
         </form>
       </DialogContent>
