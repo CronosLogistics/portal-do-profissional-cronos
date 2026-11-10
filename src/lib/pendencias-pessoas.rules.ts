@@ -28,6 +28,7 @@ export function pessoasDoUsuario(tipo: TipoPendenciaPessoas, itens: ItemAnaliseN
     if (!gestaoPessoas && (!cfg.pessoa || !indicado?.email || indicado.email.trim().toLowerCase() !== alvo)) return [];
     const status = String(f[tipo === "agendamento" ? "StatusdoTreinamento" : "Status"] ?? "");
     if (/^(finalizad|cancelad|reprovad)/i.test(status)) return [];
+    if ((tipo === "anexos" || tipo === "agendamento") && !/^\s*pendente\s*$/i.test(status)) return [];
     if (tipo === "agendamento" && /^(cancelad|reprovad)/i.test(String(f["Aprovado"] ?? ""))) return [];
     if (tipo === "experiencia" && status.trim()) return [];
     if (tipo === "feedback" && String(f["FinalizadoFeeback_x003f_"] ?? "").toLowerCase() === "sim") return [];
