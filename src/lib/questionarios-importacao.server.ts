@@ -24,7 +24,7 @@ Regras:
 - Liste TODAS as opções na ordem; para "texto" e "bloco" use opcoes vazio.
 - Remova numeração, asteriscos de obrigatório e cabeçalhos/rodapés de impressão.
 - descricao da pergunta: texto auxiliar abaixo do enunciado, ou null.
-- Máximo de 30 itens.`;
+- Máximo de 70 itens.`;
 
 export async function extrairQuestionarioForms(data: ImportacaoForms): Promise<QuestionarioExtraido> {
   const apiKey = process.env["LOVABLE_API_KEY"];

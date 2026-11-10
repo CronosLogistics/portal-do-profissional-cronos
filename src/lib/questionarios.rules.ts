@@ -28,7 +28,7 @@ export function normalizarPerguntas(raw: unknown): PerguntaQuestionario[] {
   });
 }
 
-const perguntasSchema = z.array(z.unknown()).min(1).max(30)
+const perguntasSchema = z.array(z.unknown()).min(1).max(70)
   .superRefine((raw, ctx) => {
     try { normalizarPerguntas(raw); }
     catch (e) {
@@ -75,7 +75,7 @@ export function validarRespostas(perguntas: PerguntaQuestionario[], respostas: u
 
 export const respostaQuestionarioSchema = z.object({
   id: z.string().uuid(),
-  respostas: z.array(respostaItemSchema).min(1).max(30),
+  respostas: z.array(respostaItemSchema).min(1).max(70),
 }).superRefine((data, ctx) => {
   // Questions are validated against the live form in the RPC; shape-only check here.
   if (data.respostas.every(r => r === null)) ctx.addIssue({ code: "custom", message: "Responda todas as perguntas", path: ["respostas"] });

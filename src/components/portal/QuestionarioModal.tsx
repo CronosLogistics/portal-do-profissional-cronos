@@ -219,7 +219,7 @@ export function QuestionarioModal({ questionario, edicao = false, rascunho, onCl
                           </SelectContent>
                         </Select>
                         {perguntas.length > 1 && <Button type="button" size="icon" variant="ghost" title="Remover" aria-label={`Remover item ${i + 1}`} disabled={salvar.isPending} onClick={() => setPerguntas(values => values.filter((_, n) => n !== i))}><Trash2 /></Button>}
-                        {i === perguntas.length - 1 && <Button type="button" size="icon" variant="outline" title="Adicionar pergunta" aria-label="Adicionar pergunta" disabled={salvar.isPending || perguntas.length >= 30} onClick={() => setPerguntas(values => [...values, novaPergunta()])}><Plus /></Button>}
+                        {i === perguntas.length - 1 && <Button type="button" size="icon" variant="outline" title="Adicionar pergunta" aria-label="Adicionar pergunta" disabled={salvar.isPending || perguntas.length >= 70} onClick={() => setPerguntas(values => [...values, novaPergunta()])}><Plus /></Button>}
                       </div>
                     </div>
                     {p.tipo === "bloco" ? (

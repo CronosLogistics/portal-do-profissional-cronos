@@ -12,8 +12,8 @@ describe("importação do Microsoft Forms", () => {
     const r = normalizarImportacao({ titulo: "T", descricao: "", perguntas: [{ tipo: "checkbox", enunciado: "Serviços", descricao: null, opcoes: ["Único"] }] }, id);
     expect(r.perguntas[0]?.tipo).toBe("texto");
   });
-  it("limita a 30 itens", () => {
-    const perguntas = Array.from({ length: 40 }, (_, i) => ({ tipo: "texto", enunciado: `P${i}`, descricao: null, opcoes: [] }));
-    expect(normalizarImportacao({ titulo: "T", descricao: "", perguntas }, id).perguntas).toHaveLength(30);
+  it("limita a 70 itens", () => {
+    const perguntas = Array.from({ length: 80 }, (_, i) => ({ tipo: "texto", enunciado: `P${i}`, descricao: null, opcoes: [] }));
+    expect(normalizarImportacao({ titulo: "T", descricao: "", perguntas }, id).perguntas).toHaveLength(70);
   });
 });

@@ -22,7 +22,7 @@ export const rascunhoSchema = z.object({
     tipo: z.enum(["texto", "radio", "checkbox", "bloco"]),
     enunciado: z.string().max(5000),
     opcoes: z.array(z.string().max(200)).max(20).optional(),
-  })).max(30),
+  })).max(70),
 });
 
 export type RascunhoQuestionario = {
@@ -42,7 +42,7 @@ const escapar = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").re
 export function normalizarImportacao(raw: QuestionarioExtraido, novoId: () => string = criarIdCliente) {
   const perguntas: PerguntaQuestionario[] = [];
   for (const p of raw.perguntas ?? []) {
-    if (perguntas.length >= 30) break;
+    if (perguntas.length >= 70) break;
     const enunciado = (p.enunciado ?? "").trim().slice(0, 1000);
     if (!enunciado) continue;
     const detalhe = p.descricao?.trim();
