@@ -93,7 +93,7 @@ export function QuestionarioModal({ questionario, edicao = false, rascunho, onCl
   const [respostas, setRespostas] = useState<RespostaItem[]>(() => respostasIniciais(questionario?.perguntas ?? []));
   const dados = { titulo, descricao, anonimo, perguntas };
   const valido = respondendo
-    ? perguntas.every((p, i) => {
+    ? (questionario?.perguntas ?? []).every((p, i) => {
         const r = respostas[i];
         if (p.tipo === "bloco") return true;
         if (p.tipo === "checkbox") return Array.isArray(r) && r.length > 0;
