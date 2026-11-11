@@ -26,14 +26,24 @@ Regras:
 - descricao da pergunta: texto auxiliar abaixo do enunciado, ou null.
 - Máximo de 70 itens.`;
 
+const CACHE_MS = 60 * 60 * 1000;
+const cache = new Map<string, { em: number; valor: QuestionarioExtraido }>();
+
+async function chaveCache(data: ImportacaoForms): Promise<string> {
+  const bytes = new TextEncoder().encode(`${data.pdfBase64 ?? ""}\u0000${data.texto?.trim() ?? ""}`);
+  const hash = await crypto.subtle.digest("SHA-256", bytes);
+  return Array.from(new Uint8Array(hash), (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
 export async function extrairQuestionarioForms(data: ImportacaoForms): Promise<QuestionarioExtraido> {
-  const apiKey = process.env["LOVABLE_API_KEY"];
+  const apiKey = process.env["OPENAI_API_KEY"];
   if (!apiKey) throw new Error("Leitura automática não configurada.");
-  const provider = createOpenAI({
-    baseURL: "https://ai.gateway.lovable.dev/v1",
-    apiKey,
-    headers: { "Lovable-API-Key": apiKey, "X-Lovable-AIG-SDK": "vercel-ai-sdk" },
-  });
+  const chave = await chaveCache(data);
+  const agora = Date.now();
+  for (const [k, v] of cache) if (agora - v.em >= CACHE_MS) cache.delete(k);
+  const emCache = cache.get(chave);
+  if (emCache) return emCache.valor;
+  const provider = createOpenAI({ apiKey });
   const content: Exclude<ModelMessage, { role: "system" | "tool" | "assistant" }>["content"] = [
     { type: "text", text: "Extraia o formulário a seguir." },
   ];
@@ -41,22 +51,24 @@ export async function extrairQuestionarioForms(data: ImportacaoForms): Promise<Q
   if (data.texto?.trim()) content.push({ type: "text", text: data.texto.trim() });
 
   const result = streamText({
-    model: provider.responses("openai/gpt-6-astra"),
+    model: provider.responses("gpt-4o-mini"),
     system: INSTRUCOES,
     messages: [{ role: "user", content }],
     output: Output.object({ schema: esquema }),
     maxRetries: 0,
-    providerOptions: {
-      openai: { forceReasoning: true, reasoningEffort: "low", reasoningSummary: "auto", store: false, include: ["reasoning.encrypted_content"] },
-    },
+    providerOptions: { openai: { store: false } },
   });
   try {
-    return await result.output;
+    const valor = await result.output;
+    cache.set(chave, { em: Date.now(), valor });
+    return valor;
   } catch (e) {
     if (NoObjectGeneratedError.isInstance(e)) throw new Error("Não foi possível identificar as perguntas. Confira o arquivo e tente novamente.");
     const status = (e as { statusCode?: number }).statusCode;
     console.error("importarQuestionarioForms", status, e);
+    if (status === 401 || status === 403) throw new Error("A chave da OpenAI foi recusada. Verifique a chave e as permissões.");
     if (status === 402) throw new Error("Créditos de IA esgotados. Adicione créditos para usar a importação.");
+    if (status === 429 && /quota|credit/i.test(String((e as { responseBody?: string }).responseBody ?? ""))) throw new Error("A conta da OpenAI está sem créditos. Adicione saldo na OpenAI para usar a importação.");
     if (status === 429) throw new Error("Muitas solicitações no momento. Aguarde um pouco e tente novamente.");
     throw new Error("Não foi possível ler o formulário agora.");
   }
