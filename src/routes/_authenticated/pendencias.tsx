@@ -158,6 +158,7 @@ function ListaPessoas({ tipo, itens }: { tipo: TipoPendenciaPessoas; itens: Pend
   return <div className="overflow-x-auto"><table className="w-full text-sm">
     <thead className="text-left text-xs uppercase text-muted-foreground"><tr>
       <th className="py-2 pr-4">{tipo === "agendamento" || tipo === "anexos" ? "Treinamento" : "Profissional"}</th>
+      {tipo === "feedback" && <th className="py-2 pr-4">NC</th>}
       {tipo !== "rq0216" && <th className="py-2 pr-4">{detalhe}</th>}
       <th className="py-2 pr-4">Status</th><th className="py-2 pr-4">{rq ? "Admissão" : tipo === "experiencia" ? "Data do agendamento" : tipo === "feedback" ? "Data do feedback" : "Data do treinamento"}</th>
       {rq && <><th className="py-2 pr-4">Prazo</th><th className="py-2 pr-4">Dias para finalizar</th></>}
@@ -166,6 +167,7 @@ function ListaPessoas({ tipo, itens }: { tipo: TipoPendenciaPessoas; itens: Pend
       <th className="py-2"><span className="sr-only">Link para o item</span></th>
     </tr></thead><tbody>{itens.map(p => <tr key={p.id} className="border-t">
       <td className="py-2 pr-4 font-semibold text-foreground">{p.nome}</td>
+      {tipo === "feedback" && <td className="py-2 pr-4">{p.nc ?? "-"}</td>}
       {tipo !== "rq0216" && <td className="py-2 pr-4">{p.detalhe}</td>}
       <td className="py-2 pr-4">{p.status}</td><td className="py-2 pr-4 whitespace-nowrap">{data(p.data)}</td>
       {rq && <><td className="py-2 pr-4 whitespace-nowrap">{data(p.prazo)}</td><td className={`py-2 pr-4 ${p.dias !== null && p.dias < 0 ? "font-semibold text-destructive" : "text-foreground"}`}>{p.dias ?? "-"}</td></>}
