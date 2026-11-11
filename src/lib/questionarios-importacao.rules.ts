@@ -61,3 +61,8 @@ export function normalizarImportacao(raw: QuestionarioExtraido, novoId: () => st
     perguntas,
   };
 }
+
+/** A importação com IA só é aceita quando o conteúdo tem ao menos este número de perguntas (blocos de texto não contam). */
+export const MINIMO_PERGUNTAS_IA = 30;
+export const contarPerguntasImportadas = (perguntas: { tipo: string }[]) => perguntas.filter(p => p.tipo !== "bloco").length;
+export const importacaoTemPerguntasSuficientes = (perguntas: { tipo: string }[]) => contarPerguntasImportadas(perguntas) >= MINIMO_PERGUNTAS_IA;

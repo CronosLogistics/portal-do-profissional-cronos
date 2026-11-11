@@ -17,7 +17,7 @@ import { avisosKey } from "@/lib/avisos-client";
 import { criarQuestionario, editarQuestionario, responderQuestionario } from "@/lib/questionarios.functions";
 import { criarIdCliente } from "@/lib/client-id";
 import { excluirRascunhoQuestionario, importarQuestionarioForms, salvarRascunhoQuestionario } from "@/lib/questionarios-rascunhos.functions";
-import { LIMITE_PDF_BYTES, type RascunhoQuestionario } from "@/lib/questionarios-importacao.rules";
+import { LIMITE_PDF_BYTES, MINIMO_PERGUNTAS_IA, contarPerguntasImportadas, importacaoTemPerguntasSuficientes, type RascunhoQuestionario } from "@/lib/questionarios-importacao.rules";
 import {
   novoQuestionarioSchema,
   perguntaPadrao,
@@ -63,6 +63,7 @@ export function QuestionarioModal({ questionario, edicao = false, rascunho, onCl
   const [importando, setImportando] = useState(false);
   const [arquivo, setArquivo] = useState<File | null>(null);
   const [textoImportacao, setTextoImportacao] = useState("");
+  const [poucasPerguntas, setPoucasPerguntas] = useState<number | null>(null);
   const importar = useServerFn(importarQuestionarioForms), guardarRascunho = useServerFn(salvarRascunhoQuestionario), apagarRascunho = useServerFn(excluirRascunhoQuestionario);
   const leitura = useMutation({
     mutationFn: async () => {
@@ -72,6 +73,7 @@ export function QuestionarioModal({ questionario, edicao = false, rascunho, onCl
     },
     onSuccess: r => {
       if (!r.perguntas.length) { toast.error("Nenhuma pergunta identificada no conteúdo enviado."); return; }
+      if (!importacaoTemPerguntasSuficientes(r.perguntas)) { setPoucasPerguntas(contarPerguntasImportadas(r.perguntas)); return; }
       if (r.titulo) setTitulo(r.titulo);
       setDescricao(r.descricao);
       setPerguntas(r.perguntas);
@@ -126,7 +128,7 @@ export function QuestionarioModal({ questionario, edicao = false, rascunho, onCl
     else if (tipo === "texto") atualizar(i, { ...base, tipo });
     else atualizar(i, { ...base, tipo, opcoes: "opcoes" in atual ? atual.opcoes : ["", ""] });
   };
-  return (
+  return (<>
     <Dialog open onOpenChange={open => { if (!open && !salvar.isPending) onClose(); }}>
       <DialogContent className="flex max-h-[min(92dvh,100svh)] w-[calc(100%-2rem)] max-w-2xl flex-col gap-4 overflow-hidden p-4 sm:p-6">
         <DialogHeader className="shrink-0 pr-8">
@@ -259,5 +261,17 @@ export function QuestionarioModal({ questionario, edicao = false, rascunho, onCl
         </form>
       </DialogContent>
     </Dialog>
+    <Dialog open={poucasPerguntas !== null} onOpenChange={o => { if (!o) setPoucasPerguntas(null); }}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Formulário com poucas perguntas</DialogTitle>
+          <DialogDescription>
+            A criação com IA só está disponível para formulários com no mínimo {MINIMO_PERGUNTAS_IA} perguntas. Foram encontradas {poucasPerguntas} pergunta(s); por isso, este formulário precisa ser montado manualmente.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter><Button type="button" onClick={() => { setPoucasPerguntas(null); setImportando(false); }}>Entendi, fazer manualmente</Button></DialogFooter>
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }
