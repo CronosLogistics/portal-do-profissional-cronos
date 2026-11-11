@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { ExternalLink, MessageSquare, RefreshCw, UserRound } from "lucide-react";
@@ -54,8 +55,22 @@ function FeedbackGestorPage() {
   );
 }
 
-function ListaFeedbacks({ feedbacks, liderados = false }: { feedbacks: FeedbackGestor[]; liderados?: boolean }) {
-  return feedbacks.length === 0 ? <div className="py-12 text-center text-muted-foreground"><MessageSquare className="mx-auto mb-3 h-8 w-8" /><p className="text-sm">{liderados ? "Nenhum feedback dos seus liderados por enquanto." : "Nenhum feedback recebido por enquanto."}</p></div> : (
+function ListaFeedbacks({ feedbacks: todos, liderados = false }: { feedbacks: FeedbackGestor[]; liderados?: boolean }) {
+  const [pessoa, setPessoa] = useState("");
+  const [busca, setBusca] = useState("");
+  const pessoas = [...new Set(todos.map(f => f.profissional).filter(Boolean))].sort((a, b) => a.localeCompare(b, "pt-BR"));
+  const termo = busca.trim().toLowerCase();
+  const feedbacks = liderados ? todos.filter(f => (!pessoa || f.profissional === pessoa) && (!termo || [f.mensagem, f.gestor, f.classificacao, f.profissional].some(t => t.toLowerCase().includes(termo)))) : todos;
+  const filtros = liderados && todos.length > 0 && <div className="mb-4 flex flex-wrap items-center gap-2">
+    <select aria-label="Filtrar por profissional" value={pessoa} onChange={e => setPessoa(e.target.value)} className="h-9 rounded-md border bg-card px-3 text-sm text-foreground">
+      <option value="">Todos os liderados</option>
+      {pessoas.map(p => <option key={p} value={p}>{p}</option>)}
+    </select>
+    <input aria-label="Buscar nos feedbacks" placeholder="Buscar no comentário, gestor ou classificação" value={busca} onChange={e => setBusca(e.target.value)} className="h-9 min-w-[16rem] flex-1 rounded-md border bg-card px-3 text-sm text-foreground" />
+    {(pessoa || busca) && <Button variant="ghost" size="sm" onClick={() => { setPessoa(""); setBusca(""); }}>Limpar filtros</Button>}
+    <span className="text-xs text-muted-foreground">{feedbacks.length} de {todos.length}</span>
+  </div>;
+  return <>{filtros}{feedbacks.length === 0 ? <div className="py-12 text-center text-muted-foreground"><MessageSquare className="mx-auto mb-3 h-8 w-8" /><p className="text-sm">{liderados ? "Nenhum feedback dos seus liderados por enquanto." : "Nenhum feedback recebido por enquanto."}</p></div> : (
         <div className="space-y-3">
           {feedbacks.map(f => <article key={f.id} className="rounded-lg border bg-card p-5">
             {liderados && <h2 className="mb-3 break-words text-base font-semibold text-foreground">{f.profissional}</h2>}
@@ -70,5 +85,5 @@ function ListaFeedbacks({ feedbacks, liderados = false }: { feedbacks: FeedbackG
             </dl>
           </article>)}
         </div>
-      );
+      )}</>;
 }

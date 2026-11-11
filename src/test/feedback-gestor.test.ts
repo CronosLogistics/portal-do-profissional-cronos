@@ -81,3 +81,8 @@ describe("Feedback recebido pelo Profissional", () => {
     expect(textoFeedback('<script>alert(1)</script><p>A&amp;B&nbsp;&#x1f680;</p><div>Obrigado</div>')).toBe("A&B 🚀\nObrigado");
   });
 });
+import { ordenarFeedbacks } from "../lib/feedback-gestor.rules";
+it("feedbacks de vários liderados ficam em ordem cronológica decrescente", () => {
+  const l = [{ id: "1", data: "2026-09-06" }, { id: "2", data: "2026-03-27" }, { id: "3", data: "2026-11-11" }].sort(ordenarFeedbacks);
+  expect(l.map(f => f.data)).toEqual(["2026-11-11", "2026-09-06", "2026-03-27"]);
+});

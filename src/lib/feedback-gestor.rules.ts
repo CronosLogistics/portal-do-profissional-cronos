@@ -49,5 +49,11 @@ export function feedbacksDoProfissional(itens: ItemAnaliseNC[], profissionais: I
     if (!profissional) return [];
     const gestor = usuarios.get(String(f["AutorLookupId"] ?? f["AuthorLookupId"] ?? ""));
     return [{ id: item.id, profissional: String(profissional.fields["Title"] ?? f["Title"] ?? ""), gestor: gestor?.nome ?? "Não informado", data: String(f["DatadoFeedback"] ?? ""), classificacao: String(f["Classifica_x00e7__x00e3_o"] ?? ""), status: String(f["Status"] ?? ""), mensagem: textoFeedback(f["Coment_x00e1_rio"]), link: `https://cronoslogisticscombr.sharepoint.com/sites/peoplemanagementteamgroup/Lists/Feedbacks%20Gestores/DispForm.aspx?ID=${encodeURIComponent(item.id)}` }];
-  }).sort((a, b) => b.data.localeCompare(a.data) || b.id.localeCompare(a.id, undefined, { numeric: true }));
+  }).sort(ordenarFeedbacks);
+}
+
+const ts = (d: string) => { const t = new Date(d).getTime(); return Number.isFinite(t) ? t : 0; };
+/** Mais recente primeiro; empate pelo ID mais novo. */
+export function ordenarFeedbacks(a: { data: string; id: string }, b: { data: string; id: string }): number {
+  return ts(b.data) - ts(a.data) || b.id.localeCompare(a.id, undefined, { numeric: true });
 }

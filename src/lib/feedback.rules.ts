@@ -64,5 +64,6 @@ export function elogiosVisiveis(
       vinculo: souEnvolvida ? "meu" : "equipe",
     });
   }
-  return out.sort((a, b) => (b.data ?? "").localeCompare(a.data ?? ""));
+  const ts = (d: string | null) => { const t = d ? new Date(d).getTime() : NaN; return Number.isFinite(t) ? t : 0; };
+  return out.sort((a, b) => ts(b.data) - ts(a.data) || b.id.localeCompare(a.id, undefined, { numeric: true }));
 }
