@@ -302,6 +302,13 @@
       "when": 1794401049184,
       "tag": "0042_mural_agendamento",
       "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "7",
+      "when": 1794401244543,
+      "tag": "0043_mural_hora_publicacao",
+      "breakpoints": true
     }
   ]
 }

@@ -702,6 +702,7 @@ export type Database = {
           data_post: string
           id: string
           imagem_path: string | null
+          publicar_em: string | null
           texto: string
           tipo: string
           titulo: string
@@ -714,6 +715,7 @@ export type Database = {
           data_post?: string
           id?: string
           imagem_path?: string | null
+          publicar_em?: string | null
           texto?: string
           tipo?: string
           titulo: string
@@ -726,6 +728,7 @@ export type Database = {
           data_post?: string
           id?: string
           imagem_path?: string | null
+          publicar_em?: string | null
           texto?: string
           tipo?: string
           titulo?: string
@@ -1709,6 +1712,7 @@ export type Database = {
           data_post: string
           id: string
           imagem_path: string
+          publicar_em: string
           texto: string
           tipo: string
           titulo: string
@@ -1725,6 +1729,7 @@ export type Database = {
           id: string
           imagem_path: string
           minha_reacao: string
+          publicar_em: string
           reacoes: Json
           texto: string
           tipo: string
@@ -1780,6 +1785,10 @@ export type Database = {
       minhas_permissoes: { Args: never; Returns: string[] }
       mural_post_vigente: {
         Args: { _hoje: string; _publicado: string }
+        Returns: boolean
+      }
+      mural_publicado: {
+        Args: { _data: string; _publicar_em: string }
         Returns: boolean
       }
       mural_vigentes: {

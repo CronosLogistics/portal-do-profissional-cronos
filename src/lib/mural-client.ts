@@ -10,7 +10,7 @@ export type ComentarioMural = { id: string; texto: string; criado_em: string; ed
 export type PostMural = {
   id: string; titulo: string; texto: string; imagem_path: string | null;
   data_post: string; visivel_ate: string | null; criado_em: string; comentarios: ComentarioMural[];
-  tipo: TipoMural; anos_casa: number | null;
+  tipo: TipoMural; anos_casa: number | null; publicar_em: string | null;
   reacoes: ReacaoMural[]; minha_reacao: string | null;
 };
 export type TipoMural = "geral" | "aniversario" | "tempo_casa";
@@ -41,7 +41,7 @@ export async function urlImagem(path: string | null): Promise<string | null> {
   return data?.signedUrl ?? null;
 }
 
-export type DadosPost = { titulo: string; texto: string; data_post: string; visivel_ate: string | null; tipo: TipoMural; anos_casa: number | null; arquivo?: File | null; imagem_path?: string | null };
+export type DadosPost = { titulo: string; texto: string; data_post: string; visivel_ate: string | null; tipo: TipoMural; anos_casa: number | null; publicar_em?: string | null; arquivo?: File | null; imagem_path?: string | null };
 
 export async function salvarPost(id: string | null, d: DadosPost) {
   let imagem_path = d.imagem_path ?? null;
@@ -52,7 +52,7 @@ export async function salvarPost(id: string | null, d: DadosPost) {
     if (error) throw new Error("Não foi possível enviar a imagem.");
     imagem_path = path;
   }
-  const row = { titulo: d.titulo.trim(), texto: d.texto.trim(), data_post: d.data_post, visivel_ate: d.visivel_ate || null, imagem_path, tipo: d.tipo, anos_casa: d.tipo === "tempo_casa" ? d.anos_casa : null };
+  const row = { titulo: d.titulo.trim(), texto: d.texto.trim(), data_post: d.data_post, visivel_ate: d.visivel_ate || null, imagem_path, tipo: d.tipo, anos_casa: d.tipo === "tempo_casa" ? d.anos_casa : null, publicar_em: d.publicar_em ?? null };
   const { error } = id
     ? await supabase.from("mural_posts").update(row).eq("id", id)
     : await supabase.from("mural_posts").insert(row);

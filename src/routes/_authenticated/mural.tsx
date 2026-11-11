@@ -129,7 +129,7 @@ function PostCard({ post, emFoco, meuId, podeEditar, onEditar }: { post: PostMur
 
   return (
     <li ref={ref} className={`mural-post ${emFoco ? "is-focus" : ""}`} id={`post-${post.id}`}>
-      <span className="mural-data">{post.data_post > hojeBrasil() ? `Agendado para ${dataBR(post.data_post)}` : dataBR(post.data_post)}</span>
+      <span className="mural-data">{post.data_post > hojeBrasil() || (post.publicar_em && new Date(post.publicar_em) > new Date()) ? `Agendado para ${dataBR(post.data_post)}${post.publicar_em ? " às " + new Date(post.publicar_em).toLocaleTimeString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit" }) : ""}` : dataBR(post.data_post)}</span>
       <article className="rounded-lg border bg-card p-5 shadow-sm">
         <div className="flex items-start justify-between gap-3">
           <h2 id={`titulo-post-${post.id}`} className="text-xl font-bold text-foreground">{post.titulo}</h2>
@@ -236,16 +236,20 @@ function PostForm({ post, onClose }: { post: PostMural | null; onClose: () => vo
   const [titulo, setTitulo] = useState(post?.titulo ?? "");
   const [texto, setTexto] = useState(post?.texto ?? "");
   const hoje = hojeBrasil();
-  const [agendar, setAgendar] = useState(Boolean(post && post.data_post > hoje));
-  const [dataAgendada, setDataAgendada] = useState(post && post.data_post > hoje ? post.data_post : "");
-  const data = agendar ? dataAgendada : (post && post.data_post <= hoje ? post.data_post : hoje);
-  const dataInvalida = agendar && (!dataAgendada || dataAgendada <= hoje);
+  const futuro = (q: PostMural | null) => Boolean(q && (q.data_post > hoje || (q.publicar_em && new Date(q.publicar_em) > new Date())));
+  const horaSP = (iso: string) => new Date(iso).toLocaleTimeString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit", hour12: false });
+  const [agendar, setAgendar] = useState(futuro(post));
+  const [dataAgendada, setDataAgendada] = useState(futuro(post) ? post!.data_post : "");
+  const [horaAgendada, setHoraAgendada] = useState(futuro(post) && post!.publicar_em ? horaSP(post!.publicar_em) : "08:00");
+  const data = agendar ? dataAgendada : (post && !futuro(post) ? post.data_post : hoje);
+  const publicarEm = agendar && dataAgendada && horaAgendada ? new Date(`${dataAgendada}T${horaAgendada}:00-03:00`).toISOString() : (post && !futuro(post) ? post.publicar_em : null);
+  const dataInvalida = agendar && (!publicarEm || new Date(publicarEm) <= new Date());
   const [arquivo, setArquivo] = useState<File | null>(null);
   const [tipo, setTipo] = useState<TipoMural>(post?.tipo ?? "aniversario");
   const [anos, setAnos] = useState(post?.anos_casa ? String(post.anos_casa) : "");
   const salvar = useMutation({
-    mutationFn: () => salvarPost(post?.id ?? null, { titulo, texto, data_post: data, visivel_ate: null, tipo, anos_casa: anos ? Number(anos) : null, arquivo, imagem_path: post?.imagem_path ?? null }),
-    onSuccess: () => { toast.success(agendar ? `Post agendado para ${dataBR(data)}.` : "Post publicado."); qc.invalidateQueries({ queryKey: muralKey }); qc.invalidateQueries({ queryKey: avisosKey }); onClose(); },
+    mutationFn: () => salvarPost(post?.id ?? null, { titulo, texto, data_post: data, visivel_ate: null, publicar_em: publicarEm, tipo, anos_casa: anos ? Number(anos) : null, arquivo, imagem_path: post?.imagem_path ?? null }),
+    onSuccess: () => { toast.success(agendar ? `Post agendado para ${dataBR(data)} às ${horaAgendada}.` : "Post publicado."); qc.invalidateQueries({ queryKey: muralKey }); qc.invalidateQueries({ queryKey: avisosKey }); onClose(); },
     onError: (e: Error) => toast.error(e.message),
   });
   return (
@@ -265,8 +269,10 @@ function PostForm({ post, onClose }: { post: PostMural | null; onClose: () => vo
           <div><Label htmlFor="mi">Imagem (ex.: arte de parabéns)</Label><Input id="mi" type="file" accept="image/*" onChange={(e) => setArquivo(e.target.files?.[0] ?? null)} /></div>
           <div className="space-y-2 rounded-md border p-3">
             <label className="flex items-center gap-2 text-sm font-medium"><input type="checkbox" checked={agendar} onChange={(e) => setAgendar(e.target.checked)} /> Agendar post</label>
-            {agendar && <div><Label htmlFor="mag">Publicar em</Label><Input id="mag" type="date" min={hoje} value={dataAgendada} onChange={(e) => setDataAgendada(e.target.value)} />
-              {dataInvalida && dataAgendada && <p className="mt-1 text-xs text-destructive">Escolha uma data a partir de amanhã.</p>}</div>}
+            {agendar && <div className="grid grid-cols-2 gap-3">
+              <div><Label htmlFor="mag">Data</Label><Input id="mag" type="date" min={hoje} value={dataAgendada} onChange={(e) => setDataAgendada(e.target.value)} /></div>
+              <div><Label htmlFor="mah">Hora</Label><Input id="mah" type="time" value={horaAgendada} onChange={(e) => setHoraAgendada(e.target.value)} /></div>
+              {dataInvalida && dataAgendada && <p className="col-span-2 text-xs text-destructive">Escolha uma data e hora futuras.</p>}</div>}
           </div>
           <p className="text-xs text-muted-foreground">O post sai automaticamente no primeiro dia útil do mês seguinte. Aniversários e tempo de casa aparecem em slides separados.</p>
         </div>
