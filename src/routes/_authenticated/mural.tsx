@@ -129,7 +129,7 @@ function PostCard({ post, emFoco, meuId, podeEditar, onEditar }: { post: PostMur
 
   return (
     <li ref={ref} className={`mural-post ${emFoco ? "is-focus" : ""}`} id={`post-${post.id}`}>
-      <span className="mural-data">{dataBR(post.data_post)}</span>
+      <span className="mural-data">{post.data_post > hojeBrasil() ? `Agendado para ${dataBR(post.data_post)}` : dataBR(post.data_post)}</span>
       <article className="rounded-lg border bg-card p-5 shadow-sm">
         <div className="flex items-start justify-between gap-3">
           <h2 id={`titulo-post-${post.id}`} className="text-xl font-bold text-foreground">{post.titulo}</h2>
@@ -235,13 +235,17 @@ function PostForm({ post, onClose }: { post: PostMural | null; onClose: () => vo
   const qc = useQueryClient();
   const [titulo, setTitulo] = useState(post?.titulo ?? "");
   const [texto, setTexto] = useState(post?.texto ?? "");
-  const data = post?.data_post ?? hojeBrasil();
+  const hoje = hojeBrasil();
+  const [agendar, setAgendar] = useState(Boolean(post && post.data_post > hoje));
+  const [dataAgendada, setDataAgendada] = useState(post && post.data_post > hoje ? post.data_post : "");
+  const data = agendar ? dataAgendada : (post && post.data_post <= hoje ? post.data_post : hoje);
+  const dataInvalida = agendar && (!dataAgendada || dataAgendada <= hoje);
   const [arquivo, setArquivo] = useState<File | null>(null);
   const [tipo, setTipo] = useState<TipoMural>(post?.tipo ?? "aniversario");
   const [anos, setAnos] = useState(post?.anos_casa ? String(post.anos_casa) : "");
   const salvar = useMutation({
     mutationFn: () => salvarPost(post?.id ?? null, { titulo, texto, data_post: data, visivel_ate: null, tipo, anos_casa: anos ? Number(anos) : null, arquivo, imagem_path: post?.imagem_path ?? null }),
-    onSuccess: () => { toast.success("Post publicado."); qc.invalidateQueries({ queryKey: muralKey }); qc.invalidateQueries({ queryKey: avisosKey }); onClose(); },
+    onSuccess: () => { toast.success(agendar ? `Post agendado para ${dataBR(data)}.` : "Post publicado."); qc.invalidateQueries({ queryKey: muralKey }); qc.invalidateQueries({ queryKey: avisosKey }); onClose(); },
     onError: (e: Error) => toast.error(e.message),
   });
   return (
@@ -259,11 +263,16 @@ function PostForm({ post, onClose }: { post: PostMural | null; onClose: () => vo
           <div><Label htmlFor="mt">Título</Label><Input id="mt" maxLength={120} value={titulo} onChange={(e) => setTitulo(e.target.value)} placeholder="Feliz aniversário, Maria!" /></div>
           <div><Label htmlFor="mx">Texto</Label><Textarea id="mx" rows={4} value={texto} onChange={(e) => setTexto(e.target.value)} /></div>
           <div><Label htmlFor="mi">Imagem (ex.: arte de parabéns)</Label><Input id="mi" type="file" accept="image/*" onChange={(e) => setArquivo(e.target.files?.[0] ?? null)} /></div>
+          <div className="space-y-2 rounded-md border p-3">
+            <label className="flex items-center gap-2 text-sm font-medium"><input type="checkbox" checked={agendar} onChange={(e) => setAgendar(e.target.checked)} /> Agendar post</label>
+            {agendar && <div><Label htmlFor="mag">Publicar em</Label><Input id="mag" type="date" min={hoje} value={dataAgendada} onChange={(e) => setDataAgendada(e.target.value)} />
+              {dataInvalida && dataAgendada && <p className="mt-1 text-xs text-destructive">Escolha uma data a partir de amanhã.</p>}</div>}
+          </div>
           <p className="text-xs text-muted-foreground">O post sai automaticamente no primeiro dia útil do mês seguinte. Aniversários e tempo de casa aparecem em slides separados.</p>
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={onClose}>Cancelar</Button>
-          <Button onClick={() => salvar.mutate()} disabled={!titulo.trim() || !data || salvar.isPending}>{post ? "Salvar" : "Publicar"}</Button>
+          <Button onClick={() => salvar.mutate()} disabled={!titulo.trim() || !data || dataInvalida || salvar.isPending}>{post ? "Salvar" : agendar ? "Agendar" : "Publicar"}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
