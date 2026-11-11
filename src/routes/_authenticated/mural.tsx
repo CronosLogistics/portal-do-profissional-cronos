@@ -12,10 +12,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { avisosKey } from "@/lib/avisos-client";
 import { useCurrentUser } from "@/hooks/useAuth";
 import {
-  apagarComentario, comentar, editarComentario, EMOJIS_MURAL, excluirPost, listarMural, muralKey, reagirPost, salvarPost, urlImagem,
+  apagarComentario, comentar, editarComentario, EMOJIS_MURAL, excluirPost, listarMural, muralKey, postAgendado, reagirPost, salvarPost, urlImagem,
   marcarMuralLido, type ComentarioMural, type EmojiMural, type PostMural, type TipoMural,
 } from "@/lib/mural-client";
 
@@ -37,12 +38,43 @@ export const Route = createFileRoute("/_authenticated/mural")({
 const hojeBrasil = () => new Date().toLocaleDateString("sv-SE", { timeZone: "America/Sao_Paulo" });
 const dataBR = (d: string) => d.split("-").reverse().join("/");
 
+function ListaPosts({
+  posts, vazio, foco, meuId, podeEditar, onEditar,
+}: {
+  posts: PostMural[];
+  vazio: string;
+  foco?: string;
+  meuId: string | undefined;
+  podeEditar: boolean;
+  onEditar: (p: PostMural) => void;
+}) {
+  if (posts.length === 0) {
+    return <p className="rounded-lg border bg-card p-8 text-center text-sm text-muted-foreground">{vazio}</p>;
+  }
+  return (
+    <ol className="mural-timeline">
+      {posts.map((p) => (
+        <PostCard key={p.id} post={p} emFoco={p.id === foco} meuId={meuId} podeEditar={podeEditar} onEditar={() => onEditar(p)} />
+      ))}
+    </ol>
+  );
+}
+
 function MuralPage() {
   const { post: foco } = Route.useSearch();
   const me = useCurrentUser();
   const podeEditar = Boolean(me.data?.can("conteudo.editar"));
   const posts = useQuery({ queryKey: muralKey, queryFn: listarMural });
   const [form, setForm] = useState<{ open: boolean; post?: PostMural | null }>({ open: false });
+  const lista = posts.data ?? [];
+  const publicados = lista.filter((p) => !postAgendado(p));
+  const agendados = lista.filter((p) => postAgendado(p));
+  const [aba, setAba] = useState("publicados");
+  useEffect(() => {
+    if (!foco || !posts.data) return;
+    if (posts.data.some((p) => p.id === foco && postAgendado(p))) setAba("agendados");
+  }, [foco, posts.data]);
+  const editar = (p: PostMural) => setForm({ open: true, post: p });
 
   return (
     <main className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-8">
@@ -54,12 +86,22 @@ function MuralPage() {
         {podeEditar && <Button onClick={() => setForm({ open: true })}><Plus /> Novo post</Button>}
       </header>
       {posts.isLoading && <p className="text-sm text-muted-foreground">Carregando…</p>}
-      {posts.data?.length === 0 && <p className="rounded-lg border bg-card p-8 text-center text-sm text-muted-foreground">Nenhuma comemoração publicada ainda.</p>}
-      <ol className="mural-timeline">
-        {posts.data?.map((p) => (
-          <PostCard key={p.id} post={p} emFoco={p.id === foco} meuId={me.data?.id} podeEditar={podeEditar} onEditar={() => setForm({ open: true, post: p })} />
-        ))}
-      </ol>
+      {!posts.isLoading && podeEditar ? (
+        <Tabs value={aba} onValueChange={setAba}>
+          <TabsList>
+            <TabsTrigger value="publicados">Publicados</TabsTrigger>
+            <TabsTrigger value="agendados">Agendados{agendados.length ? ` (${agendados.length})` : ""}</TabsTrigger>
+          </TabsList>
+          <TabsContent value="publicados">
+            <ListaPosts posts={publicados} vazio="Nenhuma comemoração publicada ainda." foco={foco} meuId={me.data?.id} podeEditar={podeEditar} onEditar={editar} />
+          </TabsContent>
+          <TabsContent value="agendados">
+            <ListaPosts posts={agendados} vazio="Nenhum post agendado." foco={foco} meuId={me.data?.id} podeEditar={podeEditar} onEditar={editar} />
+          </TabsContent>
+        </Tabs>
+      ) : !posts.isLoading ? (
+        <ListaPosts posts={publicados} vazio="Nenhuma comemoração publicada ainda." foco={foco} meuId={me.data?.id} podeEditar={podeEditar} onEditar={editar} />
+      ) : null}
       {form.open && <PostForm post={form.post ?? null} onClose={() => setForm({ open: false })} />}
     </main>
   );
@@ -129,7 +171,7 @@ function PostCard({ post, emFoco, meuId, podeEditar, onEditar }: { post: PostMur
 
   return (
     <li ref={ref} className={`mural-post ${emFoco ? "is-focus" : ""}`} id={`post-${post.id}`}>
-      <span className="mural-data">{post.data_post > hojeBrasil() || (post.publicar_em && new Date(post.publicar_em) > new Date()) ? `Agendado para ${dataBR(post.data_post)}${post.publicar_em ? " às " + new Date(post.publicar_em).toLocaleTimeString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit" }) : ""}` : dataBR(post.data_post)}</span>
+      <span className="mural-data">{postAgendado(post) ? `Agendado para ${dataBR(post.data_post)}${post.publicar_em ? " às " + new Date(post.publicar_em).toLocaleTimeString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit" }) : ""}` : dataBR(post.data_post)}</span>
       <article className="rounded-lg border bg-card p-5 shadow-sm">
         <div className="flex items-start justify-between gap-3">
           <h2 id={`titulo-post-${post.id}`} className="text-xl font-bold text-foreground">{post.titulo}</h2>
@@ -236,13 +278,13 @@ function PostForm({ post, onClose }: { post: PostMural | null; onClose: () => vo
   const [titulo, setTitulo] = useState(post?.titulo ?? "");
   const [texto, setTexto] = useState(post?.texto ?? "");
   const hoje = hojeBrasil();
-  const futuro = (q: PostMural | null) => Boolean(q && (q.data_post > hoje || (q.publicar_em && new Date(q.publicar_em) > new Date())));
+  const futuro = Boolean(post && postAgendado(post, hoje));
   const horaSP = (iso: string) => new Date(iso).toLocaleTimeString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit", hour12: false });
-  const [agendar, setAgendar] = useState(futuro(post));
-  const [dataAgendada, setDataAgendada] = useState(futuro(post) ? post!.data_post : "");
-  const [horaAgendada, setHoraAgendada] = useState(futuro(post) && post!.publicar_em ? horaSP(post!.publicar_em) : "08:00");
-  const data = agendar ? dataAgendada : (post && !futuro(post) ? post.data_post : hoje);
-  const publicarEm = agendar && dataAgendada && horaAgendada ? new Date(`${dataAgendada}T${horaAgendada}:00-03:00`).toISOString() : (post && !futuro(post) ? post.publicar_em : null);
+  const [agendar, setAgendar] = useState(futuro);
+  const [dataAgendada, setDataAgendada] = useState(futuro ? post!.data_post : "");
+  const [horaAgendada, setHoraAgendada] = useState(futuro && post!.publicar_em ? horaSP(post!.publicar_em) : "08:00");
+  const data = agendar ? dataAgendada : (post && !futuro ? post.data_post : hoje);
+  const publicarEm = agendar && dataAgendada && horaAgendada ? new Date(`${dataAgendada}T${horaAgendada}:00-03:00`).toISOString() : (post && !futuro ? post.publicar_em : null);
   const dataInvalida = agendar && (!publicarEm || new Date(publicarEm) <= new Date());
   const [arquivo, setArquivo] = useState<File | null>(null);
   const [tipo, setTipo] = useState<TipoMural>(post?.tipo ?? "aniversario");

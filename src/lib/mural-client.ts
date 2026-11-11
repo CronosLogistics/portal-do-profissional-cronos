@@ -16,6 +16,11 @@ export type PostMural = {
 export type TipoMural = "geral" | "aniversario" | "tempo_casa";
 export type PostVigente = { id: string; titulo: string; texto: string; imagem_path: string | null; data_post: string; tipo: TipoMural; anos_casa: number | null };
 
+/** Post ainda não visível ao público: data futura ou publicar_em no futuro. */
+export function postAgendado(p: Pick<PostMural, "data_post" | "publicar_em">, hoje = new Date().toLocaleDateString("sv-SE", { timeZone: "America/Sao_Paulo" }), agora = new Date()) {
+  return p.data_post > hoje || Boolean(p.publicar_em && new Date(p.publicar_em) > agora);
+}
+
 export async function listarMural(): Promise<PostMural[]> {
   const { data, error } = await supabase.rpc("listar_mural_com_reacoes");
   if (error) throw error;

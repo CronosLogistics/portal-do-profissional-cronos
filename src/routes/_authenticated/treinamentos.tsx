@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { TreinamentosEditor } from "@/components/treinamentos/TreinamentosEditor";
 import { useCurrentUser } from "@/hooks/useAuth";
+import { limparTextoFormatado, textoParaEditor } from "@/lib/rich-text";
 import { CONTEUDO_PADRAO, carregarTreinamentos, resolverImagens, type IconeEtapa } from "@/lib/treinamentos-client";
 
 const ICONES: Record<IconeEtapa, LucideIcon> = {
@@ -41,6 +42,16 @@ function External({ href, children, ...props }: React.ComponentPropsWithoutRef<"
     <a {...props} href={href} target="_blank" rel="noreferrer">
       {children}
     </a>
+  );
+}
+
+function TextoRico({ html, className }: { html: string; className?: string }) {
+  if (!html) return null;
+  return (
+    <div
+      className={`aviso-html break-words text-muted-foreground ${className ?? ""}`}
+      dangerouslySetInnerHTML={{ __html: limparTextoFormatado(textoParaEditor(html)) }}
+    />
   );
 }
 
@@ -126,7 +137,7 @@ function TreinamentosPage() {
                   <Icon className="h-6 w-6 text-primary" />
                 </span>
                 <h3 className="mb-2 font-display text-xl font-bold">{title}</h3>
-                <p className="text-muted-foreground">{description}</p>
+                <TextoRico html={description} />
               </div>
               );
             })}
@@ -221,7 +232,7 @@ function TreinamentosPage() {
                           <h3 className="mt-1 font-display text-xl font-bold leading-tight md:text-2xl">{step.title}</h3>
                         </div>
                       </div>
-                      <p className="mb-4 text-muted-foreground">{step.description}</p>
+                      <TextoRico html={step.description} className="mb-4" />
                       {step.bullets.length ? (
                         <ul className="mb-4 space-y-2">
                           {step.bullets.map((b) => (

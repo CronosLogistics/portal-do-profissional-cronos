@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { ArrowDown, ArrowUp, Loader2, Plus, Trash2, Upload } from "lucide-react";
 import { toast } from "sonner";
 
+import { EditorTexto } from "@/components/portal/EditorTexto";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -30,8 +31,15 @@ export function TreinamentosEditor({ open, onOpenChange, conteudo, imagens, onSa
   const [salvando, setSalvando] = useState(false);
   const [enviando, setEnviando] = useState<number | null>(null);
   const [previas, setPrevias] = useState<Record<string, string>>({});
+  const [versaoEditor, setVersaoEditor] = useState(0);
 
-  useEffect(() => { if (open) { setC(conteudo); setPrevias({}); } }, [open, conteudo]);
+  useEffect(() => {
+    if (open) {
+      setC(conteudo);
+      setPrevias({});
+      setVersaoEditor((v) => v + 1);
+    }
+  }, [open, conteudo]);
 
   const setEtapa = (i: number, patch: Partial<EtapaTreino>) =>
     setC((p) => ({ ...p, etapas: p.etapas.map((e, j) => (j === i ? { ...e, ...patch } : e)) }));
@@ -115,7 +123,16 @@ export function TreinamentosEditor({ open, onOpenChange, conteudo, imagens, onSa
                       </select>
                     </div>
                   </div>
-                  <div><Label>Descrição</Label><Textarea rows={3} value={e.description} onChange={(ev) => setEtapa(i, { description: ev.target.value })} /></div>
+                  <div className="space-y-2">
+                    <Label>Descrição</Label>
+                    <EditorTexto
+                      key={`etapa-desc-${i}-${versaoEditor}`}
+                      id={`treino-etapa-desc-${i}`}
+                      label="Descrição"
+                      initial={e.description}
+                      onChange={(html) => setEtapa(i, { description: html })}
+                    />
+                  </div>
                   <div><Label>Tópicos (um por linha)</Label>
                     <Textarea rows={2} value={e.bullets.join("\n")} onChange={(ev) => setEtapa(i, { bullets: ev.target.value.split("\n") })} /></div>
                   <div className="grid gap-3 sm:grid-cols-2">
@@ -162,7 +179,19 @@ export function TreinamentosEditor({ open, onOpenChange, conteudo, imagens, onSa
             {c.certificados.map((cert, i) => (
               <div key={i} className="space-y-2 rounded-lg border border-border p-4">
                 <div><Label>Título</Label><Input value={cert.title} onChange={(ev) => setC((x) => ({ ...x, certificados: x.certificados.map((r, j) => j === i ? { ...r, title: ev.target.value } : r) }))} /></div>
-                <div><Label>Texto</Label><Textarea rows={3} value={cert.description} onChange={(ev) => setC((x) => ({ ...x, certificados: x.certificados.map((r, j) => j === i ? { ...r, description: ev.target.value } : r) }))} /></div>
+                <div className="space-y-2">
+                  <Label>Texto</Label>
+                  <EditorTexto
+                    key={`cert-desc-${i}-${versaoEditor}`}
+                    id={`treino-cert-desc-${i}`}
+                    label="Texto"
+                    initial={cert.description}
+                    onChange={(html) => setC((x) => ({
+                      ...x,
+                      certificados: x.certificados.map((r, j) => j === i ? { ...r, description: html } : r),
+                    }))}
+                  />
+                </div>
               </div>
             ))}
           </TabsContent>

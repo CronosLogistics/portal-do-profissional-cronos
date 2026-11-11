@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { criarIdCliente } from "@/lib/client-id";
+import { limparTextoFormatado } from "@/lib/rich-text";
 import { CERTIFICADOS, LINKS, PONTUACAO, STEPS } from "@/components/treinamentos/content";
 
 export const CHAVE_TREINAMENTOS = "treinamentos_conteudo";
@@ -78,9 +79,20 @@ export async function carregarTreinamentos(): Promise<ConteudoTreinamentos> {
 }
 
 export async function salvarTreinamentos(c: ConteudoTreinamentos) {
+  const limpo: ConteudoTreinamentos = {
+    ...c,
+    certificados: c.certificados.map((cert) => ({
+      ...cert,
+      description: limparTextoFormatado(cert.description),
+    })),
+    etapas: c.etapas.map((e) => ({
+      ...e,
+      description: limparTextoFormatado(e.description),
+    })),
+  };
   const { error } = await supabase
     .from("site_content")
-    .upsert({ key: CHAVE_TREINAMENTOS, value: JSON.stringify(c) }, { onConflict: "key" });
+    .upsert({ key: CHAVE_TREINAMENTOS, value: JSON.stringify(limpo) }, { onConflict: "key" });
   if (error) throw error;
 }
 
