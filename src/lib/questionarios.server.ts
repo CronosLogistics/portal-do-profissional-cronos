@@ -12,11 +12,15 @@ async function graph(path: string, init: RequestInit = {}) {
   if (result.status === 204) return {};
   return result.json() as Promise<{ value?: { id: string; fields?: { Title?: string } }[]; "@odata.nextLink"?: string }>;
 }
-async function registrar(chave: string, fields: Record<string, string>) {
+async function registrar(chave: string, fields: Record<string, string>, comData = false) {
   const found = await graph(`/items?$filter=${encodeURIComponent(`fields/Title eq '${chave}'`)}&$select=id&$top=1`, { headers: { Prefer: "HonorNonIndexedQueriesWarningMayFailRandomly" } });
   const existing = found.value?.[0];
   if (existing) { await graph(`/items/${existing.id}/fields`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(fields) }); return; }
-  await graph("/items", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ fields: { ...fields, Title: chave } }) });
+  await graph("/items", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ fields: { ...fields, Title: chave, ...(comData ? { DatadaResposta: dataRespostaSharePoint() } : {}) } }) });
+}
+/** Data (somente dia, horário de Brasília) em que a resposta chega ao SharePoint; o portal não guarda horário para preservar o anonimato. */
+export function dataRespostaSharePoint(agora = new Date()): string {
+  return `${agora.toLocaleDateString("en-CA", { timeZone: "America/Sao_Paulo" })}T12:00:00Z`;
 }
 /** Caller must authenticate and authorize the exact questionnaire before invoking this helper. */
 export async function registrarQuestionarioSharePoint(id: string, respostaId?: string) {
@@ -40,7 +44,7 @@ export async function registrarQuestionarioSharePoint(id: string, respostaId?: s
   for (const resposta of respostas ?? []) {
     let nome = "";
     if (!q.anonimo && resposta.respondente_id) { const profile = await db.from("profiles").select("full_name,email").eq("id", resposta.respondente_id).single(); nome = `${profile.data?.full_name ?? ""} (${profile.data?.email ?? ""})`; }
-    await registrar(`R:${id}:${resposta.id}`, camposRegistro(q, normalizarPerguntas(resposta.perguntas ?? perguntas), resposta.respostas as RespostaItem[], criador.data?.full_name ?? "", nome));
+    await registrar(`R:${id}:${resposta.id}`, camposRegistro(q, normalizarPerguntas(resposta.perguntas ?? perguntas), resposta.respostas as RespostaItem[], criador.data?.full_name ?? "", nome), true);
     const updated = await db.from("questionarios_respostas").update({ sharepoint_registrado: true }).eq("id", resposta.id);
     if (updated.error) throw new Error("Não foi possível confirmar o registro da resposta.");
   }
