@@ -24,6 +24,7 @@ export const rascunhoSchema = z.object({
     tipo: z.enum(["texto", "radio", "checkbox", "bloco"]),
     enunciado: z.string().max(5000),
     opcoes: z.array(z.string().max(200)).max(20).optional(),
+    obrigatoria: z.boolean().optional(),
   })).max(70),
 });
 
@@ -36,7 +37,7 @@ export type RascunhoQuestionario = {
 export type QuestionarioExtraido = {
   titulo: string;
   descricao: string;
-  perguntas: { tipo: string; enunciado: string; descricao: string | null; opcoes: string[] }[];
+  perguntas: { tipo: string; enunciado: string; descricao: string | null; opcoes: string[]; obrigatoria?: boolean }[];
 };
 
 const escapar = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -55,8 +56,8 @@ export function normalizarImportacao(raw: QuestionarioExtraido, novoId: () => st
     }
     const titulo = detalhe ? `${enunciado} — ${detalhe}`.slice(0, 1000) : enunciado;
     const opcoes = [...new Set((p.opcoes ?? []).map(o => o.trim().slice(0, 200)).filter(Boolean))].slice(0, 20);
-    if ((p.tipo === "radio" || p.tipo === "checkbox") && opcoes.length >= 2) perguntas.push({ id: novoId(), tipo: p.tipo, enunciado: titulo, opcoes });
-    else perguntas.push({ id: novoId(), tipo: "texto", enunciado: titulo });
+    if ((p.tipo === "radio" || p.tipo === "checkbox") && opcoes.length >= 2) perguntas.push({ id: novoId(), tipo: p.tipo, enunciado: titulo, opcoes, obrigatoria: p.obrigatoria !== false });
+    else perguntas.push({ id: novoId(), tipo: "texto", enunciado: titulo, obrigatoria: p.obrigatoria !== false });
   }
   return {
     titulo: (raw.titulo ?? "").trim().slice(0, 200),

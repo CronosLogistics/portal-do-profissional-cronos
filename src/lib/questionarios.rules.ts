@@ -20,12 +20,20 @@ export const questionarioExpirado = (q: { expira_em?: string | null; expirado?: 
 export const formatarPrazoQuestionario = (data: string) => data.split("-").reverse().join("/");
 
 const opcoesEscolha = z.array(opcaoSchema).min(2).max(20);
-const perguntaTexto = z.object({ id: idPergunta, tipo: z.literal("texto"), enunciado: enunciadoSimples });
-const perguntaRadio = z.object({ id: idPergunta, tipo: z.literal("radio"), enunciado: enunciadoSimples, opcoes: opcoesEscolha });
-const perguntaCheckbox = z.object({ id: idPergunta, tipo: z.literal("checkbox"), enunciado: enunciadoSimples, opcoes: opcoesEscolha });
+const obrigatoria = z.boolean().optional();
+const perguntaTexto = z.object({ id: idPergunta, tipo: z.literal("texto"), enunciado: enunciadoSimples, obrigatoria });
+const perguntaRadio = z.object({ id: idPergunta, tipo: z.literal("radio"), enunciado: enunciadoSimples, opcoes: opcoesEscolha, obrigatoria });
+const perguntaCheckbox = z.object({ id: idPergunta, tipo: z.literal("checkbox"), enunciado: enunciadoSimples, opcoes: opcoesEscolha, obrigatoria });
 const perguntaBloco = z.object({ id: idPergunta, tipo: z.literal("bloco"), enunciado: enunciadoRico });
 export const perguntaSchema = z.discriminatedUnion("tipo", [perguntaTexto, perguntaRadio, perguntaCheckbox, perguntaBloco]);
 export type PerguntaQuestionario = z.infer<typeof perguntaSchema>;
+
+/** Questions are required unless explicitly marked optional (legacy forms stay required). */
+export const perguntaObrigatoria = (p: PerguntaQuestionario) => p.tipo !== "bloco" && p.obrigatoria !== false;
+export const respostaVazia = (r: unknown) => r === null || r === undefined || (typeof r === "string" && r.trim() === "") || (Array.isArray(r) && r.length === 0);
+/** Whether the respondent may submit: every required question answered. */
+export const respostasCompletas = (perguntas: PerguntaQuestionario[], respostas: RespostaItem[]) =>
+  perguntas.every((p, i) => !perguntaObrigatoria(p) || !respostaVazia(respostas[i]));
 
 /** Accept legacy string[] snapshots and normalize to typed questions. */
 export function normalizarPerguntas(raw: unknown): PerguntaQuestionario[] {
@@ -67,6 +75,7 @@ export function validarRespostas(perguntas: PerguntaQuestionario[], respostas: u
       if (r !== null && r !== undefined && r !== "") throw new Error("Bloco descritivo não recebe resposta");
       return null;
     }
+    if (!perguntaObrigatoria(p) && respostaVazia(r)) return p.tipo === "checkbox" ? [] : "";
     if (p.tipo === "texto") {
       const texto = z.string().trim().min(1).max(5000).parse(r);
       return texto;
@@ -139,8 +148,8 @@ export function camposRegistro(
 
 export function perguntaPadrao(tipo: TipoPergunta = "texto", id: string = criarIdCliente()): PerguntaQuestionario {
   if (tipo === "bloco") return { id, tipo, enunciado: "" };
-  if (tipo === "radio" || tipo === "checkbox") return { id, tipo, enunciado: "", opcoes: ["", ""] };
-  return { id, tipo: "texto", enunciado: "" };
+  if (tipo === "radio" || tipo === "checkbox") return { id, tipo, enunciado: "", opcoes: ["", ""], obrigatoria: true };
+  return { id, tipo: "texto", enunciado: "", obrigatoria: true };
 }
 
 export function respostasIniciais(perguntas: PerguntaQuestionario[]): RespostaItem[] {

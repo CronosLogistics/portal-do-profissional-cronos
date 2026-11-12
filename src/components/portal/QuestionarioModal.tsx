@@ -31,6 +31,8 @@ import {
   formatarPrazoQuestionario,
   perguntaPadrao,
   respostasIniciais,
+  respostasCompletas,
+  perguntaObrigatoria,
   type PerguntaQuestionario,
   type Questionario,
   type RespostaItem,
@@ -121,12 +123,7 @@ export function QuestionarioModal({ questionario, edicao = false, rascunho, onCl
   }, [respondendo, questionario, usuarioId, rascunhoLocalPronto, respostas]);
   const dados = { titulo, descricao, anonimo, perguntas, expira_em: temPrazo ? prazo : null };
   const valido = respondendo
-    ? !expirado && (questionario?.perguntas ?? []).every((p, i) => {
-        const r = respostas[i];
-        if (p.tipo === "bloco") return true;
-        if (p.tipo === "checkbox") return Array.isArray(r) && r.length > 0;
-        return typeof r === "string" && r.trim().length > 0;
-      })
+    ? !expirado && respostasCompletas(questionario?.perguntas ?? [], respostas)
     : !prazoInvalido && novoQuestionarioSchema.safeParse(dados).success;
   const salvar = useMutation({
     mutationFn: () => questionario
@@ -158,8 +155,8 @@ export function QuestionarioModal({ questionario, edicao = false, rascunho, onCl
     if (!atual || atual.tipo === tipo) return;
     const base = { id: atual.id, enunciado: atual.tipo === "bloco" || tipo === "bloco" ? "" : atual.enunciado };
     if (tipo === "bloco") atualizar(i, { ...base, tipo });
-    else if (tipo === "texto") atualizar(i, { ...base, tipo });
-    else atualizar(i, { ...base, tipo, opcoes: "opcoes" in atual ? atual.opcoes : ["", ""] });
+    else if (tipo === "texto") atualizar(i, { ...base, tipo, obrigatoria: atual.tipo === "bloco" ? true : atual.obrigatoria !== false });
+    else atualizar(i, { ...base, tipo, obrigatoria: atual.tipo === "bloco" ? true : atual.obrigatoria !== false, opcoes: "opcoes" in atual ? atual.opcoes : ["", ""] });
   };
   return (<>
     <Dialog open onOpenChange={open => { if (!open) fecharSemEnviar(); }}>
@@ -181,9 +178,9 @@ export function QuestionarioModal({ questionario, edicao = false, rascunho, onCl
                   <div key={p.id} className="min-w-0 space-y-2">
                     {p.tipo === "bloco" ? <HtmlRico html={p.enunciado} /> : (
                       <>
-                        <Label htmlFor={`resposta-${i}`} className="break-words">{i + 1}. {p.enunciado}</Label>
+                        <Label htmlFor={`resposta-${i}`} className="break-words">{i + 1}. {p.enunciado.replace(/\s*\*\s*$/, "")}{perguntaObrigatoria(p) ? <span className="text-destructive" aria-label="obrigatória"> *</span> : <span className="text-xs font-normal text-muted-foreground"> (opcional)</span>}</Label>
                         {p.tipo === "texto" && (
-                          <Textarea id={`resposta-${i}`} required maxLength={5000} value={typeof respostas[i] === "string" ? respostas[i] as string : ""} disabled={salvar.isPending}
+                          <Textarea id={`resposta-${i}`} required={perguntaObrigatoria(p)} maxLength={5000} value={typeof respostas[i] === "string" ? respostas[i] as string : ""} disabled={salvar.isPending}
                             onChange={e => setRespostas(values => values.map((v, n) => n === i ? e.target.value : v))} />
                         )}
                         {p.tipo === "radio" && (
@@ -269,6 +266,12 @@ export function QuestionarioModal({ questionario, edicao = false, rascunho, onCl
                     ) : (
                       <Input id={`pergunta-${i}`} required maxLength={1000} value={p.enunciado} disabled={salvar.isPending} placeholder="Enunciado da pergunta"
                         onChange={e => atualizar(i, { enunciado: e.target.value })} />
+                    )}
+                    {p.tipo !== "bloco" && (
+                      <div className="flex items-center gap-2">
+                        <Switch id={`pergunta-obrigatoria-${i}`} checked={p.obrigatoria !== false} disabled={salvar.isPending} onCheckedChange={v => atualizar(i, { obrigatoria: v })} />
+                        <Label htmlFor={`pergunta-obrigatoria-${i}`} className="font-normal">Resposta obrigatória</Label>
+                      </div>
                     )}
                     {(p.tipo === "radio" || p.tipo === "checkbox") && (
                       <div className="space-y-2">

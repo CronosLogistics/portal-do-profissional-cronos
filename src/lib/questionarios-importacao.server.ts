@@ -11,6 +11,7 @@ const esquema = z.object({
     enunciado: z.string(),
     descricao: z.string().nullable(),
     opcoes: z.array(z.string()),
+    obrigatoria: z.boolean(),
   })),
 });
 
@@ -22,6 +23,7 @@ Regras:
 - tipo "texto": resposta aberta, data, número, e-mail, classificação ou qualquer campo sem lista de opções.
 - tipo "bloco": títulos de seção ou textos informativos sem resposta.
 - Liste TODAS as opções na ordem; para "texto" e "bloco" use opcoes vazio.
+- obrigatoria: true quando a pergunta tem asterisco (*) de obrigatória no original; false caso contrário (blocos: false).
 - Remova numeração, asteriscos de obrigatório e cabeçalhos/rodapés de impressão.
 - descricao da pergunta: texto auxiliar abaixo do enunciado, ou null.
 - Máximo de 70 itens.`;

@@ -6,7 +6,7 @@ const id = () => "id";
 describe("importação do Microsoft Forms", () => {
   it("mantém escolha única com todas as opções", () => {
     const r = normalizarImportacao({ titulo: "T", descricao: "", perguntas: [{ tipo: "radio", enunciado: "Tipo de cadastro", descricao: null, opcoes: ["CPF", "CNPJ"] }] }, id);
-    expect(r.perguntas[0]).toEqual({ id: "id", tipo: "radio", enunciado: "Tipo de cadastro", opcoes: ["CPF", "CNPJ"] });
+    expect(r.perguntas[0]).toEqual({ id: "id", tipo: "radio", enunciado: "Tipo de cadastro", opcoes: ["CPF", "CNPJ"], obrigatoria: true });
   });
   it("converte escolha com menos de duas opções em texto aberto", () => {
     const r = normalizarImportacao({ titulo: "T", descricao: "", perguntas: [{ tipo: "checkbox", enunciado: "Serviços", descricao: null, opcoes: ["Único"] }] }, id);
