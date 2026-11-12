@@ -351,6 +351,13 @@
       "when": 1794508749255,
       "tag": "0049_mencoes",
       "breakpoints": true
+    },
+    {
+      "idx": 50,
+      "version": "7",
+      "when": 1794514570662,
+      "tag": "0050_aviso_remetente_setor_pessoa",
+      "breakpoints": true
     }
   ]
 }

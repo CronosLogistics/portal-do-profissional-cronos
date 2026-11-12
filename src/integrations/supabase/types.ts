@@ -2008,6 +2008,10 @@ export type Database = {
         Args: { _id: string; _respostas: Json }
         Returns: string
       }
+      rotulo_remetente_aviso: {
+        Args: { _autor_id: string; _perfil_id: string }
+        Returns: string
+      }
       salvar_edicao_insider: {
         Args: {
           _conteudo: Json
