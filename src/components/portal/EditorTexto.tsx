@@ -6,9 +6,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { GifPicker } from "@/components/portal/GifPicker";
 import { MencaoPicker } from "@/components/portal/MencaoPicker";
-import { tokenMencao, type Mencionavel } from "@/lib/mencoes";
+import { consultaMencaoAtiva, tokenMencao, type Mencionavel } from "@/lib/mencoes";
 import { gifPermitido } from "@/lib/giphy";
 import { linkPermitido, textoParaEditor } from "@/lib/rich-text";
+
+function textoAntesDoCursor(editor: HTMLDivElement) {
+  const sel = window.getSelection();
+  if (!sel?.rangeCount || !editor.contains(sel.anchorNode)) return "";
+  const r = document.createRange();
+  r.selectNodeContents(editor);
+  r.setEnd(sel.anchorNode!, sel.anchorOffset);
+  return r.toString();
+}
 
 export function EditorTexto({ initial, onChange, label = "Mensagem", id, permitirGif = false, permitirMencao = false }: { initial: string; onChange: (html: string) => void; label?: string; id?: string; permitirGif?: boolean; permitirMencao?: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -19,6 +28,14 @@ export function EditorTexto({ initial, onChange, label = "Mensagem", id, permiti
   const [texto, setTexto] = useState("");
   const [erro, setErro] = useState("");
   const [mencaoAberta, setMencaoAberta] = useState(false);
+  const [consultaMencao, setConsultaMencao] = useState<string | null>(null);
+  const sincronizarMencao = () => {
+    const editor = ref.current;
+    if (!permitirMencao || !editor) return;
+    const q = consultaMencaoAtiva(textoAntesDoCursor(editor));
+    if (q === null) { setMencaoAberta(false); setConsultaMencao(null); }
+    else { setMencaoAberta(true); setConsultaMencao(q); }
+  };
   const inserirMencao = (m: Mencionavel) => {
     const editor = ref.current;
     if (!editor) return;
@@ -27,9 +44,20 @@ export function EditorTexto({ initial, onChange, label = "Mensagem", id, permiti
     if (!sel?.rangeCount || !editor.contains(sel.anchorNode)) { const r = document.createRange(); r.selectNodeContents(editor); r.collapse(false); sel?.removeAllRanges(); sel?.addRange(r); }
     const s = window.getSelection();
     const no = s?.anchorNode; const off = s?.anchorOffset ?? 0;
-    // Replace a just-typed "@" that opened the picker.
-    if (no?.nodeType === Node.TEXT_NODE && off > 0 && no.textContent?.[off - 1] === "@") { const r = document.createRange(); r.setStart(no, off - 1); r.setEnd(no, off); s?.removeAllRanges(); s?.addRange(r); }
+    // Replace the live "@query" that opened/filtered the picker.
+    if (no?.nodeType === Node.TEXT_NODE && off > 0) {
+      const antes = (no.textContent ?? "").slice(0, off);
+      const trecho = antes.match(/@([^\s@]*)$/);
+      if (trecho) {
+        const r = document.createRange();
+        r.setStart(no, off - trecho[0].length);
+        r.setEnd(no, off);
+        s?.removeAllRanges();
+        s?.addRange(r);
+      }
+    }
     document.execCommand("insertText", false, `${tokenMencao(m)} `);
+    setConsultaMencao(null);
     emitir();
   };
   useEffect(() => {
@@ -68,8 +96,8 @@ export function EditorTexto({ initial, onChange, label = "Mensagem", id, permiti
   const tools = [{ icon: Bold, label: "Negrito", run: () => cmd("bold") }, { icon: Italic, label: "Itálico", run: () => cmd("italic") }, { icon: List, label: "Lista", run: () => cmd("insertUnorderedList") }, { icon: ListOrdered, label: "Lista numerada", run: () => cmd("insertOrderedList") }, { icon: Link2, label: "Link", run: abrirLink }];
   return <>
     <div className="rounded-md border border-input">
-      <div className="flex flex-wrap gap-1 border-b p-1">{tools.map(t => <Button key={t.label} type="button" variant="ghost" size="icon" className="h-8 w-8" title={t.label} aria-label={t.label} onMouseDown={e => e.preventDefault()} onClick={t.run}><t.icon /></Button>)}{permitirMencao && <MencaoPicker open={mencaoAberta} onOpenChange={setMencaoAberta} onSelect={inserirMencao} />}{permitirGif && <GifPicker onSelect={inserirGif} className="ml-1" />}</div>
-      <div id={id} ref={ref} contentEditable role="textbox" aria-multiline="true" aria-label={label} className="aviso-html min-h-[160px] break-words px-3 py-2 text-sm outline-none" onInput={e => { emitir(); if (permitirMencao && (e.nativeEvent as InputEvent).data === "@") setMencaoAberta(true); }} onPaste={e => { e.preventDefault(); document.execCommand("insertText", false, e.clipboardData.getData("text/plain")); emitir(); }} />
+      <div className="flex flex-wrap gap-1 border-b p-1">{tools.map(t => <Button key={t.label} type="button" variant="ghost" size="icon" className="h-8 w-8" title={t.label} aria-label={t.label} onMouseDown={e => e.preventDefault()} onClick={t.run}><t.icon /></Button>)}{permitirMencao && <MencaoPicker open={mencaoAberta} onOpenChange={(v) => { setMencaoAberta(v); if (!v) setConsultaMencao(null); }} consulta={consultaMencao} onSelect={inserirMencao} />}{permitirGif && <GifPicker onSelect={inserirGif} className="ml-1" />}</div>
+      <div id={id} ref={ref} contentEditable role="textbox" aria-multiline="true" aria-label={label} className="aviso-html min-h-[160px] break-words px-3 py-2 text-sm outline-none" onInput={() => { emitir(); sincronizarMencao(); }} onPaste={e => { e.preventDefault(); document.execCommand("insertText", false, e.clipboardData.getData("text/plain")); emitir(); sincronizarMencao(); }} />
     </div>
     <Dialog open={open} onOpenChange={setOpen}><DialogContent className="max-w-md" onCloseAutoFocus={e => { e.preventDefault(); ref.current?.focus(); }}>
       <DialogHeader><DialogTitle>Inserir link</DialogTitle></DialogHeader>

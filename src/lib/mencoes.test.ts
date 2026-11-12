@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { mencoesEmHtml, partesMencao, tokenMencao } from "./mencoes";
+import { consultaMencaoAtiva, mencoesEmHtml, partesMencao, tokenMencao } from "./mencoes";
 
 describe("menções", () => {
   it("gera token de pessoa e de departamento", () => {
@@ -11,5 +11,12 @@ describe("menções", () => {
   });
   it("escapa o nome ao virar destaque no aviso", () => {
     expect(mencoesEmHtml('@[<b>x</b>](d:1)')).toBe('<span class="chip-mencao is-depto">@&lt;b&gt;x&lt;/b&gt;</span>');
+  });
+  it("lê a consulta ativa depois de @", () => {
+    expect(consultaMencaoAtiva("@")).toBe("");
+    expect(consultaMencaoAtiva("Oi @M")).toBe("M");
+    expect(consultaMencaoAtiva("Oi @Maria")).toBe("Maria");
+    expect(consultaMencaoAtiva("Oi @Maria ")).toBe(null);
+    expect(consultaMencaoAtiva("email@cronos.com")).toBe(null);
   });
 });

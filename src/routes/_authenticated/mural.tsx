@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { MencaoPicker, TextoComMencoes, inserirMencaoEmTexto } from "@/components/portal/MencaoPicker";
-import { tokenMencao } from "@/lib/mencoes";
+import { consultaMencaoAtiva, tokenMencao } from "@/lib/mencoes";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { avisosKey } from "@/lib/avisos-client";
@@ -122,6 +122,7 @@ function PostCard({ post, emFoco, meuId, podeEditar, onEditar }: { post: PostMur
   const [img, setImg] = useState<string | null>(null);
   const [texto, setTexto] = useState("");
   const [mencao, setMencao] = useState(false);
+  const [consultaMencao, setConsultaMencao] = useState<string | null>(null);
   const [gif, setGif] = useState<string | null>(null);
   const [confirmExcluir, setConfirmExcluir] = useState(false);
   useEffect(() => { urlImagem(post.imagem_path).then(setImg); }, [post.imagem_path]);
@@ -216,8 +217,15 @@ function PostCard({ post, emFoco, meuId, podeEditar, onEditar }: { post: PostMur
           </ul>
           <form className="mt-4 flex gap-2" onSubmit={(e) => { e.preventDefault(); if (texto.trim() || gif) enviar.mutate(); }}>
             <div className="flex-1 space-y-2">
-              <Textarea ref={campo} rows={2} maxLength={1000} value={texto} onChange={(e) => { setTexto(e.target.value); if ((e.nativeEvent as InputEvent).data === "@") setMencao(true); }} placeholder="Escreva sua mensagem de parabéns… (use @ para mencionar)" aria-label="Comentário" aria-describedby={`titulo-post-${post.id}`} />
-              <div className="flex items-center gap-1"><MencaoPicker open={mencao} onOpenChange={setMencao} onSelect={(m) => setTexto((t) => inserirMencaoEmTexto(t, campo.current, tokenMencao(m)))} /><GifAnexo gif={gif} onChange={setGif} /></div>
+              <Textarea ref={campo} rows={2} maxLength={1000} value={texto} onChange={(e) => {
+                const v = e.target.value;
+                setTexto(v);
+                const pos = e.target.selectionStart ?? v.length;
+                const q = consultaMencaoAtiva(v.slice(0, pos));
+                if (q === null) { setMencao(false); setConsultaMencao(null); }
+                else { setMencao(true); setConsultaMencao(q); }
+              }} placeholder="Escreva sua mensagem de parabéns… (use @ para mencionar)" aria-label="Comentário" aria-describedby={`titulo-post-${post.id}`} />
+              <div className="flex items-center gap-1"><MencaoPicker open={mencao} onOpenChange={(v) => { setMencao(v); if (!v) setConsultaMencao(null); }} consulta={consultaMencao} onSelect={(m) => { setTexto((t) => inserirMencaoEmTexto(t, campo.current, tokenMencao(m))); setConsultaMencao(null); }} /><GifAnexo gif={gif} onChange={setGif} /></div>
             </div>
             <Button type="submit" disabled={(!texto.trim() && !gif) || enviar.isPending}>Comentar</Button>
           </form>
@@ -288,6 +296,7 @@ function PostForm({ post, onClose }: { post: PostMural | null; onClose: () => vo
   const [titulo, setTitulo] = useState(post?.titulo ?? "");
   const [texto, setTexto] = useState(post?.texto ?? "");
   const [mencao, setMencao] = useState(false);
+  const [consultaMencao, setConsultaMencao] = useState<string | null>(null);
   const campoTexto = useRef<HTMLTextAreaElement>(null);
   const hoje = hojeBrasil();
   const futuro = Boolean(post && postAgendado(post, hoje));
@@ -319,7 +328,14 @@ function PostForm({ post, onClose }: { post: PostMural | null; onClose: () => vo
             {tipo === "tempo_casa" && <div><Label htmlFor="man">Anos de casa</Label><Input id="man" type="number" min={1} max={80} value={anos} onChange={(e) => setAnos(e.target.value)} /></div>}
           </div>
           <div><Label htmlFor="mt">Título</Label><Input id="mt" maxLength={120} value={titulo} onChange={(e) => setTitulo(e.target.value)} placeholder="Feliz aniversário, Maria!" /></div>
-          <div><Label htmlFor="mx">Texto</Label><Textarea id="mx" ref={campoTexto} rows={4} value={texto} onChange={(e) => { setTexto(e.target.value); if ((e.nativeEvent as InputEvent).data === "@") setMencao(true); }} placeholder="Use @ para mencionar pessoas ou departamentos" /><MencaoPicker open={mencao} onOpenChange={setMencao} onSelect={(m) => setTexto((t) => inserirMencaoEmTexto(t, campoTexto.current, tokenMencao(m)))} /></div>
+          <div><Label htmlFor="mx">Texto</Label><Textarea id="mx" ref={campoTexto} rows={4} value={texto} onChange={(e) => {
+            const v = e.target.value;
+            setTexto(v);
+            const pos = e.target.selectionStart ?? v.length;
+            const q = consultaMencaoAtiva(v.slice(0, pos));
+            if (q === null) { setMencao(false); setConsultaMencao(null); }
+            else { setMencao(true); setConsultaMencao(q); }
+          }} placeholder="Use @ para mencionar pessoas ou departamentos" /><MencaoPicker open={mencao} onOpenChange={(v) => { setMencao(v); if (!v) setConsultaMencao(null); }} consulta={consultaMencao} onSelect={(m) => { setTexto((t) => inserirMencaoEmTexto(t, campoTexto.current, tokenMencao(m))); setConsultaMencao(null); }} /></div>
           <div><Label htmlFor="mi">Imagem (ex.: arte de parabéns)</Label><Input id="mi" type="file" accept="image/*" onChange={(e) => setArquivo(e.target.files?.[0] ?? null)} /></div>
           <div className="space-y-2 rounded-md border p-3">
             <label className="flex items-center gap-2 text-sm font-medium"><input type="checkbox" checked={agendar} onChange={(e) => setAgendar(e.target.checked)} /> Agendar post</label>

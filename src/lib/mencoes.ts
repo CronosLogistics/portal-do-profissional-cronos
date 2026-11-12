@@ -10,6 +10,12 @@ export function tokenMencao(m: Mencionavel) {
   return `@[${nome}](${m.tipo === "pessoa" ? "u" : "d"}:${m.id})`;
 }
 
+/** Active @query at the end of text before the caret; null if there is no live mention. Empty string means just "@". */
+export function consultaMencaoAtiva(textoAntesDoCursor: string): string | null {
+  const m = textoAntesDoCursor.match(/(?:^|[\s\u00A0])@([^\s@]*)$/);
+  return m ? (m[1] ?? "") : null;
+}
+
 /** Splits text into plain strings and mention chips for rendering. */
 export function partesMencao(texto: string): ({ texto: string } | { nome: string; departamento: boolean })[] {
   const out: ({ texto: string } | { nome: string; departamento: boolean })[] = [];
