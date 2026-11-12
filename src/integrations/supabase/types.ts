@@ -1129,6 +1129,7 @@ export type Database = {
           criador_id: string
           descricao: string
           excluindo: boolean
+          expira_em: string | null
           id: string
           perguntas: Json
           revisao: number
@@ -1142,6 +1143,7 @@ export type Database = {
           criador_id: string
           descricao?: string
           excluindo?: boolean
+          expira_em?: string | null
           id?: string
           perguntas: Json
           revisao?: number
@@ -1155,6 +1157,7 @@ export type Database = {
           criador_id?: string
           descricao?: string
           excluindo?: boolean
+          expira_em?: string | null
           id?: string
           perguntas?: Json
           revisao?: number
@@ -1194,6 +1197,7 @@ export type Database = {
           autor_id: string
           criado_em: string
           descricao: string
+          expira_em: string | null
           id: string
           perguntas: Json
           titulo: string
@@ -1204,6 +1208,7 @@ export type Database = {
           autor_id?: string
           criado_em?: string
           descricao?: string
+          expira_em?: string | null
           id?: string
           perguntas?: Json
           titulo?: string
@@ -1214,6 +1219,7 @@ export type Database = {
           autor_id?: string
           criado_em?: string
           descricao?: string
+          expira_em?: string | null
           id?: string
           perguntas?: Json
           titulo?: string
@@ -1584,6 +1590,16 @@ export type Database = {
         }
         Returns: string
       }
+      criar_questionario_com_prazo: {
+        Args: {
+          _anonimo: boolean
+          _descricao: string
+          _expira_em?: string
+          _perguntas: Json
+          _titulo: string
+        }
+        Returns: string
+      }
       departamentos_destinatarios_avisos: {
         Args: never
         Returns: {
@@ -1594,6 +1610,16 @@ export type Database = {
       editar_questionario: {
         Args: {
           _descricao: string
+          _id: string
+          _perguntas: Json
+          _titulo: string
+        }
+        Returns: undefined
+      }
+      editar_questionario_com_prazo: {
+        Args: {
+          _descricao: string
+          _expira_em?: string
           _id: string
           _perguntas: Json
           _titulo: string
@@ -1830,6 +1856,7 @@ export type Database = {
         Args: { _id: string; _perfil: string; _revisao: number }
         Returns: string
       }
+      questionario_prazo_vigente: { Args: { _prazo: string }; Returns: boolean }
       receber_compilado: {
         Args: { _html: string; _mes_ano: string; _titulo: string }
         Returns: string

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Plus, Trash2, Send, Save, FileUp, Sparkles, FileText, Eye, PencilLine } from "lucide-react";
 import { toast } from "sonner";
@@ -20,6 +20,9 @@ import { excluirRascunhoQuestionario, importarQuestionarioForms, salvarRascunhoQ
 import { LIMITE_PDF_BYTES, MINIMO_PERGUNTAS_IA, contarPerguntasImportadas, importacaoTemPerguntasSuficientes, type RascunhoQuestionario } from "@/lib/questionarios-importacao.rules";
 import {
   novoQuestionarioSchema,
+  hojeQuestionarioBrasil,
+  questionarioExpirado,
+  formatarPrazoQuestionario,
   perguntaPadrao,
   type PerguntaQuestionario,
   type Questionario,
@@ -56,6 +59,13 @@ export function QuestionarioModal({ questionario, edicao = false, rascunho, onCl
   const [titulo, setTitulo] = useState(edicao ? questionario?.titulo ?? "" : rascunho?.titulo ?? "");
   const [descricao, setDescricao] = useState(edicao ? questionario?.descricao ?? "" : rascunho?.descricao ?? "");
   const [anonimo, setAnonimo] = useState(edicao ? questionario?.anonimo ?? false : rascunho?.anonimo ?? false);
+  const prazoInicial = edicao ? questionario?.expira_em ?? null : rascunho?.expira_em ?? null;
+  const [temPrazo, setTemPrazo] = useState(Boolean(prazoInicial));
+  const [prazo, setPrazo] = useState(prazoInicial ?? "");
+  const [agora, setAgora] = useState(() => new Date());
+  useEffect(() => { const timer = window.setInterval(() => setAgora(new Date()), 1000); return () => window.clearInterval(timer); }, []);
+  const expirado = respondendo && questionario ? questionarioExpirado(questionario, agora) : false;
+  const prazoInvalido = temPrazo && (!prazo || (prazo < hojeQuestionarioBrasil(agora) && !(edicao && prazo === prazoInicial)));
   const [perguntas, setPerguntas] = useState<PerguntaQuestionario[]>(edicao ? questionario?.perguntas ?? [novaPergunta()] : rascunho?.perguntas?.length ? rascunho.perguntas : [novaPergunta()]);
   const [rascunhoId, setRascunhoId] = useState<string | null>(rascunho?.id ?? null);
   const [versaoEditor, setVersaoEditor] = useState(0);
@@ -84,7 +94,7 @@ export function QuestionarioModal({ questionario, edicao = false, rascunho, onCl
     onError: error => toast.error(error.message),
   });
   const salvarRascunho = useMutation({
-    mutationFn: () => guardarRascunho({ data: { id: rascunhoId, titulo, descricao, anonimo, perguntas } }),
+    mutationFn: () => guardarRascunho({ data: { id: rascunhoId, titulo, descricao, anonimo, perguntas, expira_em: temPrazo ? prazo || null : null } }),
     onSuccess: async r => {
       setRascunhoId(r.id);
       await qc.invalidateQueries({ queryKey: ["questionarios", "rascunhos"] });
@@ -93,15 +103,15 @@ export function QuestionarioModal({ questionario, edicao = false, rascunho, onCl
     onError: error => toast.error(error.message),
   });
   const [respostas, setRespostas] = useState<RespostaItem[]>(() => respostasIniciais(questionario?.perguntas ?? []));
-  const dados = { titulo, descricao, anonimo, perguntas };
+  const dados = { titulo, descricao, anonimo, perguntas, expira_em: temPrazo ? prazo : null };
   const valido = respondendo
-    ? (questionario?.perguntas ?? []).every((p, i) => {
+    ? !expirado && (questionario?.perguntas ?? []).every((p, i) => {
         const r = respostas[i];
         if (p.tipo === "bloco") return true;
         if (p.tipo === "checkbox") return Array.isArray(r) && r.length > 0;
         return typeof r === "string" && r.trim().length > 0;
       })
-    : novoQuestionarioSchema.safeParse(dados).success;
+    : !prazoInvalido && novoQuestionarioSchema.safeParse(dados).success;
   const salvar = useMutation({
     mutationFn: () => questionario
       ? edicao
@@ -116,7 +126,10 @@ export function QuestionarioModal({ questionario, edicao = false, rascunho, onCl
       if (!result.registrado) toast.warning("Salvo no portal; registro no SharePoint pendente. A gestão pode reenviar.");
       onClose();
     },
-    onError: error => toast.error(error.message),
+    onError: error => {
+      toast.error(error.message);
+      if (error.message.includes("prazo de resposta")) { void qc.invalidateQueries({ queryKey: ["questionarios"] }); onClose(); }
+    },
   });
   const atualizar = (i: number, patch: Partial<PerguntaQuestionario> | PerguntaQuestionario) =>
     setPerguntas(values => values.map((p, n) => (n === i ? { ...p, ...patch } as PerguntaQuestionario : p)));
@@ -141,6 +154,8 @@ export function QuestionarioModal({ questionario, edicao = false, rascunho, onCl
               <>
                 {previa && <div className="rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground">Pré-visualização: é assim que os profissionais verão o formulário <strong>{titulo || "Sem título"}</strong> ({anonimo ? "resposta anônima" : "resposta identificada"}). As respostas aqui não são enviadas.</div>}
                 <HtmlRico html={previa ? descricao : questionario?.descricao ?? ""} />
+                {(previa ? temPrazo && prazo : questionario?.expira_em) && <p className="text-sm text-muted-foreground">Respostas até {formatarPrazoQuestionario(previa ? prazo : questionario?.expira_em ?? "")} às 23:59 (Brasília).</p>}
+                {expirado && <p role="alert" className="text-sm text-destructive">O prazo de resposta desta pesquisa foi encerrado.</p>}
                 {(previa ? perguntas : questionario?.perguntas ?? []).map((p, i) => (
                   <div key={p.id} className="min-w-0 space-y-2">
                     {p.tipo === "bloco" ? <HtmlRico html={p.enunciado} /> : (
@@ -206,6 +221,10 @@ export function QuestionarioModal({ questionario, edicao = false, rascunho, onCl
                 <div className="space-y-2"><Label htmlFor="questionario-titulo">Título</Label><Input id="questionario-titulo" required maxLength={200} value={titulo} onChange={e => setTitulo(e.target.value)} disabled={salvar.isPending} /></div>
                 <div className="space-y-2"><Label>Descrição (opcional)</Label><EditorTexto key={`desc-${versaoEditor}`} id="questionario-descricao" label="Descrição" initial={descricao} onChange={setDescricao} /></div>
                 <div className="flex items-center justify-between gap-3"><Label htmlFor="questionario-anonimo">Formulário anônimo</Label><Switch id="questionario-anonimo" checked={anonimo} onCheckedChange={setAnonimo} disabled={salvar.isPending || edicao} /></div>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between gap-3"><Label htmlFor="questionario-tem-prazo">Definir prazo para responder</Label><Switch id="questionario-tem-prazo" checked={temPrazo} onCheckedChange={setTemPrazo} disabled={salvar.isPending} /></div>
+                  {temPrazo && <div className="space-y-2"><Label htmlFor="questionario-prazo">Data de expiração</Label><Input id="questionario-prazo" type="date" required min={edicao && prazo === prazoInicial ? prazo : hojeQuestionarioBrasil(agora)} value={prazo} onChange={e => setPrazo(e.target.value)} disabled={salvar.isPending} /><p className="text-xs text-muted-foreground">Respostas até 23:59 do dia escolhido, no horário de Brasília.</p>{prazoInvalido && prazo && <p role="alert" className="text-xs text-destructive">Escolha uma data a partir de hoje.</p>}</div>}
+                </div>
                 {perguntas.map((p, i) => (
                   <div key={p.id} className="min-w-0 space-y-3 rounded-md border p-3">
                     <div className="flex flex-wrap items-center justify-between gap-2">

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { criarIdCliente } from "./client-id";
 import type { PerguntaQuestionario } from "./questionarios.rules";
+import { prazoQuestionarioSchema } from "./questionarios.rules";
 
 export const LIMITE_PDF_BYTES = 8 * 1024 * 1024;
 
@@ -17,6 +18,7 @@ export const rascunhoSchema = z.object({
   titulo: z.string().max(200),
   descricao: z.string().max(10000),
   anonimo: z.boolean(),
+  expira_em: prazoQuestionarioSchema,
   perguntas: z.array(z.object({
     id: z.string().min(1).max(80),
     tipo: z.enum(["texto", "radio", "checkbox", "bloco"]),
@@ -28,6 +30,7 @@ export const rascunhoSchema = z.object({
 export type RascunhoQuestionario = {
   id: string; titulo: string; descricao: string; anonimo: boolean;
   perguntas: PerguntaQuestionario[]; atualizado_em: string;
+  expira_em?: string | null;
 };
 
 export type QuestionarioExtraido = {

@@ -4,13 +4,13 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { importacaoFormsSchema, normalizarImportacao, rascunhoSchema, type RascunhoQuestionario } from "./questionarios-importacao.rules";
 
 export const listarRascunhosQuestionario = createServerFn({ method: "GET" }).middleware([requireSupabaseAuth]).handler(async ({ context }): Promise<RascunhoQuestionario[]> => {
-  const r = await context.supabase.from("questionarios_rascunhos").select("id, titulo, descricao, anonimo, perguntas, atualizado_em").order("atualizado_em", { ascending: false });
+  const r = await context.supabase.from("questionarios_rascunhos").select("id, titulo, descricao, anonimo, perguntas, atualizado_em, expira_em").order("atualizado_em", { ascending: false });
   if (r.error) throw new Error("Não foi possível consultar os rascunhos.");
   return (r.data ?? []) as unknown as RascunhoQuestionario[];
 });
 
 export const salvarRascunhoQuestionario = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth]).inputValidator(input => rascunhoSchema.parse(input)).handler(async ({ data, context }) => {
-  const campos = { titulo: data.titulo, descricao: data.descricao, anonimo: data.anonimo, perguntas: data.perguntas as never };
+  const campos = { titulo: data.titulo, descricao: data.descricao, anonimo: data.anonimo, perguntas: data.perguntas as never, ...(data.expira_em !== undefined ? { expira_em: data.expira_em } : {}) };
   const r = data.id
     ? await context.supabase.from("questionarios_rascunhos").update(campos).eq("id", data.id).select("id").single()
     : await context.supabase.from("questionarios_rascunhos").insert(campos).select("id").single();

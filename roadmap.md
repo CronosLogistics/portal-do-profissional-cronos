@@ -1,4 +1,8 @@
 # Atualização visual do Portal do Profissional
+## Prazo de resposta das pesquisas
+- [x] Adicionar prazo opcional na criação, rascunhos e edição, com vencimento ao final do dia em Brasília.
+- [x] Bloquear respostas vencidas e removê-las das pendências sem apagar respostas anteriores.
+- [x] Validar testes de vencimento, preservação e reabertura; criação, edição e remoção de prazo relidas na tela autenticada, computador/celular sem erros. Pesquisas temporárias removidas.
 ## Feedbacks sem equipe vinculada
 - [x] Mostrar diretamente recebidos sem abas para profissionais sem liderados; preservar abas para quem possui equipe, mesmo sem feedbacks.
 - [x] Validar 14 testes e tela autenticada de Maria sem abas; conta sem feedbacks recebidos, portanto nenhum cartão real foi exercitado nesta verificação.

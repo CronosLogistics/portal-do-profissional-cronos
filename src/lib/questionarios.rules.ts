@@ -10,6 +10,14 @@ const opcaoSchema = z.string().trim().min(1).max(200);
 const enunciadoSimples = z.string().trim().min(1).max(1000);
 const enunciadoRico = z.string().max(5000).transform(v => limparTextoFormatado(v)).refine(htmlComConteudo, "Texto obrigatório");
 const descricaoRica = z.string().max(10000).transform(v => limparTextoFormatado(v));
+export const prazoQuestionarioSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine(v => {
+  const d = new Date(`${v}T12:00:00Z`);
+  return Number.isFinite(d.getTime()) && d.toISOString().slice(0, 10) === v;
+}, "Data inválida").nullable().optional();
+export const hojeQuestionarioBrasil = (agora = new Date()) => agora.toLocaleDateString("sv-SE", { timeZone: "America/Sao_Paulo" });
+export const questionarioExpirado = (q: { expira_em?: string | null; expirado?: boolean }, agora = new Date()) =>
+  q.expira_em ? hojeQuestionarioBrasil(agora) > q.expira_em : Boolean(q.expirado);
+export const formatarPrazoQuestionario = (data: string) => data.split("-").reverse().join("/");
 
 const opcoesEscolha = z.array(opcaoSchema).min(2).max(20);
 const perguntaTexto = z.object({ id: idPergunta, tipo: z.literal("texto"), enunciado: enunciadoSimples });
@@ -43,6 +51,7 @@ export const novoQuestionarioSchema = z.object({
   descricao: descricaoRica,
   anonimo: z.boolean(),
   perguntas: perguntasSchema,
+  expira_em: prazoQuestionarioSchema,
 });
 export const editarQuestionarioSchema = novoQuestionarioSchema.extend({ id: z.string().uuid() });
 export const idQuestionarioSchema = z.object({ id: z.string().uuid() });
@@ -89,6 +98,8 @@ export type Questionario = {
   perguntas: PerguntaQuestionario[];
   respondido: boolean;
   excluindo?: boolean;
+  expira_em?: string | null;
+  expirado?: boolean;
 };
 export type GestaoQuestionario = {
   total: number;

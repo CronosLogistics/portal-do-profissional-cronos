@@ -17,7 +17,7 @@ export const contarQuestionariosPendentes = createServerFn({ method: "GET" }).mi
   return Number(result.data ?? 0);
 });
 export const criarQuestionario = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth]).inputValidator(input => novoQuestionarioSchema.parse(input)).handler(async ({ data, context }) => {
-  const result = await context.supabase.rpc("criar_questionario", { _titulo: data.titulo, _descricao: data.descricao, _anonimo: data.anonimo, _perguntas: data.perguntas });
+  const result = await context.supabase.rpc("criar_questionario_com_prazo", { _titulo: data.titulo, _descricao: data.descricao, _anonimo: data.anonimo, _perguntas: data.perguntas, ...(data.expira_em ? { _expira_em: data.expira_em } : {}) });
   if (result.error || !result.data) throw new Error("Não foi possível criar o formulário. Confira sua permissão e os campos.");
   let registrado = true;
   try { const { registrarQuestionarioSharePoint } = await import("./questionarios.server"); await registrarQuestionarioSharePoint(result.data); } catch { registrado = false; }
@@ -25,6 +25,7 @@ export const criarQuestionario = createServerFn({ method: "POST" }).middleware([
 });
 export const responderQuestionario = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth]).inputValidator(input => respostaQuestionarioSchema.parse(input)).handler(async ({ data, context }) => {
   const result = await context.supabase.rpc("responder_questionario", { _id: data.id, _respostas: data.respostas });
+  if (result.error?.message.includes("Prazo de resposta encerrado")) throw new Error("O prazo de resposta desta pesquisa foi encerrado.");
   if (result.error || !result.data) throw new Error("Não foi possível enviar. Responda todas as perguntas e confira se já respondeu este formulário.");
   let registrado = true;
   try { const { registrarQuestionarioSharePoint } = await import("./questionarios.server"); await registrarQuestionarioSharePoint(data.id, result.data); } catch { registrado = false; }
@@ -46,7 +47,10 @@ export const reenviarQuestionarioSharePoint = createServerFn({ method: "POST" })
   return { registrado: true };
 });
 export const editarQuestionario = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth]).inputValidator(input => editarQuestionarioSchema.parse(input)).handler(async ({ data, context }) => {
-  const result = await context.supabase.rpc("editar_questionario", { _id: data.id, _titulo: data.titulo, _descricao: data.descricao, _perguntas: data.perguntas });
+  const campos = { _id: data.id, _titulo: data.titulo, _descricao: data.descricao, _perguntas: data.perguntas };
+  const result = data.expira_em === undefined
+    ? await context.supabase.rpc("editar_questionario", campos)
+    : await context.supabase.rpc("editar_questionario_com_prazo", { ...campos, ...(data.expira_em ? { _expira_em: data.expira_em } : {}) });
   if (result.error) throw new Error("Não foi possível editar o formulário. Confira sua permissão e os campos.");
   let registrado = true;
   try { const { registrarQuestionarioSharePoint } = await import("./questionarios.server"); await registrarQuestionarioSharePoint(data.id); } catch { registrado = false; }

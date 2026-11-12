@@ -43,7 +43,7 @@ function ListaPosts({
 }: {
   posts: PostMural[];
   vazio: string;
-  foco?: string;
+  foco?: string | undefined;
   meuId: string | undefined;
   podeEditar: boolean;
   onEditar: (p: PostMural) => void;
