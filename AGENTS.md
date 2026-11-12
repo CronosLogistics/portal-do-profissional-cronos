@@ -36,4 +36,3 @@
 - Audit log: DB triggers write insert-only `auditoria_logs`; admins read via RPCs. Why: captures every change path, immutable.
 - Questionnaire deadlines are nullable Brazil-local dates enforced by database triggers and permission-checked atomic RPCs; expired forms leave pending feeds while management and previous responses remain accessible. Why: editing or stale open forms cannot bypass expiration or erase submissions.
 
-- GIFs come only from Giphy (public browser key in `src/lib/giphy.ts`); body `<img>` and comment `gif_url` are restricted to Giphy https URLs by both `limpar_html_aviso`/`gif_permitido` and `rich-text.ts`. Interactive common notices (`permite_interacao`) reuse avisos_comentarios/reacoes via `pode_interagir_compilado`; `avisos.interacao` is granted to system Administrators and named people in service-role-only `permissoes_individuais`. Why: individual grants survive department sync and arbitrary images can't be injected.
