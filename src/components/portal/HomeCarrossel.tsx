@@ -171,7 +171,8 @@ function SlideMural({ posts }: { posts: PostVigente[] }) {
   }, [chave]);
   if (!post) return null;
   const data = post.data_post.split("-").reverse().join("/");
-  const resumo = !varios && post.texto ? post.texto.slice(0, 160) + (post.texto.length > 160 ? "…" : "") : "";
+  const textoLimpo = post.texto.replace(/@\[([^\][]{1,80})\]\((?:u|d):[0-9A-Za-z_-]{1,40}\)/g, "@$1");
+  const resumo = !varios && textoLimpo ? textoLimpo.slice(0, 160) + (textoLimpo.length > 160 ? "…" : "") : "";
   const titulo = varios ? posts.map((p) => p.titulo).join(" · ") : post.titulo;
   const anos = !varios ? post.anos_casa : null;
 

@@ -639,6 +639,67 @@ export type Database = {
         }
         Relationships: []
       }
+      mencoes: {
+        Row: {
+          autor_id: string
+          aviso_id: string | null
+          comentario_id: string | null
+          criado_em: string
+          id: string
+          lido_em: string | null
+          origem: string
+          post_id: string | null
+          usuario_id: string
+          via_departamento: boolean
+        }
+        Insert: {
+          autor_id: string
+          aviso_id?: string | null
+          comentario_id?: string | null
+          criado_em?: string
+          id?: string
+          lido_em?: string | null
+          origem: string
+          post_id?: string | null
+          usuario_id: string
+          via_departamento?: boolean
+        }
+        Update: {
+          autor_id?: string
+          aviso_id?: string | null
+          comentario_id?: string | null
+          criado_em?: string
+          id?: string
+          lido_em?: string | null
+          origem?: string
+          post_id?: string | null
+          usuario_id?: string
+          via_departamento?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mencoes_aviso_id_fkey"
+            columns: ["aviso_id"]
+            isOneToOne: false
+            referencedRelation: "avisos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mencoes_comentario_id_fkey"
+            columns: ["comentario_id"]
+            isOneToOne: false
+            referencedRelation: "mural_comentarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mencoes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "mural_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mural_comentarios: {
         Row: {
           criado_em: string
@@ -1592,6 +1653,14 @@ export type Database = {
         }[]
       }
       avisos_enviados_destinatarios: { Args: never; Returns: Json }
+      buscar_mencionaveis: {
+        Args: { _busca: string }
+        Returns: {
+          id: string
+          nome: string
+          tipo: string
+        }[]
+      }
       buscar_profissionais_ativos: {
         Args: { _busca: string }
         Returns: {
@@ -1823,6 +1892,7 @@ export type Database = {
         }[]
       }
       listar_questionarios: { Args: never; Returns: Json }
+      marcar_mencao_lida: { Args: { _id: string }; Returns: undefined }
       marcar_mural_lido: { Args: { _post_id: string }; Returns: undefined }
       marcar_todas_notificacoes_lidas: { Args: never; Returns: number }
       marcar_todos_avisos_lidos: { Args: never; Returns: number }
@@ -1865,6 +1935,22 @@ export type Database = {
           titulo: string
         }[]
       }
+      notificacoes_mencoes: {
+        Args: never
+        Returns: {
+          confirmado_em: string
+          editado_em: string
+          exige_confirmacao: boolean
+          expira_em: string
+          id: string
+          lido: boolean
+          mensagem: string
+          perfil_nome: string
+          publicar_em: string
+          tipo: string
+          titulo: string
+        }[]
+      }
       notificacoes_mural: {
         Args: never
         Returns: {
@@ -1896,6 +1982,17 @@ export type Database = {
       receber_compilado: {
         Args: { _html: string; _mes_ano: string; _titulo: string }
         Returns: string
+      }
+      registrar_mencoes: {
+        Args: {
+          _autor: string
+          _aviso: string
+          _coment: string
+          _origem: string
+          _post: string
+          _texto: string
+        }
+        Returns: undefined
       }
       reservar_departamentos: { Args: never; Returns: boolean }
       reservar_insider: {

@@ -1,3 +1,4 @@
+import { mencoesEmHtml } from "@/lib/mencoes";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { MessageCircle, SmilePlus, Trash2 } from "lucide-react";
@@ -43,7 +44,7 @@ export function AvisoHtml({ html }: { html: string }) {
   return (
     <div
       className="aviso-html"
-      dangerouslySetInnerHTML={{ __html: html }}
+      dangerouslySetInnerHTML={{ __html: mencoesEmHtml(html) }}
       onClick={(e) => {
         const a = (e.target as HTMLElement).closest("a");
         if (a?.href) {

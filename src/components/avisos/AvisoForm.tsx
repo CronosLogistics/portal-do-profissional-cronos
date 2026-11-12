@@ -137,7 +137,7 @@ export function AvisoForm({ open, onClose, aviso }: { open: boolean; onClose: ()
             </div>
             <div className="grid gap-2">
               <Label>Mensagem</Label>
-              <EditorTexto initial={mensagem} onChange={setMensagem} permitirGif />
+              <EditorTexto initial={mensagem} onChange={setMensagem} permitirGif permitirMencao />
             </div>
             {!publicado && (
               <div className="grid gap-2">

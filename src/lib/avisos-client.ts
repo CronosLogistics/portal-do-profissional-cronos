@@ -15,10 +15,16 @@ export type AvisoRecebido = {
   confirmado_em?: string | null;
 };
 
-export type TipoAviso = "comum" | "insider" | "compilado" | "mural" | "questionario";
+export type TipoAviso = "comum" | "insider" | "compilado" | "mural" | "questionario" | "mencao";
 
 /** Destino ao abrir um item do feed unificado de notificações. */
-export function destinoNotificacao(a: { id: string; tipo: TipoAviso }): { to: "/mural"; search: { post: string } } | { to: "/formularios-internos"; search: { pesquisa: string } } | { to: "/avisos"; search: { aviso: string } } {
+export function destinoNotificacao(a: { id: string; tipo: TipoAviso; mensagem?: string }): { to: "/mural"; search: { post: string } } | { to: "/formularios-internos"; search: { pesquisa: string } } | { to: "/avisos"; search: { aviso: string } } {
+  if (a.tipo === "mencao") {
+    // Mention rows carry their target as "aviso:<id>" or "mural:<id>"; opening marks the mention read.
+    void import("@/lib/mencoes").then((m) => m.marcarMencaoLida(a.id));
+    const [alvo, id = ""] = (a.mensagem ?? "").split(":");
+    return alvo === "mural" ? { to: "/mural", search: { post: id } } : { to: "/avisos", search: { aviso: id } };
+  }
   if (a.tipo === "mural") return { to: "/mural", search: { post: a.id } };
   if (a.tipo === "questionario") return { to: "/formularios-internos", search: { pesquisa: a.id } };
   return { to: "/avisos", search: { aviso: a.id } };
