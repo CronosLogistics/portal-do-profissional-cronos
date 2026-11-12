@@ -16,7 +16,7 @@ export function partesMencao(texto: string): ({ texto: string } | { nome: string
   let i = 0;
   for (const m of texto.matchAll(MENCAO_RE)) {
     if (m.index! > i) out.push({ texto: texto.slice(i, m.index) });
-    out.push({ nome: m[1], departamento: m[2] === "d" });
+    out.push({ nome: m[1] ?? "", departamento: m[2] === "d" });
     i = m.index! + m[0].length;
   }
   if (i < texto.length) out.push({ texto: texto.slice(i) });
