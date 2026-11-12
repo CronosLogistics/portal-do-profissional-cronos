@@ -142,3 +142,51 @@ export function perguntaPadrao(tipo: TipoPergunta = "texto", id: string = criarI
   if (tipo === "radio" || tipo === "checkbox") return { id, tipo, enunciado: "", opcoes: ["", ""] };
   return { id, tipo: "texto", enunciado: "" };
 }
+
+export function respostasIniciais(perguntas: PerguntaQuestionario[]): RespostaItem[] {
+  return perguntas.map(p => (p.tipo === "checkbox" ? [] : p.tipo === "bloco" ? null : ""));
+}
+
+/** Browser draft of an in-progress questionnaire answer; restored only when question IDs still match. */
+export type RascunhoRespostaLocal = {
+  questionarioId: string;
+  perguntaIds: string[];
+  respostas: RespostaItem[];
+  atualizadoEm: string;
+};
+
+function respostaRascunhoCompativel(p: PerguntaQuestionario, r: unknown): RespostaItem | undefined {
+  if (p.tipo === "bloco") return r === null || r === undefined || r === "" ? null : undefined;
+  if (p.tipo === "texto") return typeof r === "string" && r.length <= 5000 ? r : undefined;
+  if (p.tipo === "radio") {
+    if (typeof r !== "string") return undefined;
+    if (!r) return "";
+    return p.opcoes.includes(r) ? r : "";
+  }
+  if (!Array.isArray(r)) return undefined;
+  const unicas = [...new Set(r.filter((o): o is string => typeof o === "string" && p.opcoes.includes(o)))];
+  return unicas;
+}
+
+/** Returns restored answers when the draft matches the published questions; otherwise null. */
+export function aplicarRascunhoRespostas(perguntas: PerguntaQuestionario[], rascunho: RascunhoRespostaLocal | null | undefined): RespostaItem[] | null {
+  if (!rascunho || rascunho.perguntaIds.length !== perguntas.length) return null;
+  if (!perguntas.every((p, i) => p.id === rascunho.perguntaIds[i])) return null;
+  if (!Array.isArray(rascunho.respostas) || rascunho.respostas.length !== perguntas.length) return null;
+  const aplicadas: RespostaItem[] = [];
+  for (let i = 0; i < perguntas.length; i++) {
+    const item = respostaRascunhoCompativel(perguntas[i]!, rascunho.respostas[i]);
+    if (item === undefined) return null;
+    aplicadas.push(item);
+  }
+  return aplicadas;
+}
+
+export function rascunhoRespostaTemProgresso(perguntas: PerguntaQuestionario[], respostas: RespostaItem[]): boolean {
+  return perguntas.some((p, i) => {
+    const r = respostas[i];
+    if (p.tipo === "bloco") return false;
+    if (p.tipo === "checkbox") return Array.isArray(r) && r.length > 0;
+    return typeof r === "string" && r.trim().length > 0;
+  });
+}

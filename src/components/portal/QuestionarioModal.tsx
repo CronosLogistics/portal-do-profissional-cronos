@@ -13,17 +13,24 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { EditorTexto } from "@/components/portal/EditorTexto";
+import { useCurrentUser } from "@/hooks/useAuth";
 import { avisosKey } from "@/lib/avisos-client";
 import { criarQuestionario, editarQuestionario, responderQuestionario } from "@/lib/questionarios.functions";
 import { criarIdCliente } from "@/lib/client-id";
 import { excluirRascunhoQuestionario, importarQuestionarioForms, salvarRascunhoQuestionario } from "@/lib/questionarios-rascunhos.functions";
 import { LIMITE_PDF_BYTES, MINIMO_PERGUNTAS_IA, contarPerguntasImportadas, importacaoTemPerguntasSuficientes, type RascunhoQuestionario } from "@/lib/questionarios-importacao.rules";
 import {
+  carregarRespostasLocais,
+  gravarRascunhoRespostaLocal,
+  limparRascunhoRespostaLocal,
+} from "@/lib/questionarios-resposta-local";
+import {
   novoQuestionarioSchema,
   hojeQuestionarioBrasil,
   questionarioExpirado,
   formatarPrazoQuestionario,
   perguntaPadrao,
+  respostasIniciais,
   type PerguntaQuestionario,
   type Questionario,
   type RespostaItem,
@@ -38,10 +45,6 @@ function HtmlRico({ html }: { html: string }) {
   return <div className="aviso-html break-words text-sm text-muted-foreground" dangerouslySetInnerHTML={{ __html: limparTextoFormatado(textoParaEditor(html)) }} />;
 }
 
-function respostasIniciais(perguntas: PerguntaQuestionario[]): RespostaItem[] {
-  return perguntas.map(p => (p.tipo === "checkbox" ? [] : p.tipo === "bloco" ? null : ""));
-}
-
 function lerBase64(arquivo: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const leitor = new FileReader();
@@ -53,6 +56,8 @@ function lerBase64(arquivo: File): Promise<string> {
 
 export function QuestionarioModal({ questionario, edicao = false, rascunho, onClose }: { questionario?: Questionario; edicao?: boolean; rascunho?: RascunhoQuestionario; onClose: () => void }) {
   const qc = useQueryClient();
+  const me = useCurrentUser();
+  const usuarioId = me.data?.id;
   const criar = useServerFn(criarQuestionario), responder = useServerFn(responderQuestionario), editar = useServerFn(editarQuestionario);
   const respondendo = Boolean(questionario && !edicao);
   const criando = !questionario;
@@ -74,6 +79,7 @@ export function QuestionarioModal({ questionario, edicao = false, rascunho, onCl
   const [arquivo, setArquivo] = useState<File | null>(null);
   const [textoImportacao, setTextoImportacao] = useState("");
   const [poucasPerguntas, setPoucasPerguntas] = useState<number | null>(null);
+  const [rascunhoLocalPronto, setRascunhoLocalPronto] = useState(!respondendo);
   const importar = useServerFn(importarQuestionarioForms), guardarRascunho = useServerFn(salvarRascunhoQuestionario), apagarRascunho = useServerFn(excluirRascunhoQuestionario);
   const leitura = useMutation({
     mutationFn: async () => {
@@ -103,6 +109,16 @@ export function QuestionarioModal({ questionario, edicao = false, rascunho, onCl
     onError: error => toast.error(error.message),
   });
   const [respostas, setRespostas] = useState<RespostaItem[]>(() => respostasIniciais(questionario?.perguntas ?? []));
+  useEffect(() => {
+    if (!respondendo || !questionario || !usuarioId || rascunhoLocalPronto) return;
+    const salvas = carregarRespostasLocais(usuarioId, questionario.id, questionario.perguntas);
+    if (salvas) setRespostas(salvas);
+    setRascunhoLocalPronto(true);
+  }, [respondendo, questionario, usuarioId, rascunhoLocalPronto]);
+  useEffect(() => {
+    if (!respondendo || !questionario || !usuarioId || !rascunhoLocalPronto) return;
+    gravarRascunhoRespostaLocal(usuarioId, questionario.id, questionario.perguntas, respostas);
+  }, [respondendo, questionario, usuarioId, rascunhoLocalPronto, respostas]);
   const dados = { titulo, descricao, anonimo, perguntas, expira_em: temPrazo ? prazo : null };
   const valido = respondendo
     ? !expirado && (questionario?.perguntas ?? []).every((p, i) => {
@@ -119,6 +135,7 @@ export function QuestionarioModal({ questionario, edicao = false, rascunho, onCl
         : responder({ data: { id: questionario.id, respostas } })
       : criar({ data: dados }).then(async r => { if (rascunhoId) { try { await apagarRascunho({ data: { id: rascunhoId } }); } catch { /* draft cleanup is best-effort */ } } return r; }),
     onSuccess: async result => {
+      if (respondendo && questionario && usuarioId) limparRascunhoRespostaLocal(usuarioId, questionario.id);
       await qc.invalidateQueries({ queryKey: ["questionarios"] });
       await qc.invalidateQueries({ queryKey: avisosKey });
       if (criando) await qc.invalidateQueries({ queryKey: ["questionarios", "rascunhos"] });
@@ -131,6 +148,9 @@ export function QuestionarioModal({ questionario, edicao = false, rascunho, onCl
       if (error.message.includes("prazo de resposta")) { void qc.invalidateQueries({ queryKey: ["questionarios"] }); onClose(); }
     },
   });
+  const fecharSemEnviar = () => {
+    if (!salvar.isPending) onClose();
+  };
   const atualizar = (i: number, patch: Partial<PerguntaQuestionario> | PerguntaQuestionario) =>
     setPerguntas(values => values.map((p, n) => (n === i ? { ...p, ...patch } as PerguntaQuestionario : p)));
   const trocarTipo = (i: number, tipo: TipoPergunta) => {
@@ -142,7 +162,7 @@ export function QuestionarioModal({ questionario, edicao = false, rascunho, onCl
     else atualizar(i, { ...base, tipo, opcoes: "opcoes" in atual ? atual.opcoes : ["", ""] });
   };
   return (<>
-    <Dialog open onOpenChange={open => { if (!open && !salvar.isPending) onClose(); }}>
+    <Dialog open onOpenChange={open => { if (!open) fecharSemEnviar(); }}>
       <DialogContent className="flex max-h-[min(92dvh,100svh)] w-[calc(100%-2rem)] max-w-2xl flex-col gap-4 overflow-hidden p-4 sm:p-6">
         <DialogHeader className="shrink-0 pr-8">
           <DialogTitle className="break-words">{edicao ? "Editar formulário interno" : questionario?.titulo ?? "Novo formulário interno"}</DialogTitle>
@@ -153,6 +173,7 @@ export function QuestionarioModal({ questionario, edicao = false, rascunho, onCl
             {(respondendo && questionario) || previa ? (
               <>
                 {previa && <div className="rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground">Pré-visualização: é assim que os profissionais verão o formulário <strong>{titulo || "Sem título"}</strong> ({anonimo ? "resposta anônima" : "resposta identificada"}). As respostas aqui não são enviadas.</div>}
+                {respondendo && !previa && <p className="text-sm text-muted-foreground">Suas respostas são salvas automaticamente neste navegador até o envio.</p>}
                 <HtmlRico html={previa ? descricao : questionario?.descricao ?? ""} />
                 {(previa ? temPrazo && prazo : questionario?.expira_em) && <p className="text-sm text-muted-foreground">Respostas até {formatarPrazoQuestionario(previa ? prazo : questionario?.expira_em ?? "")} às 23:59 (Brasília).</p>}
                 {expirado && <p role="alert" className="text-sm text-destructive">O prazo de resposta desta pesquisa foi encerrado.</p>}
@@ -273,7 +294,7 @@ export function QuestionarioModal({ questionario, edicao = false, rascunho, onCl
           </div>
           <DialogFooter className="shrink-0 flex-col-reverse gap-2 border-t pt-4 sm:flex-row sm:flex-wrap sm:justify-end">
             {!respondendo && <Button type="button" variant="ghost" disabled={salvar.isPending} onClick={() => { if (!previa) setRespostas(respostasIniciais(perguntas)); setPrevia(v => !v); }}>{previa ? <><PencilLine />Voltar à edição</> : <><Eye />Pré-visualizar</>}</Button>}
-            <Button type="button" variant="outline" disabled={salvar.isPending} onClick={onClose}>Cancelar</Button>
+            <Button type="button" variant="outline" disabled={salvar.isPending} onClick={fecharSemEnviar}>{respondendo ? "Continuar depois" : "Cancelar"}</Button>
             {criando && <Button type="button" variant="secondary" disabled={salvar.isPending || salvarRascunho.isPending || leitura.isPending} onClick={() => salvarRascunho.mutate()}><FileText />{salvarRascunho.isPending ? "Salvando…" : "Salvar rascunho"}</Button>}
             <Button type="submit" disabled={!valido || salvar.isPending || previa}>{edicao ? <Save /> : <Send />}{salvar.isPending ? "Salvando…" : edicao ? "Salvar alterações" : respondendo ? "Enviar resposta" : "Publicar formulário"}</Button>
           </DialogFooter>
