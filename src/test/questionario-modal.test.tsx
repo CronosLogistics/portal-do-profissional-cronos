@@ -15,6 +15,8 @@ vi.mock("@/hooks/useAuth", () => ({ useCurrentUser: () => ({ data: { id: "100000
 import { QuestionarioModal } from "@/components/portal/QuestionarioModal";
 
 vi.stubGlobal("ResizeObserver", class { observe() {} unobserve() {} disconnect() {} });
+const rolar = vi.fn();
+Element.prototype.scrollIntoView = rolar;
 
 afterEach(() => { cleanup(); vi.clearAllMocks(); localStorage.clear(); });
 
@@ -28,9 +30,9 @@ const questionario: Questionario = {
   ],
 };
 
-function abrir() {
+function abrir(formulario = questionario) {
   const onClose = vi.fn();
-  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><QuestionarioModal questionario={questionario} onClose={onClose} /></QueryClientProvider>);
+  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><QuestionarioModal questionario={formulario} onClose={onClose} /></QueryClientProvider>);
   return onClose;
 }
 
@@ -46,15 +48,28 @@ it("envia as perguntas publicadas com checkbox, rádio, texto e bloco informativ
   await waitFor(() => expect(onClose).toHaveBeenCalled());
 });
 
-it("não libera o envio enquanto uma pergunta publicada não foi respondida", () => {
+it("permite tentar enviar e direciona à primeira obrigatória pendente sem enviar respostas incompletas", () => {
   abrir();
   fireEvent.click(screen.getByRole("checkbox", { name: "Amei!" }));
-  expect(screen.getByRole("button", { name: "Enviar resposta" })).toBeDisabled();
-  fireEvent.click(screen.getByRole("radio", { name: "Sim" }));
-  expect(screen.getByRole("button", { name: "Enviar resposta" })).toBeDisabled();
-  fireEvent.change(screen.getByRole("textbox"), { target: { value: "   " } });
-  expect(screen.getByRole("button", { name: "Enviar resposta" })).toBeDisabled();
+  const enviar = screen.getByRole("button", { name: "Enviar resposta" });
+  expect(enviar).toBeEnabled();
+  fireEvent.click(enviar);
+  expect(rolar).toHaveBeenCalled();
+  expect(screen.getByRole("radio", { name: "Sim" })).toHaveFocus();
   expect(responder).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole("radio", { name: "Sim" }));
+  fireEvent.change(screen.getByRole("textbox"), { target: { value: "   " } });
+  fireEvent.click(enviar);
+  expect(screen.getByRole("textbox")).toHaveFocus();
+  expect(responder).not.toHaveBeenCalled();
+});
+
+it("envia com comentário opcional vazio", async () => {
+  abrir({ ...questionario, perguntas: questionario.perguntas.map(p => p.tipo === "texto" ? { ...p, obrigatoria: false } : p) });
+  fireEvent.click(screen.getByRole("checkbox", { name: "Amei!" }));
+  fireEvent.click(screen.getByRole("radio", { name: "Sim" }));
+  fireEvent.click(screen.getByRole("button", { name: "Enviar resposta" }));
+  await waitFor(() => expect(responder).toHaveBeenCalledWith({ data: { id: questionario.id, respostas: [["Amei!"], null, "Sim", ""] } }));
 });
 
 it("salva o progresso no localStorage e restaura ao reabrir", async () => {

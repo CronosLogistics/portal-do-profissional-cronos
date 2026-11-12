@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Plus, Trash2, Send, Save, FileUp, Sparkles, FileText, Eye, PencilLine } from "lucide-react";
 import { toast } from "sonner";
@@ -112,6 +112,9 @@ export function QuestionarioModal({ questionario, edicao = false, rascunho, onCl
     onError: error => toast.error(error.message),
   });
   const [respostas, setRespostas] = useState<RespostaItem[]>(() => respostasIniciais(questionario?.perguntas ?? []));
+  const [tentouEnviar, setTentouEnviar] = useState(false);
+  const camposResposta = useRef(new Map<number, HTMLDivElement>());
+  const pendentes = (questionario?.perguntas ?? []).flatMap((p, i) => respostasCompletas([p], [respostas[i] ?? null]) ? [] : [i]);
   useEffect(() => {
     if (!respondendo || !questionario || !usuarioId || rascunhoLocalPronto) return;
     const salvas = carregarRespostasLocais(usuarioId, questionario.id, questionario.perguntas);
@@ -166,7 +169,20 @@ export function QuestionarioModal({ questionario, edicao = false, rascunho, onCl
           <DialogTitle className="break-words">{edicao ? "Editar formulário interno" : questionario?.titulo ?? "Novo formulário interno"}</DialogTitle>
           <DialogDescription>{edicao ? "Respostas recebidas preservadas; anonimato mantido." : questionario ? questionario.anonimo ? "Resposta anônima" : "Resposta identificada" : "Cadastro de questionário"}</DialogDescription>
         </DialogHeader>
-        <form className="flex min-h-0 min-w-0 flex-1 flex-col gap-4" onSubmit={e => { e.preventDefault(); if (valido && !previa && !salvar.isPending) salvar.mutate(); }}>
+        <form noValidate={respondendo} className="flex min-h-0 min-w-0 flex-1 flex-col gap-4" onSubmit={e => {
+          e.preventDefault();
+          if (previa || salvar.isPending || expirado) return;
+          if (respondendo && pendentes.length) {
+            setTentouEnviar(true);
+            const primeira = pendentes[0];
+            const campo = primeira === undefined ? undefined : camposResposta.current.get(primeira);
+            campo?.scrollIntoView({ behavior: "auto", block: "center" });
+            const controle = campo?.querySelector<HTMLElement>('textarea, [role="radio"], [role="checkbox"]');
+            (controle ?? campo)?.focus({ preventScroll: true });
+            return;
+          }
+          if (valido) salvar.mutate();
+        }}>
           <div className="min-h-0 min-w-0 flex-1 space-y-5 overflow-y-auto overflow-x-hidden overscroll-contain pr-1">
             {(respondendo && questionario) || previa ? (
               <>
@@ -176,7 +192,7 @@ export function QuestionarioModal({ questionario, edicao = false, rascunho, onCl
                 {(previa ? temPrazo && prazo : questionario?.expira_em) && <p className="text-sm text-muted-foreground">Respostas até {formatarPrazoQuestionario(previa ? prazo : questionario?.expira_em ?? "")} às 23:59 (Brasília).</p>}
                 {expirado && <p role="alert" className="text-sm text-destructive">O prazo de resposta desta pesquisa foi encerrado.</p>}
                 {(previa ? perguntas : questionario?.perguntas ?? []).map((p, i) => (
-                  <div key={p.id} className="min-w-0 space-y-2">
+                  <div key={p.id} tabIndex={-1} ref={el => { if (el) camposResposta.current.set(i, el); else camposResposta.current.delete(i); }} className="min-w-0 space-y-2">
                     {p.tipo === "bloco" ? <HtmlRico html={p.enunciado} /> : (
                       <>
                         <Label htmlFor={`resposta-${i}`} className="break-words">{i + 1}. {p.enunciado.replace(/\s*\*\s*$/, "")}{perguntaObrigatoria(p) ? <span className="text-destructive" aria-label="obrigatória"> *</span> : <span className="text-xs font-normal text-muted-foreground"> (opcional)</span>}</Label>
@@ -213,6 +229,7 @@ export function QuestionarioModal({ questionario, edicao = false, rascunho, onCl
                             })}
                           </div>
                         )}
+                        {!previa && tentouEnviar && pendentes.includes(i) && <p className="text-sm text-destructive">Responda esta pergunta obrigatória.</p>}
                       </>
                     )}
                   </div>
@@ -296,11 +313,12 @@ export function QuestionarioModal({ questionario, edicao = false, rascunho, onCl
               </>
             )}
           </div>
+          {respondendo && tentouEnviar && pendentes.length > 0 && <p role="alert" className="shrink-0 text-sm text-destructive">Faltam respostas obrigatórias nas perguntas: {pendentes.map(i => i + 1).join(", ")}. Suas respostas preenchidas foram mantidas.</p>}
           <DialogFooter className="shrink-0 flex-col-reverse gap-2 border-t pt-4 sm:flex-row sm:flex-wrap sm:justify-end">
             {!respondendo && <Button type="button" variant="ghost" disabled={salvar.isPending} onClick={() => { if (!previa) setRespostas(respostasIniciais(perguntas)); setPrevia(v => !v); }}>{previa ? <><PencilLine />Voltar à edição</> : <><Eye />Pré-visualizar</>}</Button>}
             <Button type="button" variant="outline" disabled={salvar.isPending} onClick={fecharSemEnviar}>{respondendo ? "Continuar depois" : "Cancelar"}</Button>
             {criando && <Button type="button" variant="secondary" disabled={salvar.isPending || salvarRascunho.isPending || leitura.isPending} onClick={() => salvarRascunho.mutate()}><FileText />{salvarRascunho.isPending ? "Salvando…" : "Salvar rascunho"}</Button>}
-            <Button type="submit" disabled={!valido || salvar.isPending || previa}>{edicao ? <Save /> : <Send />}{salvar.isPending ? "Salvando…" : edicao ? "Salvar alterações" : respondendo ? "Enviar resposta" : "Publicar formulário"}</Button>
+            <Button type="submit" disabled={(respondendo ? expirado : !valido) || salvar.isPending || previa}>{edicao ? <Save /> : <Send />}{salvar.isPending ? "Salvando…" : edicao ? "Salvar alterações" : respondendo ? "Enviar resposta" : "Publicar formulário"}</Button>
           </DialogFooter>
         </form>
       </DialogContent>
