@@ -8,6 +8,7 @@ export const PERMISSOES = [
   { codigo: "avisos.publicar", nome: "Publicar avisos", descricao: "Criar avisos em nome dos perfis de que a pessoa faz parte." },
   { codigo: "avisos.gerenciar", nome: "Gerenciar avisos", descricao: "Editar e arquivar avisos de qualquer perfil." },
   { codigo: "avisos.confirmacao", nome: "Permitir avisos com confirmações de leitura", descricao: "Enviar avisos de leitura obrigatória e acompanhar quem confirmou ou não confirmou ciência." },
+  { codigo: "avisos.interacao", nome: "Permitir interação em avisos", descricao: "Criar avisos com comentários, reações e GIFs. Liberada individualmente (Matheus Bernardes e Fabio Rengel) e para Administradores." },
   { codigo: "avisos.insider", nome: "Publicar o Cronos Insider", descricao: "Editar e publicar o Cronos Insider; a edição fica 3 dias no carrossel da página Início." },
   { codigo: "conteudo.editar", nome: "Editar conteúdos", descricao: "Cadastrar benefícios, parceiros, recompensas e textos do portal." },
   { codigo: "documentos.gerenciar", nome: "Gerenciar documentos", descricao: "Incluir, editar e remover links na página Documentos." },

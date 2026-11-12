@@ -6,7 +6,7 @@ export const EMOJIS_MURAL = ["👍", "❤️", "👏", "🎉", "😮"] as const;
 export type EmojiMural = (typeof EMOJIS_MURAL)[number];
 export type ReacaoMural = { emoji: string; total: number; meu: boolean };
 
-export type ComentarioMural = { id: string; texto: string; criado_em: string; editado_em: string | null; usuario_id: string; nome: string };
+export type ComentarioMural = { id: string; texto: string; gif_url?: string | null; criado_em: string; editado_em: string | null; usuario_id: string; nome: string };
 export type PostMural = {
   id: string; titulo: string; texto: string; imagem_path: string | null;
   data_post: string; visivel_ate: string | null; criado_em: string; comentarios: ComentarioMural[];
@@ -69,8 +69,8 @@ export async function excluirPost(id: string) {
   if (error) throw error;
 }
 
-export async function comentar(post_id: string, texto: string) {
-  const { error } = await supabase.from("mural_comentarios").insert({ post_id, texto: texto.trim() });
+export async function comentar(post_id: string, texto: string, gifUrl: string | null = null) {
+  const { error } = await supabase.from("mural_comentarios").insert({ post_id, texto: texto.trim(), gif_url: gifUrl });
   if (error) throw error;
 }
 export async function editarComentario(id: string, texto: string) {

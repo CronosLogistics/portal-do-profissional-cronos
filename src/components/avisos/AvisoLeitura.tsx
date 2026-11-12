@@ -22,6 +22,8 @@ import {
 } from "@/lib/avisos-client";
 import { formatarDataBrasilia } from "@/lib/avisos-rules";
 import { InsiderPublicado } from "./InsiderJornal";
+import { GifPicker } from "@/components/portal/GifPicker";
+import { gifPermitido } from "@/lib/giphy";
 
 export type AvisoExibido = {
   id?: string;
@@ -68,7 +70,7 @@ export function AvisoCorpo({ aviso }: { aviso: AvisoExibido }) {
         </DialogDescription>
       </DialogHeader>
       {aviso.tipo === "compilado" && aviso.id ? <CompiladoHtml avisoId={aviso.id} fallback={aviso.mensagem} /> : aviso.tipo === "insider" && aviso.id ? <InsiderPublicado avisoId={aviso.id} fallback={<AvisoHtml html={aviso.mensagem} />} /> : <AvisoHtml html={aviso.mensagem} />}
-      {(aviso.tipo === "compilado" || aviso.tipo === "insider") && aviso.id ? <CompiladoInteracoes avisoId={aviso.id} /> : null}
+      {(aviso.tipo === "compilado" || aviso.tipo === "insider") && aviso.id ? <CompiladoInteracoes avisoId={aviso.id} /> : aviso.id && (!aviso.tipo || aviso.tipo === "comum") ? <CompiladoInteracoes avisoId={aviso.id} opcional /> : null}
     </>
   );
 }
@@ -132,17 +134,20 @@ function CompiladoAtalhos({ avisoId }: { avisoId: string }) {
   );
 }
 
-function CompiladoInteracoes({ avisoId }: { avisoId: string }) {
+/** `opcional`: avisos comuns só mostram a seção quando o banco libera interação. */
+function CompiladoInteracoes({ avisoId, opcional = false }: { avisoId: string; opcional?: boolean }) {
   const me = useCurrentUser();
   const qc = useQueryClient();
   const [texto, setTexto] = useState("");
+  const [gif, setGif] = useState<string | null>(null);
   const interacoes = useQuery({ queryKey: interacoesKey(avisoId), queryFn: () => interacoesCompilado(avisoId) });
   const podeRemover = Boolean(me.data?.can("conteudo.editar"));
 
   const enviar = useMutation({
-    mutationFn: () => comentarCompilado(avisoId, texto),
+    mutationFn: () => comentarCompilado(avisoId, texto, gif),
     onSuccess: () => {
       setTexto("");
+      setGif(null);
       qc.invalidateQueries({ queryKey: interacoesKey(avisoId) });
     },
     onError: () => toast.error("Não foi possível comentar."),
@@ -156,6 +161,7 @@ function CompiladoInteracoes({ avisoId }: { avisoId: string }) {
 
   const comentarios = interacoes.data?.comentarios ?? [];
   const reacoes = interacoes.data?.reacoes ?? [];
+  if (opcional && !interacoes.data?.disponivel) return null;
 
   return (
     <section id="compilado-comentarios" className="compilado-interacoes">
@@ -196,9 +202,10 @@ function CompiladoInteracoes({ avisoId }: { avisoId: string }) {
         className="mt-4 flex gap-2"
         onSubmit={(e) => {
           e.preventDefault();
-          if (texto.trim()) enviar.mutate();
+          if (texto.trim() || gif) enviar.mutate();
         }}
       >
+        <div className="flex-1 space-y-2">
         <Textarea
           id="compilado-campo-comentario"
           rows={2}
@@ -208,7 +215,9 @@ function CompiladoInteracoes({ avisoId }: { avisoId: string }) {
           placeholder="Deixe um comentário…"
           aria-label="Comentário"
         />
-        <Button type="submit" disabled={!texto.trim() || enviar.isPending}>
+        <GifAnexo gif={gif} onChange={setGif} />
+        </div>
+        <Button type="submit" disabled={(!texto.trim() && !gif) || enviar.isPending}>
           Comentar
         </Button>
       </form>
@@ -249,7 +258,8 @@ function ComentarioCompiladoItem({
           )}
         </div>
       </div>
-      <p className="mt-1 whitespace-pre-line text-sm text-foreground">{c.texto}</p>
+      {c.texto && <p className="mt-1 whitespace-pre-line text-sm text-foreground">{c.texto}</p>}
+      {gifPermitido(c.gif_url) && <img src={c.gif_url} alt="GIF" loading="lazy" className="comentario-gif" />}
     </li>
   );
 }
@@ -290,4 +300,19 @@ export function AvisoLeitura({ aviso, onClose }: { aviso: AvisoExibido | null; o
 /** Insider e compilado abrem no modal central grande (B1), em formato de página de leitura. */
 export function leituraGrande(aviso: AvisoExibido | null) {
   return aviso?.tipo === "insider" || aviso?.tipo === "compilado";
+}
+
+/** Botão GIF + prévia removível do GIF anexado ao comentário. */
+export function GifAnexo({ gif, onChange }: { gif: string | null; onChange: (url: string | null) => void }) {
+  return (
+    <div className="flex items-start gap-2">
+      <GifPicker onSelect={onChange} />
+      {gif && (
+        <div className="relative">
+          <img src={gif} alt="GIF selecionado" className="comentario-gif mt-0" />
+          <Button type="button" size="sm" variant="secondary" className="absolute right-1 top-1 h-6 px-2 text-xs" onClick={() => onChange(null)}>Remover</Button>
+        </div>
+      )}
+    </div>
+  );
 }

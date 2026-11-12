@@ -11,7 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useCurrentUser } from "@/hooks/useAuth";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { avisosKey, departamentosDestinatarios, perfisRemetentes, salvarAviso, type AvisoEnviado } from "@/lib/avisos-client";
+import { avisoPermiteInteracao, avisosKey, departamentosDestinatarios, perfisRemetentes, salvarAviso, type AvisoEnviado } from "@/lib/avisos-client";
 import { brasiliaParaUtc, statusAviso, TITULO_MAX, utcParaBrasilia } from "@/lib/avisos-rules";
 import { AvisoHtml } from "./AvisoLeitura";
 import { formatarDataBrasilia } from "@/lib/avisos-rules";
@@ -35,6 +35,14 @@ export function AvisoForm({ open, onClose, aviso }: { open: boolean; onClose: ()
   const [exigeConfirmacao, setExigeConfirmacao] = useState(false);
   const me = useCurrentUser();
   const podeConfirmacao = Boolean(me.data?.can("avisos.confirmacao"));
+  const podeInteracao = Boolean(me.data?.can("avisos.interacao"));
+  const [permiteInteracao, setPermiteInteracao] = useState(false);
+  const [interacaoOriginal, setInteracaoOriginal] = useState(false);
+  useEffect(() => {
+    if (!open) return;
+    setPermiteInteracao(false); setInteracaoOriginal(false);
+    if (aviso?.id) void avisoPermiteInteracao(aviso.id).then((v) => { setPermiteInteracao(v); setInteracaoOriginal(v); });
+  }, [open, aviso?.id]);
 
   useEffect(() => {
     if (!open) return;
@@ -61,7 +69,7 @@ export function AvisoForm({ open, onClose, aviso }: { open: boolean; onClose: ()
       if (destino === "departamentos" && departamentosIds.length === 0) throw new Error("Selecione pelo menos um departamento.");
       if (quando === "agendar" && !agendarEm && !publicado) throw new Error("Informe a data e hora do agendamento.");
       const publicarEm = publicado && aviso ? aviso.publicar_em : quando === "agora" ? new Date().toISOString() : brasiliaParaUtc(agendarEm);
-      return salvarAviso({ perfil_id: perfilId, titulo, mensagem, publicar_em: publicarEm, expira_em: expiraEm ? brasiliaParaUtc(expiraEm) : null, tipo: aviso?.tipo ?? "comum", exige_confirmacao: exigeConfirmacao, departamentos_ids: destino === "todos" ? [] : departamentosIds }, aviso?.id);
+      return salvarAviso({ perfil_id: perfilId, titulo, mensagem, publicar_em: publicarEm, expira_em: expiraEm ? brasiliaParaUtc(expiraEm) : null, tipo: aviso?.tipo ?? "comum", exige_confirmacao: exigeConfirmacao, ...(permiteInteracao !== interacaoOriginal ? { permite_interacao: permiteInteracao } : {}), departamentos_ids: destino === "todos" ? [] : departamentosIds }, aviso?.id);
     },
     onSuccess: async () => {
       toast.success(aviso ? "Aviso atualizado." : quando === "agora" ? "Aviso publicado." : "Aviso agendado.");
@@ -106,11 +114,21 @@ export function AvisoForm({ open, onClose, aviso }: { open: boolean; onClose: ()
               )}
               {!perfis.isLoading && !remetentes.length && !aviso && <p className="text-xs text-destructive">Você não faz parte de nenhum perfil que pode publicar avisos.</p>}
             </div>
-            {(podeConfirmacao || exigeConfirmacao) && (!aviso || aviso.tipo === "comum") && (
-              <label className="flex items-center gap-3 rounded-md border p-3 text-sm">
-                <Checkbox checked={exigeConfirmacao} disabled={publicado || !podeConfirmacao} onCheckedChange={(v) => setExigeConfirmacao(v === true)} />
-                <strong>Exigir confirmação de leitura?</strong>
-              </label>
+            {(!aviso || aviso.tipo === "comum") && (podeConfirmacao || exigeConfirmacao || podeInteracao || permiteInteracao) && (
+              <div className="grid gap-3 sm:grid-cols-2">
+                {(podeConfirmacao || exigeConfirmacao) && (
+                  <label className="flex items-center gap-3 rounded-md border p-3 text-sm">
+                    <Checkbox checked={exigeConfirmacao} disabled={publicado || !podeConfirmacao} onCheckedChange={(v) => setExigeConfirmacao(v === true)} />
+                    <strong>Exigir confirmação de leitura?</strong>
+                  </label>
+                )}
+                {(podeInteracao || permiteInteracao) && (
+                  <label className="flex items-center gap-3 rounded-md border p-3 text-sm">
+                    <Checkbox checked={permiteInteracao} disabled={!podeInteracao} onCheckedChange={(v) => setPermiteInteracao(v === true)} />
+                    <strong>Permitir interação?</strong>
+                  </label>
+                )}
+              </div>
             )}
             {aviso?.tipo === "insider" && <p className="rounded-md bg-muted p-3 text-sm">Edição do <strong>Cronos Insider</strong>. Corrigir o texto atualiza a mesma edição no carrossel.</p>}
             <div className="grid gap-2">
@@ -119,7 +137,7 @@ export function AvisoForm({ open, onClose, aviso }: { open: boolean; onClose: ()
             </div>
             <div className="grid gap-2">
               <Label>Mensagem</Label>
-              <EditorTexto initial={mensagem} onChange={setMensagem} />
+              <EditorTexto initial={mensagem} onChange={setMensagem} permitirGif />
             </div>
             {!publicado && (
               <div className="grid gap-2">

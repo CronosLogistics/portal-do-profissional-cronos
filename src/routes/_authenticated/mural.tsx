@@ -14,6 +14,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { avisosKey } from "@/lib/avisos-client";
+import { GifAnexo } from "@/components/avisos/AvisoLeitura";
+import { gifPermitido } from "@/lib/giphy";
 import { useCurrentUser } from "@/hooks/useAuth";
 import {
   apagarComentario, comentar, editarComentario, EMOJIS_MURAL, excluirPost, listarMural, muralKey, postAgendado, reagirPost, salvarPost, urlImagem,
@@ -117,6 +119,7 @@ function PostCard({ post, emFoco, meuId, podeEditar, onEditar }: { post: PostMur
   const campo = useRef<HTMLTextAreaElement>(null);
   const [img, setImg] = useState<string | null>(null);
   const [texto, setTexto] = useState("");
+  const [gif, setGif] = useState<string | null>(null);
   const [confirmExcluir, setConfirmExcluir] = useState(false);
   useEffect(() => { urlImagem(post.imagem_path).then(setImg); }, [post.imagem_path]);
   useEffect(() => {
@@ -154,8 +157,8 @@ function PostCard({ post, emFoco, meuId, podeEditar, onEditar }: { post: PostMur
   }, [emFoco, post.id]);
   const atualizar = () => qc.invalidateQueries({ queryKey: muralKey });
   const enviar = useMutation({
-    mutationFn: () => comentar(post.id, texto),
-    onSuccess: () => { setTexto(""); atualizar(); },
+    mutationFn: () => comentar(post.id, texto, gif),
+    onSuccess: () => { setTexto(""); setGif(null); atualizar(); },
     onError: () => toast.error("Não foi possível comentar."),
   });
   const excluir = useMutation({
@@ -208,9 +211,12 @@ function PostCard({ post, emFoco, meuId, podeEditar, onEditar }: { post: PostMur
           <ul className="space-y-3">
             {post.comentarios.map((c) => <Comentario key={c.id} c={c} meu={c.usuario_id === meuId} podeRemover={podeEditar} onMudou={atualizar} />)}
           </ul>
-          <form className="mt-4 flex gap-2" onSubmit={(e) => { e.preventDefault(); if (texto.trim()) enviar.mutate(); }}>
-            <Textarea ref={campo} rows={2} maxLength={1000} value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Escreva sua mensagem de parabéns…" aria-label="Comentário" aria-describedby={`titulo-post-${post.id}`} />
-            <Button type="submit" disabled={!texto.trim() || enviar.isPending}>Comentar</Button>
+          <form className="mt-4 flex gap-2" onSubmit={(e) => { e.preventDefault(); if (texto.trim() || gif) enviar.mutate(); }}>
+            <div className="flex-1 space-y-2">
+              <Textarea ref={campo} rows={2} maxLength={1000} value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Escreva sua mensagem de parabéns…" aria-label="Comentário" aria-describedby={`titulo-post-${post.id}`} />
+              <GifAnexo gif={gif} onChange={setGif} />
+            </div>
+            <Button type="submit" disabled={(!texto.trim() && !gif) || enviar.isPending}>Comentar</Button>
           </form>
         </div>
       </article>
@@ -254,9 +260,10 @@ function Comentario({ c, meu, podeRemover, onMudou }: { c: ComentarioMural; meu:
       {editando ? (
         <div className="mt-2 space-y-2">
           <Textarea rows={2} maxLength={1000} value={texto} onChange={(e) => setTexto(e.target.value)} />
-          <div className="flex gap-2"><Button size="sm" onClick={salvar} disabled={!texto.trim()}>Salvar</Button><Button size="sm" variant="ghost" onClick={() => { setTexto(c.texto); setEditando(false); }}>Cancelar</Button></div>
+          <div className="flex gap-2"><Button size="sm" onClick={salvar} disabled={!texto.trim() && !c.gif_url}>Salvar</Button><Button size="sm" variant="ghost" onClick={() => { setTexto(c.texto); setEditando(false); }}>Cancelar</Button></div>
         </div>
-      ) : <p className="mt-1 whitespace-pre-line text-sm text-foreground">{c.texto}</p>}
+      ) : c.texto ? <p className="mt-1 whitespace-pre-line text-sm text-foreground">{c.texto}</p> : null}
+      {!editando && gifPermitido(c.gif_url) && <img src={c.gif_url} alt="GIF" loading="lazy" className="comentario-gif" />}
       <AlertDialog open={confirmApagar} onOpenChange={setConfirmApagar}>
         <AlertDialogContent>
           <AlertDialogHeader>

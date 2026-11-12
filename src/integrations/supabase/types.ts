@@ -65,6 +65,7 @@ export type Database = {
           id: string
           mensagem: string
           perfil_id: string
+          permite_interacao: boolean
           publicar_em: string
           tipo: string
           titulo: string
@@ -80,6 +81,7 @@ export type Database = {
           id?: string
           mensagem?: string
           perfil_id: string
+          permite_interacao?: boolean
           publicar_em?: string
           tipo?: string
           titulo: string
@@ -95,6 +97,7 @@ export type Database = {
           id?: string
           mensagem?: string
           perfil_id?: string
+          permite_interacao?: boolean
           publicar_em?: string
           tipo?: string
           titulo?: string
@@ -114,6 +117,7 @@ export type Database = {
           aviso_id: string
           criado_em: string
           editado_em: string | null
+          gif_url: string | null
           id: string
           texto: string
           usuario_id: string
@@ -122,6 +126,7 @@ export type Database = {
           aviso_id: string
           criado_em?: string
           editado_em?: string | null
+          gif_url?: string | null
           id?: string
           texto: string
           usuario_id?: string
@@ -130,6 +135,7 @@ export type Database = {
           aviso_id?: string
           criado_em?: string
           editado_em?: string | null
+          gif_url?: string | null
           id?: string
           texto?: string
           usuario_id?: string
@@ -637,6 +643,7 @@ export type Database = {
         Row: {
           criado_em: string
           editado_em: string | null
+          gif_url: string | null
           id: string
           post_id: string
           texto: string
@@ -645,6 +652,7 @@ export type Database = {
         Insert: {
           criado_em?: string
           editado_em?: string | null
+          gif_url?: string | null
           id?: string
           post_id: string
           texto: string
@@ -653,6 +661,7 @@ export type Database = {
         Update: {
           criado_em?: string
           editado_em?: string | null
+          gif_url?: string | null
           id?: string
           post_id?: string
           texto?: string
@@ -1043,6 +1052,32 @@ export type Database = {
           sistema?: boolean
         }
         Relationships: []
+      }
+      permissoes_individuais: {
+        Row: {
+          criado_em: string
+          permissao: string
+          usuario_id: string
+        }
+        Insert: {
+          criado_em?: string
+          permissao: string
+          usuario_id: string
+        }
+        Update: {
+          criado_em?: string
+          permissao?: string
+          usuario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "permissoes_individuais_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -1635,6 +1670,7 @@ export type Database = {
         Returns: boolean
       }
       gestao_questionario: { Args: { _id: string }; Returns: Json }
+      gif_permitido: { Args: { _url: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

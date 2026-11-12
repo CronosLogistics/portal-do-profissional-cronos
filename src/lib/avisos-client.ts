@@ -94,7 +94,7 @@ export async function departamentosDestinatarios(): Promise<{ id: string; nome: 
   return data ?? [];
 }
 
-export type DadosAviso = { perfil_id: string; titulo: string; mensagem: string; publicar_em: string; expira_em: string | null; tipo?: TipoAviso; exige_confirmacao?: boolean; departamentos_ids?: string[] };
+export type DadosAviso = { perfil_id: string; titulo: string; mensagem: string; publicar_em: string; expira_em: string | null; tipo?: TipoAviso; exige_confirmacao?: boolean; permite_interacao?: boolean; departamentos_ids?: string[] };
 
 export async function salvarAviso(dados: DadosAviso, id?: string) {
   const titulo = dados.titulo.trim();
@@ -151,11 +151,17 @@ export type EmojiCompilado = (typeof EMOJIS_COMPILADO)[number];
 export type ComentarioCompilado = {
   id: string;
   texto: string;
+  gif_url?: string | null;
   criado_em: string;
   editado_em: string | null;
   usuario_id: string;
   nome: string;
 };
+
+export async function avisoPermiteInteracao(id: string) {
+  const { data } = await supabase.from("avisos").select("permite_interacao").eq("id", id).maybeSingle();
+  return Boolean(data?.permite_interacao);
+}
 
 export type ReacaoResumo = { emoji: string; total: number; meu: boolean };
 
@@ -165,19 +171,21 @@ export type InteracoesCompilado = {
   minha_reacao: string | null;
 };
 
-export async function interacoesCompilado(avisoId: string): Promise<InteracoesCompilado> {
+export async function interacoesCompilado(avisoId: string): Promise<InteracoesCompilado & { disponivel: boolean }> {
   const { data, error } = await supabase.rpc("interacoes_compilado", { _aviso_id: avisoId });
   if (error) throw amigavel(error.message);
+  const disponivel = data !== null;
   const raw = (data ?? {}) as Partial<InteracoesCompilado>;
   return {
+    disponivel,
     comentarios: (raw.comentarios as ComentarioCompilado[] | undefined) ?? [],
     reacoes: (raw.reacoes as ReacaoResumo[] | undefined) ?? [],
     minha_reacao: raw.minha_reacao ?? null,
   };
 }
 
-export async function comentarCompilado(avisoId: string, texto: string) {
-  const { error } = await supabase.from("avisos_comentarios").insert({ aviso_id: avisoId, texto: texto.trim() });
+export async function comentarCompilado(avisoId: string, texto: string, gifUrl: string | null = null) {
+  const { error } = await supabase.from("avisos_comentarios").insert({ aviso_id: avisoId, texto: texto.trim(), gif_url: gifUrl });
   if (error) throw amigavel(error.message);
 }
 
