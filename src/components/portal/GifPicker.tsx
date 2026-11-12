@@ -12,8 +12,8 @@ export function GifPicker({ onSelect, className }: { onSelect: (url: string) => 
   const [busca, setBusca] = useState("");
   useEffect(() => { const t = setTimeout(() => setBusca(termo), 400); return () => clearTimeout(t); }, [termo]);
   const gifs = useQuery({ queryKey: ["giphy", busca], queryFn: () => buscarGifs(busca), enabled: open, staleTime: 5 * 60_000 });
+  // modal: inside Dialog (AvisoForm), remove-scroll blocks wheel on portaled content otherwise
   return (
-    {/* modal: inside Dialog (AvisoForm), remove-scroll blocks wheel on portaled content otherwise */}
     <Popover modal open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button type="button" variant="outline" size="sm" className={`h-8 px-2 text-xs font-bold ${className ?? ""}`} aria-label="Inserir GIF" title="Inserir GIF" onMouseDown={(e) => e.preventDefault()}>GIF</Button>
