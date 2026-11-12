@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { brasiliaParaUtc, filtrarAvisosPorBusca, statusAviso, tituloComContador, utcParaBrasilia } from "@/lib/avisos-rules";
+import { brasiliaParaUtc, filtrarAvisosPorBusca, rotuloRemetente, statusAviso, tituloComContador, utcParaBrasilia } from "@/lib/avisos-rules";
 
 const agora = new Date("2026-10-23T15:00:00Z");
 
@@ -31,6 +31,16 @@ describe("título da aba", () => {
   it("mostra o contador e não duplica", () => {
     expect(tituloComContador("(1) Portal do Profissional", 2)).toBe("(2) Portal do Profissional");
     expect(tituloComContador("(3) Portal do Profissional", 0)).toBe("Portal do Profissional");
+  });
+});
+
+describe("rótulo do remetente", () => {
+  it("troca cargo pelo nome da pessoa", () => {
+    expect(rotuloRemetente("TECNOLOGIA - Supervisor", "Natan Boos")).toBe("TECNOLOGIA — Natan Boos");
+    expect(rotuloRemetente("GESTÃO DE PESSOAS — Liderados", "Marcelli")).toBe("GESTÃO DE PESSOAS — Marcelli");
+  });
+  it("sem autor mantém só o setor", () => {
+    expect(rotuloRemetente("TECNOLOGIA - Supervisor")).toBe("TECNOLOGIA");
   });
 });
 

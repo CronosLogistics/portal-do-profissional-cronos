@@ -35,6 +35,14 @@ export function tituloComContador(titulo: string, naoLidos: number): string {
   return naoLidos > 0 ? `(${naoLidos > 99 ? "99+" : naoLidos}) ${base}` : base;
 }
 
+/** SETOR — NOME (remove o cargo do perfil sincronizado). Sem autor, fica só o setor. */
+export function rotuloRemetente(perfilNome: string, autorNome?: string | null): string {
+  const setor = perfilNome.replace(/\s+[—–-]\s+.+$/u, "").trim() || perfilNome.trim();
+  const pessoa = autorNome?.trim();
+  if (!pessoa) return setor;
+  return `${setor} — ${pessoa}`;
+}
+
 /** Busca em título, remetente e texto do aviso (HTML ignorado). */
 export function filtrarAvisosPorBusca<T extends { titulo: string; perfil_nome: string; mensagem: string }>(avisos: T[], busca: string): T[] {
   const termo = busca.trim().toLocaleLowerCase("pt-BR");

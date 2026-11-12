@@ -15,7 +15,7 @@ import { AvisoForm } from "@/components/avisos/AvisoForm";
 import { AvisoAcompanhamento } from "@/components/avisos/AvisoAcompanhamento";
 import { InsiderEditor } from "@/components/avisos/InsiderEditor";
 import { arquivarAviso, avisosEnviados, avisosKey, cancelarAviso, destinoNotificacao, listarAvisos, marcarTodosLidos, POR_PAGINA, type AvisoEnviado } from "@/lib/avisos-client";
-import { filtrarAvisosPorBusca, formatarDataBrasilia, statusAviso, type StatusAviso } from "@/lib/avisos-rules";
+import { filtrarAvisosPorBusca, formatarDataBrasilia, rotuloRemetente, statusAviso, type StatusAviso } from "@/lib/avisos-rules";
 
 export const Route = createFileRoute("/_authenticated/avisos")({
   validateSearch: (s: Record<string, unknown>): { aviso?: string } => (typeof s["aviso"] === "string" ? { aviso: s["aviso"] } : {}),
@@ -185,13 +185,13 @@ function Enviados({ onEdit }: { onEdit: (a: AvisoEnviado) => void }) {
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant={statusVariant[st]}>{st}</Badge>
                 {a.exige_confirmacao && <Badge variant="outline">Leitura obrigatória</Badge>}
-                <span className="text-xs font-bold uppercase text-accent">{a.perfil_nome}</span>
+                <span className="text-xs font-bold uppercase text-accent">{rotuloRemetente(a.perfil_nome, a.autor_nome)}</span>
                 {a.editado_em && <span className="text-xs text-muted-foreground">editado</span>}
               </div>
               <h3 className="mt-1 truncate font-bold">{a.titulo}</h3>
               <p className="text-xs text-muted-foreground">
                 {st === "Agendado" ? "Publica em " : "Publicado em "}{formatarDataBrasilia(a.publicar_em)}
-                {a.expira_em ? ` · expira em ${formatarDataBrasilia(a.expira_em)}` : ""} · por {a.autor_nome || "-"}
+                {a.expira_em ? ` · expira em ${formatarDataBrasilia(a.expira_em)}` : ""}
               </p>
             </div>
             {st !== "Agendado" && <p className="text-sm"><strong>{a.exige_confirmacao ? "Confirmado por" : "Lido por"} {a.lidos}</strong> de {a.ativos} ativos</p>}
