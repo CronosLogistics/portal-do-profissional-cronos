@@ -1,20 +1,45 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { RefreshCw } from "lucide-react";
+import { Download, RefreshCw } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
+import { utils, writeFile } from "xlsx";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { consultarGestaoQuestionario, reenviarQuestionarioSharePoint } from "@/lib/questionarios.functions";
-import { enunciadoPlano, formatarResposta, type PerguntaQuestionario, type Questionario } from "@/lib/questionarios.rules";
+import { enunciadoPlano, formatarResposta, montarPlanilhaResultados, type PerguntaQuestionario, type Questionario } from "@/lib/questionarios.rules";
 import { limparTextoFormatado, textoParaEditor } from "@/lib/rich-text";
 
 export function QuestionarioResultados({ questionario, onClose }: { questionario: Questionario; onClose: () => void }) {
   const consultar = useServerFn(consultarGestaoQuestionario), reenviar = useServerFn(reenviarQuestionarioSharePoint), qc = useQueryClient();
+  const [exportando, setExportando] = useState(false);
   const q = useQuery({ queryKey: ["questionarios", "gestao", questionario.id], queryFn: () => consultar({ data: { id: questionario.id } }) });
   const envio = useMutation({ mutationFn: () => reenviar({ data: { id: questionario.id } }), onSuccess: async () => { await qc.invalidateQueries({ queryKey: ["questionarios"] }); toast.success("Registros enviados ao SharePoint."); }, onError: e => toast.error(e.message) });
+
+  function exportarXlsx() {
+    if (!q.data?.respostas.length) {
+      toast.error("Não há respostas para exportar.");
+      return;
+    }
+    setExportando(true);
+    try {
+      const planilha = montarPlanilhaResultados(questionario, q.data.respostas);
+      const ws = utils.aoa_to_sheet([planilha.cabecalhos, ...planilha.linhas]);
+      const wb = utils.book_new();
+      utils.book_append_sheet(wb, ws, "Respostas");
+      writeFile(wb, planilha.nomeArquivo);
+      toast.success("Arquivo Excel gerado.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Não foi possível exportar as respostas.");
+    } finally {
+      setExportando(false);
+    }
+  }
+
   return <Dialog open onOpenChange={open => { if (!open) onClose(); }}><DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-2xl"><DialogHeader><DialogTitle>{questionario.titulo}</DialogTitle><DialogDescription>{questionario.anonimo ? "Resultados anônimos" : "Resultados identificados"}</DialogDescription></DialogHeader>
     {q.isPending && <p className="text-muted-foreground">Carregando resultados…</p>}{q.error && <p role="alert" className="text-destructive">{q.error.message}</p>}
     {q.data && <><div className="grid grid-cols-3 gap-3 border-y py-4">{[["Profissionais", q.data.total], ["Respondidos", q.data.respondidos], ["Pendentes", q.data.pendentes]].map(([label, value]) => <div key={label}><p className="text-2xl font-bold text-primary">{value}</p><p className="text-xs text-muted-foreground">{label}</p></div>)}</div>
+      <div className="flex flex-wrap items-center justify-between gap-3 text-sm"><span className="text-muted-foreground">Baixe as respostas em Excel sem precisar do SharePoint.</span><Button variant="outline" size="sm" disabled={exportando || !q.data.respostas.length} onClick={exportarXlsx}><Download />{exportando ? "Exportando…" : "Exportar XLSX"}</Button></div>
       {q.data.sharepointPendente && <div className="flex flex-wrap items-center justify-between gap-3 text-sm"><span className="text-muted-foreground">Há registros pendentes de envio ao SharePoint.</span><Button variant="outline" size="sm" disabled={envio.isPending} onClick={() => envio.mutate()}><RefreshCw />{envio.isPending ? "Enviando…" : "Reenviar registros"}</Button></div>}
       {!questionario.anonimo && q.data.pessoasPendentes && <section><h3 className="mb-2 font-bold">Quem falta responder</h3>{q.data.pessoasPendentes.length ? <ul className="divide-y">{q.data.pessoasPendentes.map(p => <li key={p.email} className="py-2 text-sm"><p>{p.nome}</p><p className="text-xs text-muted-foreground">{p.email}</p></li>)}</ul> : <p className="text-sm text-muted-foreground">Todos responderam.</p>}</section>}
       <section><h3 className="mb-3 font-bold">Respostas</h3>{!q.data.respostas.length && <p className="text-sm text-muted-foreground">Nenhuma resposta recebida.</p>}<div className="space-y-4">{q.data.respostas.map((r, i) => {

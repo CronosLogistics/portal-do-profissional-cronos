@@ -147,6 +147,47 @@ export function camposRegistro(
   };
 }
 
+function paresRespostaExportacao(perguntas: Array<PerguntaQuestionario | string>, respostas: RespostaItem[]) {
+  return perguntas.map((p, i) => ({ p, r: respostas[i] ?? null })).filter(({ p }) => typeof p === "string" || p.tipo !== "bloco");
+}
+
+/** Safe download name for questionnaire result exports. */
+export function nomeArquivoResultados(titulo: string) {
+  const base = titulo.replace(/[<>:"/\\|?*\u0000-\u001f]+/g, "").trim().slice(0, 80) || "questionario";
+  return `resultados-${base}.xlsx`;
+}
+
+/** Builds a tabular sheet from management projections: one row per submission, columns from each answer snapshot. */
+export function montarPlanilhaResultados(
+  formulario: { titulo: string; anonimo: boolean },
+  respostas: GestaoQuestionario["respostas"],
+) {
+  const chaves: string[] = [];
+  const rotulos = new Map<string, string>();
+  const linhasDados = respostas.map(r => {
+    const mapa = new Map<string, string>();
+    for (const { p, r: valor } of paresRespostaExportacao(r.perguntas, r.respostas)) {
+      const chave = typeof p === "string" ? `legado:${p}` : p.id;
+      if (!rotulos.has(chave)) {
+        chaves.push(chave);
+        rotulos.set(chave, enunciadoPlano(p));
+      }
+      mapa.set(chave, formatarResposta(valor));
+    }
+    return { mapa, nome: r.nome, email: r.email };
+  });
+  const cabecalhos = formulario.anonimo
+    ? ["Resposta", ...chaves.map(c => rotulos.get(c)!)]
+    : ["Resposta", "Nome", "E-mail", ...chaves.map(c => rotulos.get(c)!)];
+  const linhas = linhasDados.map((linha, i) => {
+    const respostasColunas = chaves.map(c => linha.mapa.get(c) ?? "");
+    return formulario.anonimo
+      ? [String(i + 1), ...respostasColunas]
+      : [String(i + 1), linha.nome ?? "", linha.email ?? "", ...respostasColunas];
+  });
+  return { nomeArquivo: nomeArquivoResultados(formulario.titulo), cabecalhos, linhas };
+}
+
 export function perguntaPadrao(tipo: TipoPergunta = "texto", id: string = criarIdCliente()): PerguntaQuestionario {
   if (tipo === "bloco") return { id, tipo, enunciado: "" };
   if (tipo === "radio" || tipo === "checkbox") return { id, tipo, enunciado: "", opcoes: ["", ""], obrigatoria: true };
