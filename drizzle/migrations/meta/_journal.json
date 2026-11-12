@@ -330,6 +330,13 @@
       "when": 1794486383039,
       "tag": "0046_questionarios_perguntas_opcionais",
       "breakpoints": true
+    },
+    {
+      "idx": 47,
+      "version": "7",
+      "when": 1794488715140,
+      "tag": "0047_questionarios_25_opcoes",
+      "breakpoints": true
     }
   ]
 }

@@ -10,6 +10,7 @@
 <!-- LOVABLE:END -->
 
 ## Architecture rules
+- Questionnaire choice limits share one browser-safe constant across editing, import and validation, mirrored in database RPCs. Why: saved forms and submitted answers must accept the same bounds.
 - Subdirectories have their own `AGENTS.md` (e.g. `src/lib/`); read it before changing files there.
 - Browser IDs use `criarIdCliente` (UUID secure-random fallback). Why: browsers lacking `crypto.randomUUID`.
 - Portal pages live under `src/routes/_authenticated/`; only `/auth` and `/definir-senha` are public. Why: internal access.

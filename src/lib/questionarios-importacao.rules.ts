@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { criarIdCliente } from "./client-id";
 import type { PerguntaQuestionario } from "./questionarios.rules";
-import { prazoQuestionarioSchema } from "./questionarios.rules";
+import { prazoQuestionarioSchema, MAXIMO_OPCOES_PERGUNTA } from "./questionarios.rules";
 
 export const LIMITE_PDF_BYTES = 8 * 1024 * 1024;
 
@@ -23,7 +23,7 @@ export const rascunhoSchema = z.object({
     id: z.string().min(1).max(80),
     tipo: z.enum(["texto", "radio", "checkbox", "bloco"]),
     enunciado: z.string().max(5000),
-    opcoes: z.array(z.string().max(200)).max(20).optional(),
+    opcoes: z.array(z.string().max(200)).max(MAXIMO_OPCOES_PERGUNTA).optional(),
     obrigatoria: z.boolean().optional(),
   })).max(70),
 });
@@ -55,7 +55,7 @@ export function normalizarImportacao(raw: QuestionarioExtraido, novoId: () => st
       continue;
     }
     const titulo = detalhe ? `${enunciado} — ${detalhe}`.slice(0, 1000) : enunciado;
-    const opcoes = [...new Set((p.opcoes ?? []).map(o => o.trim().slice(0, 200)).filter(Boolean))].slice(0, 20);
+    const opcoes = [...new Set((p.opcoes ?? []).map(o => o.trim().slice(0, 200)).filter(Boolean))].slice(0, MAXIMO_OPCOES_PERGUNTA);
     if ((p.tipo === "radio" || p.tipo === "checkbox") && opcoes.length >= 2) perguntas.push({ id: novoId(), tipo: p.tipo, enunciado: titulo, opcoes, obrigatoria: p.obrigatoria !== false });
     else perguntas.push({ id: novoId(), tipo: "texto", enunciado: titulo, obrigatoria: p.obrigatoria !== false });
   }

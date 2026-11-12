@@ -4,6 +4,7 @@ import { htmlComConteudo, limparTextoFormatado, textoPlano } from "./rich-text";
 
 export const tiposPergunta = ["texto", "radio", "checkbox", "bloco"] as const;
 export type TipoPergunta = (typeof tiposPergunta)[number];
+export const MAXIMO_OPCOES_PERGUNTA = 25;
 
 const idPergunta = z.string().trim().min(1).max(80);
 const opcaoSchema = z.string().trim().min(1).max(200);
@@ -19,7 +20,7 @@ export const questionarioExpirado = (q: { expira_em?: string | null; expirado?: 
   q.expira_em ? hojeQuestionarioBrasil(agora) > q.expira_em : Boolean(q.expirado);
 export const formatarPrazoQuestionario = (data: string) => data.split("-").reverse().join("/");
 
-const opcoesEscolha = z.array(opcaoSchema).min(2).max(20);
+const opcoesEscolha = z.array(opcaoSchema).min(2).max(MAXIMO_OPCOES_PERGUNTA);
 const obrigatoria = z.boolean().optional();
 const perguntaTexto = z.object({ id: idPergunta, tipo: z.literal("texto"), enunciado: enunciadoSimples, obrigatoria });
 const perguntaRadio = z.object({ id: idPergunta, tipo: z.literal("radio"), enunciado: enunciadoSimples, opcoes: opcoesEscolha, obrigatoria });
@@ -85,7 +86,7 @@ export function validarRespostas(perguntas: PerguntaQuestionario[], respostas: u
       if (!p.opcoes.includes(escolhida)) throw new Error("Opção inválida");
       return escolhida;
     }
-    const escolhidas = z.array(z.string().trim().min(1).max(200)).min(1).max(20).parse(r);
+    const escolhidas = z.array(z.string().trim().min(1).max(200)).min(1).max(MAXIMO_OPCOES_PERGUNTA).parse(r);
     if (escolhidas.some(o => !p.opcoes.includes(o)) || new Set(escolhidas).size !== escolhidas.length) throw new Error("Opções inválidas");
     return escolhidas;
   });

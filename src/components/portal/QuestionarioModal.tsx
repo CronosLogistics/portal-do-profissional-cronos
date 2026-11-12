@@ -26,6 +26,7 @@ import {
 } from "@/lib/questionarios-resposta-local";
 import {
   novoQuestionarioSchema,
+  MAXIMO_OPCOES_PERGUNTA,
   hojeQuestionarioBrasil,
   questionarioExpirado,
   formatarPrazoQuestionario,
@@ -286,7 +287,7 @@ export function QuestionarioModal({ questionario, edicao = false, rascunho, onCl
                             )}
                           </div>
                         ))}
-                        <Button type="button" size="sm" variant="outline" disabled={salvar.isPending || p.opcoes.length >= 20}
+                        <Button type="button" size="sm" variant="outline" disabled={salvar.isPending || p.opcoes.length >= MAXIMO_OPCOES_PERGUNTA}
                           onClick={() => atualizar(i, { opcoes: [...p.opcoes, ""] })}><Plus />Opção</Button>
                       </div>
                     )}
