@@ -34,7 +34,8 @@ export function HomeCarrossel() {
   if (agora && agora <= CRONOS_DAY_FIM) slides.push({ id: "cronos-day", conteudo: <SlideCronosDay agora={agora} /> });
   const posts = mural.data ?? [];
   for (const tipo of ["aniversario", "tempo_casa"] as const) {
-    const grupo = posts.filter((x) => x.tipo === tipo);
+    const hoje = agora ? new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" }).format(agora) : null;
+    const grupo = posts.filter((x) => x.tipo === tipo && x.data_post === hoje);
     if (grupo.length) slides.push({ id: `mural-${tipo}`, conteudo: <SlideMural posts={grupo} /> });
   }
   for (const p of posts.filter((x) => x.tipo === "geral")) slides.push({ id: `mural-${p.id}`, conteudo: <SlideMural posts={[p]} /> });
