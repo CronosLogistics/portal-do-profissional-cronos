@@ -16,7 +16,8 @@ export const PERMISSOES = [
   { codigo: "pendencias.liderados", nome: "Visualizar pendências dos liderados", descricao: "Consultar pendências dos níveis abaixo na hierarquia do departamento, conforme o SharePoint." },
 ] as const;
 
-export type Permissao = (typeof PERMISSOES)[number]["codigo"];
+/** "acessos.relatorios" is derived (admins, individual grants, Gestão de Pessoas/Qualidade departments), not assignable to profiles. */
+export type Permissao = (typeof PERMISSOES)[number]["codigo"] | "acessos.relatorios";
 
 export type PerfilAtribuido = { id: string; nome: string; ativo: boolean; sistema: boolean; permissoes: string[] };
 

@@ -58,6 +58,7 @@ export const registrarAcesso = createServerFn({ method: "POST" })
       ultimo_acesso: now,
     });
     if (upErr) throw new Error("Não foi possível registrar o acesso.");
+    await supabaseAdmin.from("historico_acessos").insert({ usuario_id: context.userId, acessado_em: now });
     const { sincronizarDepartamentos } = await import("./departamentos.server");
     await sincronizarDepartamentos(true);
     return { ok: true };

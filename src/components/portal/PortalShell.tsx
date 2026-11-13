@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { Award, CalendarDays, ListChecks, MessageSquareHeart, Building2, ClipboardList, FolderOpen, PartyPopper, ChevronLeft, ChevronRight, Gift, GraduationCap, Home, LogOut, Megaphone, Menu, Settings, Tag, X } from "lucide-react";
+import { Award, BarChart3, CalendarDays, ListChecks, MessageSquareHeart, Building2, ClipboardList, FolderOpen, PartyPopper, ChevronLeft, ChevronRight, Gift, GraduationCap, Home, LogOut, Megaphone, Menu, Settings, Tag, X } from "lucide-react";
 import { TourBoasVindas } from "@/components/portal/TourBoasVindas";
 import { AvisosBell } from "@/components/avisos/AvisosBell";
 import { useAvisosAoVivo, useNaoLidos } from "@/hooks/useAvisos";
@@ -191,9 +191,9 @@ export function PortalShell({ children }: { children: ReactNode }) {
             );
           })}
         </nav>
-        {me.data?.isAdmin && <div className="portal-admin-nav">
+        {(me.data?.isAdmin || me.data?.can("acessos.relatorios")) && <div className="portal-admin-nav">
           <div className="portal-nav-heading sidebar-label">GESTÃO</div>
-          {me.data.isAdmin ? (
+          {me.data.isAdmin && (
             <SidebarBranch
               label="Administração"
               icon={Settings}
@@ -228,9 +228,10 @@ export function PortalShell({ children }: { children: ReactNode }) {
                 Perfis
               </Link>}
             </SidebarBranch>
-          ) : (
-            <Button asChild variant="ghost" className={`portal-nav-item ${matchesPath(pathname, "/admin") ? "is-active" : ""}`}>
-              <Link to="/admin" title="Administração" onClick={closeMobile}><Settings /><span className="sidebar-label">Administração</span></Link>
+          )}
+          {me.data.can("acessos.relatorios") && (
+            <Button asChild variant="ghost" className={`portal-nav-item ${matchesPath(pathname, "/relatorios-acessos") ? "is-active" : ""}`}>
+              <Link to="/relatorios-acessos" title="Relatórios de acesso" onClick={closeMobile}><BarChart3 /><span className="sidebar-label">Relatórios de acesso</span></Link>
             </Button>
           )}
         </div>}

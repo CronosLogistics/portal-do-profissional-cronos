@@ -571,6 +571,32 @@ export type Database = {
         }
         Relationships: []
       }
+      historico_acessos: {
+        Row: {
+          acessado_em: string
+          id: string
+          usuario_id: string
+        }
+        Insert: {
+          acessado_em?: string
+          id?: string
+          usuario_id: string
+        }
+        Update: {
+          acessado_em?: string
+          id?: string
+          usuario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "historico_acessos_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       insider_edicoes: {
         Row: {
           atualizado_em: string
@@ -1973,6 +1999,7 @@ export type Database = {
         Returns: boolean
       }
       pode_ler_insider: { Args: { _id: string }; Returns: boolean }
+      pode_ver_relatorios_acesso: { Args: never; Returns: boolean }
       primeiro_util_mes: { Args: { _data: string }; Returns: string }
       publicar_edicao_insider: {
         Args: { _id: string; _perfil: string; _revisao: number }
@@ -1993,6 +2020,27 @@ export type Database = {
           _texto: string
         }
         Returns: undefined
+      }
+      relatorio_acessos_eventos: {
+        Args: { _de: string }
+        Returns: {
+          acessado_em: string
+          usuario_id: string
+        }[]
+      }
+      relatorio_acessos_usuarios: {
+        Args: never
+        Returns: {
+          acessos_30d: number
+          ativo: boolean
+          departamento: string
+          email: string
+          nome: string
+          primeiro_acesso: string
+          total_acessos: number
+          ultimo_acesso: string
+          usuario_id: string
+        }[]
       }
       reservar_departamentos: { Args: never; Returns: boolean }
       reservar_insider: {

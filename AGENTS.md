@@ -36,3 +36,4 @@
 - Audit log: DB triggers write insert-only `auditoria_logs`; admins read via RPCs. Why: captures every change path, immutable.
 - Questionnaire deadlines are nullable Brazil-local dates enforced by database triggers and permission-checked atomic RPCs; expired forms leave pending feeds while management and previous responses remain accessible. Why: editing or stale open forms cannot bypass expiration or erase submissions.
 
+- Access reports read `historico_acessos` (one row per session login via `registrarAcesso`, service-role writes only) through permission-checked RPCs; `acessos.relatorios` is derived by `pode_ver_relatorios_acesso` (system admins, individual grants, current Gestão de Pessoas/Qualidade departments), not assignable to profiles. Why: department sync cannot overwrite it and the browser never reads raw access rows.
