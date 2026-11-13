@@ -15,9 +15,9 @@ describe("tabela-ordenacao", () => {
       { nome: "Ana", dias: 2 },
       { nome: "Carla", dias: 10 },
     ];
-    expect(ordenarItensTabela(itens, { coluna: "nome", direcao: "asc" }, { nome: (i) => i.nome, dias: (i) => i.dias }).map((i) => i.nome))
+    expect(ordenarItensTabela(itens, { coluna: "nome", direcao: "asc" }, { nome: (i) => i.nome }).map((i) => i.nome))
       .toEqual(["Ana", "Bruno", "Carla"]);
-    expect(ordenarItensTabela(itens, { coluna: "dias", direcao: "asc" }, { nome: (i) => i.nome, dias: (i) => i.dias }).map((i) => i.nome))
+    expect(ordenarItensTabela(itens, { coluna: "dias", direcao: "asc" }, { dias: (i) => i.dias }).map((i) => i.nome))
       .toEqual(["Ana", "Carla", "Bruno"]);
     expect(compararValoresOrdenacao("10", "2", "asc")).toBeGreaterThan(0);
   });

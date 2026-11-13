@@ -139,8 +139,8 @@ function Recebidos() {
                 <span className="min-w-0 flex-1">
                   <span className="flex flex-wrap items-center gap-2">
                     <span className="text-xs font-bold uppercase tracking-wide text-accent">{a.perfil_nome}</span>
-                    {a.exige_confirmacao && (
-                      <AvisoEtiqueta importante={a.importante} confirmado={a.lido} />
+                    {(a.importante || a.exige_confirmacao) && (
+                      <AvisoEtiqueta importante={a.importante} confirmado={a.exige_confirmacao && a.lido} />
                     )}
                   </span>
                   <span className="mt-0.5 block truncate text-base text-foreground">{a.titulo}</span>

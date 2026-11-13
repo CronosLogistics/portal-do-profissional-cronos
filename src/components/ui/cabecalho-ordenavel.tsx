@@ -13,7 +13,7 @@ type PropsBase<K extends string> = {
   align?: "left" | "right";
 };
 
-function Icone({ ativo, direcao }: { ativo: boolean; direcao?: DirecaoOrdenacao }) {
+function Icone({ ativo, direcao }: { ativo: boolean; direcao?: DirecaoOrdenacao | undefined }) {
   if (!ativo) return <ArrowUpDown className="size-3.5 opacity-50" aria-hidden />;
   if (direcao === "desc") return <ArrowDown className="size-3.5" aria-hidden />;
   return <ArrowUp className="size-3.5" aria-hidden />;
