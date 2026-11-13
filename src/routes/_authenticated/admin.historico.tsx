@@ -8,9 +8,11 @@ import { AdminTabs } from "@/components/clube/AdminTabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
+import { TableHeadOrdenavel } from "@/components/ui/cabecalho-ordenavel";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useCurrentUser } from "@/hooks/useAuth";
+import { useOrdenacaoTabela } from "@/hooks/useOrdenacaoTabela";
 
 export const Route = createFileRoute("/_authenticated/admin/historico")({
   head: () => ({
@@ -77,12 +79,19 @@ function HistoricoPage() {
     },
   });
 
+  const linhasBase = logs.data ?? [];
+  const { itens: linhas, ordenacao, alternar } = useOrdenacaoTabela(linhasBase, {
+    data: (l) => l.criado_em,
+    quem: (l) => l.autor_nome,
+    acao: (l) => l.acao,
+    onde: (l) => l.alvo,
+  });
+
   if (me.data && !isAdmin) {
     return <p className="text-muted-foreground">Apenas administradores podem ver o histórico.</p>;
   }
 
-  const linhas = logs.data ?? [];
-  const total = Number(linhas[0]?.total ?? 0);
+  const total = Number(linhasBase[0]?.total ?? 0);
   const paginas = Math.max(1, Math.ceil(total / POR_PAGINA));
 
   return (
@@ -116,10 +125,10 @@ function HistoricoPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Data e hora</TableHead>
-              <TableHead>Quem</TableHead>
-              <TableHead>O que fez</TableHead>
-              <TableHead>Onde</TableHead>
+              <TableHeadOrdenavel coluna="data" ordenacao={ordenacao} onOrdenar={alternar}>Data e hora</TableHeadOrdenavel>
+              <TableHeadOrdenavel coluna="quem" ordenacao={ordenacao} onOrdenar={alternar}>Quem</TableHeadOrdenavel>
+              <TableHeadOrdenavel coluna="acao" ordenacao={ordenacao} onOrdenar={alternar}>O que fez</TableHeadOrdenavel>
+              <TableHeadOrdenavel coluna="onde" ordenacao={ordenacao} onOrdenar={alternar}>Onde</TableHeadOrdenavel>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -169,24 +178,33 @@ function HistoricoPage() {
 }
 
 function Detalhes({ log }: { log: Log }) {
-  const chaves = Array.from(new Set([...Object.keys(log.antes ?? {}), ...Object.keys(log.depois ?? {})]));
+  const chaves = Array.from(new Set([...Object.keys(log.antes ?? {}), ...Object.keys(log.depois ?? {})])).map((campo) => ({
+    campo,
+    antes: valor(log.antes?.[campo]),
+    depois: valor(log.depois?.[campo]),
+  }));
+  const { itens, ordenacao, alternar } = useOrdenacaoTabela(chaves, {
+    campo: (r) => r.campo,
+    antes: (r) => r.antes,
+    depois: (r) => r.depois,
+  });
   if (chaves.length === 0) return <p className="text-sm text-muted-foreground">Sem detalhes.</p>;
   return (
     <div className="max-h-[60vh] overflow-auto rounded-md border border-border">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Campo</TableHead>
-            {log.operacao !== "INSERT" && <TableHead>Antes</TableHead>}
-            {log.operacao !== "DELETE" && <TableHead>Depois</TableHead>}
+            <TableHeadOrdenavel coluna="campo" ordenacao={ordenacao} onOrdenar={alternar}>Campo</TableHeadOrdenavel>
+            {log.operacao !== "INSERT" && <TableHeadOrdenavel coluna="antes" ordenacao={ordenacao} onOrdenar={alternar}>Antes</TableHeadOrdenavel>}
+            {log.operacao !== "DELETE" && <TableHeadOrdenavel coluna="depois" ordenacao={ordenacao} onOrdenar={alternar}>Depois</TableHeadOrdenavel>}
           </TableRow>
         </TableHeader>
         <TableBody>
-          {chaves.map((k) => (
-            <TableRow key={k}>
-              <TableCell className="font-medium">{k}</TableCell>
-              {log.operacao !== "INSERT" && <TableCell className="max-w-xs break-words text-xs">{valor(log.antes?.[k])}</TableCell>}
-              {log.operacao !== "DELETE" && <TableCell className="max-w-xs break-words text-xs">{valor(log.depois?.[k])}</TableCell>}
+          {itens.map((r) => (
+            <TableRow key={r.campo}>
+              <TableCell className="font-medium">{r.campo}</TableCell>
+              {log.operacao !== "INSERT" && <TableCell className="max-w-xs break-words text-xs">{r.antes}</TableCell>}
+              {log.operacao !== "DELETE" && <TableCell className="max-w-xs break-words text-xs">{r.depois}</TableCell>}
             </TableRow>
           ))}
         </TableBody>

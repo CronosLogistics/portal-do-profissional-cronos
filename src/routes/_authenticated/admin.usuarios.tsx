@@ -16,10 +16,14 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
+import { TableHeadOrdenavel } from "@/components/ui/cabecalho-ordenavel";
 import { currentUserQueryKey, useCurrentUser } from "@/hooks/useAuth";
+import { useOrdenacaoTabela } from "@/hooks/useOrdenacaoTabela";
 import { USERS_PAGE_SIZE, getSyncStatus, listUsers, syncNow, type PortalUser, type UserFilter } from "@/lib/users.functions";
 import { adicionarMembro, listarPerfis, removerMembro } from "@/lib/perfis-client";
+
+type ColunaUsuario = "nome" | "email" | "status" | "perfis" | "ultimoAcesso";
 
 export const Route = createFileRoute("/_authenticated/admin/usuarios")({
   head: () => ({
@@ -101,6 +105,15 @@ function UsersPage() {
     onError: (e) => { toast.error(e instanceof Error ? e.message : "Não foi possível remover."); setRemoving(null); },
   });
 
+  const list = users.data?.users ?? [];
+  const { itens: listOrdenada, ordenacao, alternar } = useOrdenacaoTabela(list, {
+    nome: (u) => u.fullName || "",
+    email: (u) => u.email,
+    status: (u) => (u.isActive ? "Ativo" : "Inativo"),
+    perfis: (u) => u.perfis.map((p) => p.nome).join(", "),
+    ultimoAcesso: (u) => u.lastSignInAt,
+  });
+
   if (me.isPending) return <Skeleton className="h-40 w-full" />;
   if (!isAdmin) {
     return (
@@ -112,7 +125,6 @@ function UsersPage() {
     );
   }
 
-  const list = users.data?.users ?? [];
   const total = users.data?.total ?? 0;
   const counts = users.data?.counts;
   const pages = Math.max(1, Math.ceil(total / USERS_PAGE_SIZE));
@@ -185,15 +197,15 @@ function UsersPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Nome</TableHead>
-                <TableHead className="hidden md:table-cell">E-mail</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Perfis</TableHead>
-                <TableHead className="hidden lg:table-cell">Último acesso</TableHead>
+                <TableHeadOrdenavel coluna={"nome" as ColunaUsuario} ordenacao={ordenacao} onOrdenar={alternar}>Nome</TableHeadOrdenavel>
+                <TableHeadOrdenavel coluna={"email" as ColunaUsuario} ordenacao={ordenacao} onOrdenar={alternar} className="hidden md:table-cell">E-mail</TableHeadOrdenavel>
+                <TableHeadOrdenavel coluna={"status" as ColunaUsuario} ordenacao={ordenacao} onOrdenar={alternar}>Status</TableHeadOrdenavel>
+                <TableHeadOrdenavel coluna={"perfis" as ColunaUsuario} ordenacao={ordenacao} onOrdenar={alternar}>Perfis</TableHeadOrdenavel>
+                <TableHeadOrdenavel coluna={"ultimoAcesso" as ColunaUsuario} ordenacao={ordenacao} onOrdenar={alternar} className="hidden lg:table-cell">Último acesso</TableHeadOrdenavel>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {list.map((u) => (
+              {listOrdenada.map((u) => (
                 <TableRow key={u.id}>
                   <TableCell className="font-medium">{u.fullName || "-"}</TableCell>
                   <TableCell className="hidden text-sm md:table-cell">{u.email}</TableCell>

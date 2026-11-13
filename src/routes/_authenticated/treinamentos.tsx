@@ -9,9 +9,11 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Navbar } from "@/components/clube/Navbar";
 import { Footer } from "@/components/clube/Footer";
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
+import { TableHeadOrdenavel } from "@/components/ui/cabecalho-ordenavel";
 import { TreinamentosEditor } from "@/components/treinamentos/TreinamentosEditor";
 import { useCurrentUser } from "@/hooks/useAuth";
+import { useOrdenacaoTabela } from "@/hooks/useOrdenacaoTabela";
 import { limparTextoFormatado, textoParaEditor } from "@/lib/rich-text";
 import { CONTEUDO_PADRAO, carregarTreinamentos, resolverImagens, type IconeEtapa } from "@/lib/treinamentos-client";
 
@@ -100,6 +102,10 @@ function TreinamentosPage() {
   });
   const LINKS = conteudo.links;
   const processoRef = useRevealOnScroll<HTMLOListElement>(conteudo);
+  const pontuacao = useOrdenacaoTabela(conteudo.pontuacao, {
+    categoria: (r) => r.categoria,
+    pontos: (r) => r.pontos,
+  });
 
   return (
     <div className="min-h-screen">
@@ -164,12 +170,12 @@ function TreinamentosPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="uppercase-tracked px-6 py-4">Classificação da capacitação</TableHead>
-                  <TableHead className="uppercase-tracked px-6 py-4 text-right">Pontuação</TableHead>
+                  <TableHeadOrdenavel coluna="categoria" ordenacao={pontuacao.ordenacao} onOrdenar={pontuacao.alternar} className="uppercase-tracked px-6 py-4">Classificação da capacitação</TableHeadOrdenavel>
+                  <TableHeadOrdenavel coluna="pontos" ordenacao={pontuacao.ordenacao} onOrdenar={pontuacao.alternar} align="right" className="uppercase-tracked px-6 py-4">Pontuação</TableHeadOrdenavel>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {conteudo.pontuacao.map((row, ri) => (
+                {pontuacao.itens.map((row, ri) => (
                   <TableRow key={ri}>
                     <TableCell className="px-6 py-4 text-base font-medium">{row.categoria}</TableCell>
                     <TableCell className="px-6 py-4 text-right">

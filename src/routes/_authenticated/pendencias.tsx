@@ -3,7 +3,9 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { ExternalLink } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { ThOrdenavel } from "@/components/ui/cabecalho-ordenavel";
 import { useCurrentUser } from "@/hooks/useAuth";
+import { useOrdenacaoTabela } from "@/hooks/useOrdenacaoTabela";
 import { minhasPendencias, type ListasQualidade } from "@/lib/pendencias.functions";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { minhasPendenciasPessoas } from "@/lib/pendencias-pessoas.functions";
@@ -148,6 +150,17 @@ function PendenciasGestaoPessoas({ qualidadeVazia, modo }: { qualidadeVazia: boo
 }
 
 function ListaPessoas({ tipo, itens }: { tipo: TipoPendenciaPessoas; itens: PendenciaPessoas[] }) {
+  const { itens: ordenados, ordenacao, alternar } = useOrdenacaoTabela(itens, {
+    nome: (p) => p.nome,
+    nc: (p) => p.nc,
+    detalhe: (p) => p.detalhe,
+    status: (p) => p.status,
+    data: (p) => p.data,
+    prazo: (p) => p.prazo,
+    dias: (p) => p.dias,
+    gestor: (p) => p.gestor,
+    responsavel: (p) => p.responsavel,
+  });
   if (!itens.length) return <p className="py-4 text-center text-sm text-muted-foreground">Nenhuma pendência para você.</p>;
   const rq = tipo === "rq0244" || tipo === "rq0216";
   const data = (valor: string) => {
@@ -157,15 +170,16 @@ function ListaPessoas({ tipo, itens }: { tipo: TipoPendenciaPessoas; itens: Pend
   const detalhe = tipo === "experiencia" ? "Ciclo Experiência" : tipo === "anexos" ? "Turma" : tipo === "rq0244" ? "Treinamento para" : tipo === "feedback" ? "Classificação" : "Status da aprovação";
   return <div className="overflow-x-auto"><table className="w-full text-sm">
     <thead className="text-left text-xs uppercase text-muted-foreground"><tr>
-      <th className="py-2 pr-4">{tipo === "agendamento" || tipo === "anexos" ? "Treinamento" : "Profissional"}</th>
-      {tipo === "feedback" && <th className="py-2 pr-4">NC</th>}
-      {tipo !== "rq0216" && <th className="py-2 pr-4">{detalhe}</th>}
-      <th className="py-2 pr-4">Status</th><th className="py-2 pr-4">{rq ? "Admissão" : tipo === "experiencia" ? "Data do agendamento" : tipo === "feedback" ? "Data do feedback" : "Data do treinamento"}</th>
-      {rq && <><th className="py-2 pr-4">Prazo</th><th className="py-2 pr-4">Dias para finalizar</th></>}
-      {tipo === "experiencia" && <th className="py-2 pr-4">Gestor Responsável</th>}
-      {tipo !== "rq0216" && <th className="py-2 pr-4">{tipo === "feedback" ? "Autor" : "Responsável"}</th>}
+      <ThOrdenavel coluna="nome" ordenacao={ordenacao} onOrdenar={alternar}>{tipo === "agendamento" || tipo === "anexos" ? "Treinamento" : "Profissional"}</ThOrdenavel>
+      {tipo === "feedback" && <ThOrdenavel coluna="nc" ordenacao={ordenacao} onOrdenar={alternar}>NC</ThOrdenavel>}
+      {tipo !== "rq0216" && <ThOrdenavel coluna="detalhe" ordenacao={ordenacao} onOrdenar={alternar}>{detalhe}</ThOrdenavel>}
+      <ThOrdenavel coluna="status" ordenacao={ordenacao} onOrdenar={alternar}>Status</ThOrdenavel>
+      <ThOrdenavel coluna="data" ordenacao={ordenacao} onOrdenar={alternar}>{rq ? "Admissão" : tipo === "experiencia" ? "Data do agendamento" : tipo === "feedback" ? "Data do feedback" : "Data do treinamento"}</ThOrdenavel>
+      {rq && <><ThOrdenavel coluna="prazo" ordenacao={ordenacao} onOrdenar={alternar}>Prazo</ThOrdenavel><ThOrdenavel coluna="dias" ordenacao={ordenacao} onOrdenar={alternar}>Dias para finalizar</ThOrdenavel></>}
+      {tipo === "experiencia" && <ThOrdenavel coluna="gestor" ordenacao={ordenacao} onOrdenar={alternar}>Gestor Responsável</ThOrdenavel>}
+      {tipo !== "rq0216" && <ThOrdenavel coluna="responsavel" ordenacao={ordenacao} onOrdenar={alternar}>{tipo === "feedback" ? "Autor" : "Responsável"}</ThOrdenavel>}
       <th className="py-2"><span className="sr-only">Link para o item</span></th>
-    </tr></thead><tbody>{itens.map(p => <tr key={p.id} className="border-t">
+    </tr></thead><tbody>{ordenados.map(p => <tr key={p.id} className="border-t">
       <td className="py-2 pr-4 font-semibold text-foreground">{p.nome}</td>
       {tipo === "feedback" && <td className="py-2 pr-4">{p.nc ?? "-"}</td>}
       {tipo !== "rq0216" && <td className="py-2 pr-4">{p.detalhe}</td>}
@@ -201,14 +215,32 @@ function Secao({ valor, titulo, total, ultimo, children }: { valor: string; titu
 }
 
 function ListaRevisoes({ itens }: { itens: PendenciaRevisao[] }) {
+  const { itens: ordenados, ordenacao, alternar } = useOrdenacaoTabela(itens, {
+    documento: (p) => p.documento,
+    revisao: (p) => p.revisao,
+    statusAnalise: (p) => p.statusAnalise,
+    diasAtrasoAnalise: (p) => p.diasAtrasoAnalise,
+    statusRevisao: (p) => p.statusRevisao,
+    diasAtrasoDocumento: (p) => p.diasAtrasoDocumento,
+    responsavel: (p) => p.responsavel,
+  });
   if (!itens.length) return <p className="py-4 text-center text-sm text-muted-foreground">Nenhuma revisão de documento pendente para você.</p>;
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead className="text-left text-xs uppercase text-muted-foreground">
-          <tr><th className="py-2 pr-4">Documento</th><th className="py-2 pr-4">Nº da revisão</th><th className="py-2 pr-4">Status da análise</th><th className="py-2 pr-4">Dias em atraso</th><th className="py-2 pr-4">Status da revisão</th><th className="py-2 pr-4">Dias em atraso do documento</th><th className="py-2 pr-4">Responsável</th><th className="py-2" /></tr>
+          <tr>
+            <ThOrdenavel coluna="documento" ordenacao={ordenacao} onOrdenar={alternar}>Documento</ThOrdenavel>
+            <ThOrdenavel coluna="revisao" ordenacao={ordenacao} onOrdenar={alternar}>Nº da revisão</ThOrdenavel>
+            <ThOrdenavel coluna="statusAnalise" ordenacao={ordenacao} onOrdenar={alternar}>Status da análise</ThOrdenavel>
+            <ThOrdenavel coluna="diasAtrasoAnalise" ordenacao={ordenacao} onOrdenar={alternar}>Dias em atraso</ThOrdenavel>
+            <ThOrdenavel coluna="statusRevisao" ordenacao={ordenacao} onOrdenar={alternar}>Status da revisão</ThOrdenavel>
+            <ThOrdenavel coluna="diasAtrasoDocumento" ordenacao={ordenacao} onOrdenar={alternar}>Dias em atraso do documento</ThOrdenavel>
+            <ThOrdenavel coluna="responsavel" ordenacao={ordenacao} onOrdenar={alternar}>Responsável</ThOrdenavel>
+            <th className="py-2" />
+          </tr>
         </thead>
-        <tbody>{itens.map((p) => (
+        <tbody>{ordenados.map((p) => (
           <tr key={p.id} className="border-t">
             <td className="py-2 pr-4 font-semibold text-foreground">{p.documento}</td>
             <td className="py-2 pr-4">{p.revisao}</td>
@@ -226,15 +258,27 @@ function ListaRevisoes({ itens }: { itens: PendenciaRevisao[] }) {
 }
 
 function ListaNPS({ itens }: { itens: PendenciaNPS[] }) {
+  const { itens: ordenados, ordenacao, alternar } = useOrdenacaoTabela(itens, {
+    cliente: (p) => p.cliente,
+    processo: (p) => p.processo,
+    nota: (p) => p.nota,
+    status: (p) => p.status,
+  });
   if (itens.length === 0) return <p className="py-4 text-center text-sm text-muted-foreground">Nenhuma satisfação do cliente pendente para você.</p>;
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead className="text-left text-xs uppercase text-muted-foreground">
-          <tr><th className="py-2 pr-4">Cliente</th><th className="py-2 pr-4">Processo</th><th className="py-2 pr-4">Nota</th><th className="py-2 pr-4">Status</th><th className="py-2" /></tr>
+          <tr>
+            <ThOrdenavel coluna="cliente" ordenacao={ordenacao} onOrdenar={alternar}>Cliente</ThOrdenavel>
+            <ThOrdenavel coluna="processo" ordenacao={ordenacao} onOrdenar={alternar}>Processo</ThOrdenavel>
+            <ThOrdenavel coluna="nota" ordenacao={ordenacao} onOrdenar={alternar}>Nota</ThOrdenavel>
+            <ThOrdenavel coluna="status" ordenacao={ordenacao} onOrdenar={alternar}>Status</ThOrdenavel>
+            <th className="py-2" />
+          </tr>
         </thead>
         <tbody>
-          {itens.map((p) => (
+          {ordenados.map((p) => (
             <tr key={p.id} className="border-t">
               <td className="py-2 pr-4 font-semibold text-foreground">{p.cliente}</td>
               <td className="py-2 pr-4">{p.processo}</td>
@@ -252,15 +296,27 @@ function ListaNPS({ itens }: { itens: PendenciaNPS[] }) {
 }
 
 function ListaNC({ itens, vazio = "Nenhuma análise de NC pendente para você.", colunaDias = "Nº de dias sem responder", rotulo = "NC" }: { itens: PendenciaNC[]; vazio?: string; colunaDias?: string; rotulo?: string }) {
+  const { itens: ordenados, ordenacao, alternar } = useOrdenacaoTabela(itens, {
+    nc: (p) => p.nc,
+    status: (p) => p.status,
+    dias: (p) => p.diasSemResposta,
+    responsavel: (p) => p.responsavel,
+  });
   if (itens.length === 0) return <p className="py-4 text-center text-sm text-muted-foreground">{vazio}</p>;
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead className="text-left text-xs uppercase text-muted-foreground">
-          <tr><th className="py-2 pr-4">{rotulo}</th><th className="py-2 pr-4">Status por tempo de resposta</th><th className="py-2 pr-4">{colunaDias}</th><th className="py-2 pr-4">Responsável</th><th className="py-2" /></tr>
+          <tr>
+            <ThOrdenavel coluna="nc" ordenacao={ordenacao} onOrdenar={alternar}>{rotulo}</ThOrdenavel>
+            <ThOrdenavel coluna="status" ordenacao={ordenacao} onOrdenar={alternar}>Status por tempo de resposta</ThOrdenavel>
+            <ThOrdenavel coluna="dias" ordenacao={ordenacao} onOrdenar={alternar}>{colunaDias}</ThOrdenavel>
+            <ThOrdenavel coluna="responsavel" ordenacao={ordenacao} onOrdenar={alternar}>Responsável</ThOrdenavel>
+            <th className="py-2" />
+          </tr>
         </thead>
         <tbody>
-          {itens.map((p) => (
+          {ordenados.map((p) => (
             <tr key={p.id} className="border-t">
               <td className="py-2 pr-4 font-semibold text-foreground">{p.nc}</td>
               <td className="py-2 pr-4">

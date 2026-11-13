@@ -9,7 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
+import { TableHeadOrdenavel } from "@/components/ui/cabecalho-ordenavel";
+import { useOrdenacaoTabela } from "@/hooks/useOrdenacaoTabela";
 import { diasSemAcessar, indicadores, situacao, type EventoAcesso, type UsuarioAcesso } from "@/lib/relatorios-acessos.rules";
 
 export const Route = createFileRoute("/_authenticated/relatorios-acessos")({
@@ -70,6 +72,21 @@ function RelatoriosAcessosPage() {
       && (setor === TODOS || (u.departamento ?? "Sem setor") === setor)
       && (sit === TODOS || situacao(u) === sit);
   });
+  const setoresTabela = useOrdenacaoTabela(ind.setores, {
+    setor: (s) => s.setor,
+    usuarios: (s) => s.usuarios,
+    acessaram: (s) => s.acessaram,
+    adesao: (s) => (s.usuarios ? s.acessaram / s.usuarios : 0),
+  });
+  const usuariosTabela = useOrdenacaoTabela(filtrados, {
+    nome: (u) => u.nome,
+    setor: (u) => u.departamento ?? "Sem setor",
+    situacao: (u) => situacao(u),
+    ultimo: (u) => u.ultimo_acesso,
+    dias: (u) => diasSemAcessar(u.ultimo_acesso),
+    acessos30: (u) => u.acessos_30d,
+    total: (u) => u.total_acessos,
+  });
 
   async function exportar() {
     const XLSX = await import("xlsx");
@@ -125,19 +142,32 @@ function RelatoriosAcessosPage() {
             <ol className="space-y-2">{ind.top.map((t, i) => <li key={t.nome + i} className="flex justify-between gap-2 border-b pb-2 text-sm"><span><b>{i + 1}.</b> {t.nome} <span className="text-muted-foreground">· {t.setor}</span></span><b>{t.acessos}</b></li>)}</ol>}</section>
         </div>
         <section className="rounded-lg border bg-card p-4"><h2 className="mb-3 font-bold text-foreground">Adesão por setor</h2>
-          <Table><TableHeader><TableRow><TableHead>Setor</TableHead><TableHead>Profissionais</TableHead><TableHead>Acessaram</TableHead><TableHead>Adesão</TableHead></TableRow></TableHeader>
-            <TableBody>{ind.setores.map((s) => <TableRow key={s.setor}><TableCell className="font-semibold">{s.setor}</TableCell><TableCell>{s.usuarios}</TableCell><TableCell>{s.acessaram}</TableCell><TableCell>{pct(s.usuarios ? s.acessaram / s.usuarios : 0)}</TableCell></TableRow>)}</TableBody></Table></section>
+          <Table><TableHeader><TableRow>
+            <TableHeadOrdenavel coluna="setor" ordenacao={setoresTabela.ordenacao} onOrdenar={setoresTabela.alternar}>Setor</TableHeadOrdenavel>
+            <TableHeadOrdenavel coluna="usuarios" ordenacao={setoresTabela.ordenacao} onOrdenar={setoresTabela.alternar}>Profissionais</TableHeadOrdenavel>
+            <TableHeadOrdenavel coluna="acessaram" ordenacao={setoresTabela.ordenacao} onOrdenar={setoresTabela.alternar}>Acessaram</TableHeadOrdenavel>
+            <TableHeadOrdenavel coluna="adesao" ordenacao={setoresTabela.ordenacao} onOrdenar={setoresTabela.alternar}>Adesão</TableHeadOrdenavel>
+          </TableRow></TableHeader>
+            <TableBody>{setoresTabela.itens.map((s) => <TableRow key={s.setor}><TableCell className="font-semibold">{s.setor}</TableCell><TableCell>{s.usuarios}</TableCell><TableCell>{s.acessaram}</TableCell><TableCell>{pct(s.usuarios ? s.acessaram / s.usuarios : 0)}</TableCell></TableRow>)}</TableBody></Table></section>
       </TabsContent>
       <TabsContent value="usuarios" className="pt-4">
         <div className="mb-4 flex flex-wrap items-center gap-3">
           <div className="relative w-full sm:max-w-xs"><Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /><Input aria-label="Buscar profissional" placeholder="Buscar nome ou e-mail" value={busca} onChange={(e) => setBusca(e.target.value)} className="pl-9" /></div>
           <Select value={setor} onValueChange={setSetor}><SelectTrigger className="w-56" aria-label="Setor"><SelectValue /></SelectTrigger><SelectContent><SelectItem value={TODOS}>Todos os setores</SelectItem>{setores.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select>
           <Select value={sit} onValueChange={setSit}><SelectTrigger className="w-44" aria-label="Situação"><SelectValue /></SelectTrigger><SelectContent><SelectItem value={TODOS}>Todas as situações</SelectItem><SelectItem value="Ativo">Ativo</SelectItem><SelectItem value="Nunca acessou">Nunca acessou</SelectItem><SelectItem value="Inativo">Inativo</SelectItem></SelectContent></Select>
-          <span className="ml-auto text-sm text-muted-foreground">{filtrados.length} profissionais</span>
+          <span className="ml-auto text-sm text-muted-foreground">{usuariosTabela.itens.length} profissionais</span>
         </div>
         <Table>
-          <TableHeader><TableRow><TableHead>Nome</TableHead><TableHead>Setor</TableHead><TableHead>Situação</TableHead><TableHead>Último acesso</TableHead><TableHead>Dias sem acessar</TableHead><TableHead>Acessos (30 dias)</TableHead><TableHead>Total</TableHead></TableRow></TableHeader>
-          <TableBody>{filtrados.map((u) => <TableRow key={u.usuario_id}>
+          <TableHeader><TableRow>
+            <TableHeadOrdenavel coluna="nome" ordenacao={usuariosTabela.ordenacao} onOrdenar={usuariosTabela.alternar}>Nome</TableHeadOrdenavel>
+            <TableHeadOrdenavel coluna="setor" ordenacao={usuariosTabela.ordenacao} onOrdenar={usuariosTabela.alternar}>Setor</TableHeadOrdenavel>
+            <TableHeadOrdenavel coluna="situacao" ordenacao={usuariosTabela.ordenacao} onOrdenar={usuariosTabela.alternar}>Situação</TableHeadOrdenavel>
+            <TableHeadOrdenavel coluna="ultimo" ordenacao={usuariosTabela.ordenacao} onOrdenar={usuariosTabela.alternar}>Último acesso</TableHeadOrdenavel>
+            <TableHeadOrdenavel coluna="dias" ordenacao={usuariosTabela.ordenacao} onOrdenar={usuariosTabela.alternar}>Dias sem acessar</TableHeadOrdenavel>
+            <TableHeadOrdenavel coluna="acessos30" ordenacao={usuariosTabela.ordenacao} onOrdenar={usuariosTabela.alternar}>Acessos (30 dias)</TableHeadOrdenavel>
+            <TableHeadOrdenavel coluna="total" ordenacao={usuariosTabela.ordenacao} onOrdenar={usuariosTabela.alternar}>Total</TableHeadOrdenavel>
+          </TableRow></TableHeader>
+          <TableBody>{usuariosTabela.itens.map((u) => <TableRow key={u.usuario_id}>
             <TableCell className="min-w-48"><div className="font-semibold">{u.nome}</div><div className="text-xs text-muted-foreground">{u.email}</div></TableCell>
             <TableCell>{u.departamento ?? "Sem setor"}</TableCell>
             <TableCell className="whitespace-nowrap">{situacao(u)}</TableCell>

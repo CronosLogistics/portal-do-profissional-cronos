@@ -5,7 +5,9 @@ import { useState } from "react";
 import { listarFeriasColaboradores } from "@/lib/ferias.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
+import { TableHeadOrdenavel } from "@/components/ui/cabecalho-ordenavel";
+import { useOrdenacaoTabela } from "@/hooks/useOrdenacaoTabela";
 
 const feriasQuery = queryOptions({ queryKey: ["ferias-colaboradores"], queryFn: () => listarFeriasColaboradores(), staleTime: 60_000 });
 export const Route = createFileRoute("/_authenticated/ferias")({
@@ -27,10 +29,20 @@ function formatarData(data: string | null) {
   return data.split("-").reverse().join("/");
 }
 
+type Coluna = "nome" | "status" | "inicio" | "fim" | "retorno" | "suplente";
+
 function FeriasPage() {
   const q = useSuspenseQuery(feriasQuery);
   const [busca, setBusca] = useState("");
-  const itens = q.data.itens.filter(item => item.nome.toLocaleLowerCase("pt-BR").includes(busca.trim().toLocaleLowerCase("pt-BR")));
+  const filtrados = q.data.itens.filter(item => item.nome.toLocaleLowerCase("pt-BR").includes(busca.trim().toLocaleLowerCase("pt-BR")));
+  const { itens, ordenacao, alternar } = useOrdenacaoTabela(filtrados, {
+    nome: (i) => i.nome,
+    status: (i) => i.status,
+    inicio: (i) => i.inicio,
+    fim: (i) => i.fim,
+    retorno: (i) => i.retorno,
+    suplente: (i) => i.suplente,
+  });
   return <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-8">
     <header className="mb-6 flex items-start justify-between gap-4">
       <h1 className="min-w-0 break-words text-3xl font-bold text-foreground">Férias Programadas</h1>
@@ -43,7 +55,18 @@ function FeriasPage() {
       </div>
       {itens.length === 0 ? <p role="status" className="py-12 text-center text-sm text-muted-foreground">{busca ? "Nenhum colaborador encontrado." : "Nenhuma programação de férias disponível no momento."}</p> :
         <Table>
-          <TableHeader><TableRow><TableHead>Nome</TableHead><TableHead>Status</TableHead><TableHead>Início</TableHead><TableHead>Fim</TableHead><TableHead>Retorno</TableHead><TableHead>Suplente</TableHead></TableRow></TableHeader>
+          <TableHeader><TableRow>
+            {([
+              ["nome", "Nome"],
+              ["status", "Status"],
+              ["inicio", "Início"],
+              ["fim", "Fim"],
+              ["retorno", "Retorno"],
+              ["suplente", "Suplente"],
+            ] as const).map(([coluna, rotulo]) => (
+              <TableHeadOrdenavel key={coluna} coluna={coluna as Coluna} ordenacao={ordenacao} onOrdenar={alternar}>{rotulo}</TableHeadOrdenavel>
+            ))}
+          </TableRow></TableHeader>
           <TableBody>{itens.map(item => <TableRow key={item.id}>
             <TableCell className="min-w-48 font-semibold">{item.nome}</TableCell>
             <TableCell className="whitespace-nowrap">{item.status}</TableCell>
