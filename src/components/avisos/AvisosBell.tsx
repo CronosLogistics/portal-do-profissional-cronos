@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { avisosKey, destinoNotificacao, listarAvisos, marcarTodosLidos } from "@/lib/avisos-client";
 import { formatarDataBrasilia } from "@/lib/avisos-rules";
+import { AvisoEtiqueta } from "./AvisoEtiqueta";
 
 export function AvisosBell({ naoLidos }: { naoLidos: number }) {
   const [open, setOpen] = useState(false);
@@ -51,7 +52,7 @@ export function AvisosBell({ naoLidos }: { naoLidos: number }) {
               >
                 <span className="flex flex-wrap items-center gap-1.5">
                   <span className="text-[11px] font-bold uppercase text-accent">{a.perfil_nome}</span>
-                  {a.exige_confirmacao && <span className="aviso-tag-obrigatoria">Leitura obrigatória</span>}
+                  {a.exige_confirmacao && <AvisoEtiqueta importante={a.importante} />}
                 </span>
                 <span className="line-clamp-2 text-sm text-foreground">{a.titulo}</span>
                 <span className="text-xs text-muted-foreground">{formatarDataBrasilia(a.publicar_em)}</span>

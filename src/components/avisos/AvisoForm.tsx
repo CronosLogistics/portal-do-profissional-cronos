@@ -12,7 +12,8 @@ import { useCurrentUser } from "@/hooks/useAuth";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { avisoPermiteInteracao, avisosKey, departamentosDestinatarios, perfisRemetentes, salvarAviso, type AvisoEnviado } from "@/lib/avisos-client";
-import { brasiliaParaUtc, statusAviso, TITULO_MAX, utcParaBrasilia } from "@/lib/avisos-rules";
+import { brasiliaParaUtc, confirmacaoAoMarcarImportante, statusAviso, TITULO_MAX, utcParaBrasilia } from "@/lib/avisos-rules";
+import { AvisoEtiqueta } from "./AvisoEtiqueta";
 import { AvisoHtml } from "./AvisoLeitura";
 import { formatarDataBrasilia } from "@/lib/avisos-rules";
 
@@ -33,6 +34,7 @@ export function AvisoForm({ open, onClose, aviso }: { open: boolean; onClose: ()
   const [expiraEm, setExpiraEm] = useState("");
   const [preview, setPreview] = useState(false);
   const [exigeConfirmacao, setExigeConfirmacao] = useState(false);
+  const [importante, setImportante] = useState(false);
   const me = useCurrentUser();
   const podeConfirmacao = Boolean(me.data?.can("avisos.confirmacao"));
   const podeInteracao = Boolean(me.data?.can("avisos.interacao"));
@@ -51,6 +53,7 @@ export function AvisoForm({ open, onClose, aviso }: { open: boolean; onClose: ()
     setDepartamentosIds(aviso?.departamentos_ids ?? []);
     setBuscaDepartamento("");
     setExigeConfirmacao(aviso?.exige_confirmacao ?? false);
+    setImportante(aviso?.importante ?? false);
     setPerfilId(aviso?.perfil_id ?? "");
     setTitulo(aviso?.titulo ?? "");
     setMensagem(aviso?.mensagem ?? "");
@@ -69,7 +72,7 @@ export function AvisoForm({ open, onClose, aviso }: { open: boolean; onClose: ()
       if (destino === "departamentos" && departamentosIds.length === 0) throw new Error("Selecione pelo menos um departamento.");
       if (quando === "agendar" && !agendarEm && !publicado) throw new Error("Informe a data e hora do agendamento.");
       const publicarEm = publicado && aviso ? aviso.publicar_em : quando === "agora" ? new Date().toISOString() : brasiliaParaUtc(agendarEm);
-      return salvarAviso({ perfil_id: perfilId, titulo, mensagem, publicar_em: publicarEm, expira_em: expiraEm ? brasiliaParaUtc(expiraEm) : null, tipo: aviso?.tipo ?? "comum", exige_confirmacao: exigeConfirmacao, ...(permiteInteracao !== interacaoOriginal ? { permite_interacao: permiteInteracao } : {}), departamentos_ids: destino === "todos" ? [] : departamentosIds }, aviso?.id);
+      return salvarAviso({ perfil_id: perfilId, titulo, mensagem, publicar_em: publicarEm, expira_em: expiraEm ? brasiliaParaUtc(expiraEm) : null, tipo: aviso?.tipo ?? "comum", exige_confirmacao: importante || exigeConfirmacao, importante, ...(permiteInteracao !== interacaoOriginal ? { permite_interacao: permiteInteracao } : {}), departamentos_ids: destino === "todos" ? [] : departamentosIds }, aviso?.id);
     },
     onSuccess: async () => {
       toast.success(aviso ? "Aviso atualizado." : quando === "agora" ? "Aviso publicado." : "Aviso agendado.");
@@ -92,6 +95,7 @@ export function AvisoForm({ open, onClose, aviso }: { open: boolean; onClose: ()
         {preview ? (
           <div className="rounded-lg border p-5">
             <p className="text-xs font-bold uppercase tracking-wide text-accent">{nomePerfil}</p>
+            {exigeConfirmacao && <AvisoEtiqueta importante={importante} />}
             <h3 className="mt-1 text-xl font-bold">{titulo || "Sem título"}</h3>
             <p className="mb-3 text-sm text-muted-foreground">
               {formatarDataBrasilia(quando === "agendar" && agendarEm ? brasiliaParaUtc(agendarEm) : new Date().toISOString())}
@@ -118,7 +122,7 @@ export function AvisoForm({ open, onClose, aviso }: { open: boolean; onClose: ()
               <div className="grid gap-3 sm:grid-cols-2">
                 {(podeConfirmacao || exigeConfirmacao) && (
                   <label className="flex items-center gap-3 rounded-md border p-3 text-sm">
-                    <Checkbox checked={exigeConfirmacao} disabled={publicado || !podeConfirmacao} onCheckedChange={(v) => setExigeConfirmacao(v === true)} />
+                    <Checkbox checked={exigeConfirmacao} disabled={importante || publicado || !podeConfirmacao} onCheckedChange={(v) => setExigeConfirmacao(v === true)} />
                     <strong>Exigir confirmação de leitura?</strong>
                   </label>
                 )}
@@ -126,6 +130,12 @@ export function AvisoForm({ open, onClose, aviso }: { open: boolean; onClose: ()
                   <label className="flex items-center gap-3 rounded-md border p-3 text-sm">
                     <Checkbox checked={permiteInteracao} disabled={!podeInteracao} onCheckedChange={(v) => setPermiteInteracao(v === true)} />
                     <strong>Permitir interação?</strong>
+                  </label>
+                )}
+                {(podeConfirmacao || importante) && (
+                  <label className={`flex items-center gap-3 rounded-md border p-3 text-sm ${(podeInteracao || permiteInteracao) ? "sm:col-span-2" : ""}`}>
+                    <Checkbox checked={importante} disabled={publicado || !podeConfirmacao} onCheckedChange={(v) => { const marcado = v === true; setImportante(marcado); setExigeConfirmacao((atual) => confirmacaoAoMarcarImportante(marcado, atual)); }} />
+                    <strong>Aviso importante?</strong>
                   </label>
                 )}
               </div>

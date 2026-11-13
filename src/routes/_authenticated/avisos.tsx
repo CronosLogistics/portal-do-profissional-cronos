@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Archive, CheckCheck, Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { AlertTriangle, Archive, CheckCheck, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,9 +12,10 @@ import { useCurrentUser } from "@/hooks/useAuth";
 import { useNaoLidos } from "@/hooks/useAvisos";
 import { AvisoLeitura, type AvisoExibido } from "@/components/avisos/AvisoLeitura";
 import { AvisoForm } from "@/components/avisos/AvisoForm";
+import { AvisoEtiqueta } from "@/components/avisos/AvisoEtiqueta";
 import { AvisoAcompanhamento } from "@/components/avisos/AvisoAcompanhamento";
 import { InsiderEditor } from "@/components/avisos/InsiderEditor";
-import { arquivarAviso, avisosEnviados, avisosKey, cancelarAviso, destinoNotificacao, listarAvisos, marcarTodosLidos, POR_PAGINA, type AvisoEnviado } from "@/lib/avisos-client";
+import { arquivarAviso, avisosEnviados, avisosKey, cancelarAviso, contarImportantes, destinoNotificacao, listarAvisos, marcarTodosLidos, POR_PAGINA, type AvisoEnviado } from "@/lib/avisos-client";
 import { filtrarAvisosPorBusca, formatarDataBrasilia, rotuloRemetente, statusAviso, type StatusAviso } from "@/lib/avisos-rules";
 
 export const Route = createFileRoute("/_authenticated/avisos")({
@@ -68,12 +69,14 @@ function Recebidos() {
   const qc = useQueryClient();
   const navigate = useNavigate({ from: "/avisos" });
   const { aviso: abertoId } = Route.useSearch();
-  const [filtro, setFiltro] = useState<"todos" | "nao-lidos" | "obrigatorios">("todos");
+  const [filtro, setFiltro] = useState<"todos" | "nao-lidos" | "obrigatorios" | "importantes">("todos");
   const [busca, setBusca] = useState("");
   const naoLidos = useNaoLidos();
+  const importantes = useQuery({ queryKey: [...avisosKey, "importantes-pendentes"], queryFn: contarImportantes, refetchInterval: 60_000, staleTime: 15_000 });
   const lista = useInfiniteQuery({
     queryKey: [...avisosKey, "lista", filtro],
-    queryFn: ({ pageParam }) => listarAvisos(filtro === "nao-lidos", POR_PAGINA, pageParam, filtro === "obrigatorios"),
+    queryFn: ({ pageParam }) => listarAvisos(filtro === "nao-lidos", POR_PAGINA, pageParam, filtro === "obrigatorios", undefined, false, filtro === "importantes"),
+    refetchInterval: 60_000,
     initialPageParam: 0,
     getNextPageParam: (last, pages) => (last.length < POR_PAGINA ? undefined : pages.length * POR_PAGINA),
   });
@@ -110,6 +113,10 @@ function Recebidos() {
             Não lidos{naoLidos.data ? ` (${naoLidos.data})` : ""}
           </Button>
           <Button size="sm" variant={filtro === "obrigatorios" ? "default" : "outline"} onClick={() => setFiltro("obrigatorios")}>Leitura obrigatória</Button>
+          <Button size="sm" variant={filtro === "importantes" ? "default" : "outline"} onClick={() => setFiltro("importantes")}>
+            <AlertTriangle className={importantes.data ? "text-accent" : ""} aria-hidden="true" />Importante
+            {Boolean(importantes.data) && <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-accent px-1.5 text-xs font-bold text-primary-foreground" aria-label={`${importantes.data} avisos importantes pendentes`}>{importantes.data}</span>}
+          </Button>
         </div>
         <Button size="sm" variant="ghost" disabled={!naoLidos.data || todos.isPending} onClick={() => todos.mutate()}><CheckCheck />Marcar todos como lidos</Button>
       </div>
@@ -120,7 +127,7 @@ function Recebidos() {
       {lista.isError ? <p role="alert" className="py-6 text-destructive">{lista.error.message}</p> : lista.isLoading ? (
         <p className="py-10 text-center text-muted-foreground">Carregando avisos...</p>
       ) : vazio ? (
-        <p className="rounded-lg border py-10 text-center text-muted-foreground">{filtro === "nao-lidos" ? "Você está em dia: nenhum aviso não lido." : filtro === "obrigatorios" ? "Nenhum aviso de leitura obrigatória." : "Nenhum aviso vigente no momento."}</p>
+        <p className="rounded-lg border py-10 text-center text-muted-foreground">{filtro === "nao-lidos" ? "Você está em dia: nenhum aviso não lido." : filtro === "obrigatorios" ? "Nenhum aviso de leitura obrigatória." : filtro === "importantes" ? "Nenhum aviso importante no momento." : "Nenhum aviso vigente no momento."}</p>
       ) : semResultado ? (
         <p className="rounded-lg border py-10 text-center text-muted-foreground">{aindaBuscando ? "Buscando em todos os avisos..." : `Nenhum aviso encontrado para “${busca.trim()}”.`}</p>
       ) : (
@@ -133,9 +140,7 @@ function Recebidos() {
                   <span className="flex flex-wrap items-center gap-2">
                     <span className="text-xs font-bold uppercase tracking-wide text-accent">{a.perfil_nome}</span>
                     {a.exige_confirmacao && (
-                      <span className="aviso-tag-obrigatoria">
-                        Leitura obrigatória{a.lido ? " · confirmada" : ""}
-                      </span>
+                      <AvisoEtiqueta importante={a.importante} confirmado={a.lido} />
                     )}
                   </span>
                   <span className="mt-0.5 block truncate text-base text-foreground">{a.titulo}</span>
@@ -184,7 +189,7 @@ function Enviados({ onEdit }: { onEdit: (a: AvisoEnviado) => void }) {
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant={statusVariant[st]}>{st}</Badge>
-                {a.exige_confirmacao && <Badge variant="outline">Leitura obrigatória</Badge>}
+                {a.exige_confirmacao && <AvisoEtiqueta importante={a.importante} />}
                 <span className="text-xs font-bold uppercase text-accent">{rotuloRemetente(a.perfil_nome, a.autor_nome)}</span>
                 {a.editado_em && <span className="text-xs text-muted-foreground">editado</span>}
               </div>

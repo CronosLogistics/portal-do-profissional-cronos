@@ -25,6 +25,7 @@ import { formatarDataBrasilia } from "@/lib/avisos-rules";
 import { InsiderPublicado } from "./InsiderJornal";
 import { GifPicker } from "@/components/portal/GifPicker";
 import { gifPermitido } from "@/lib/giphy";
+import { AvisoEtiqueta } from "./AvisoEtiqueta";
 
 export type AvisoExibido = {
   id?: string;
@@ -36,6 +37,7 @@ export type AvisoExibido = {
   lido?: boolean;
   tipo?: string;
   exige_confirmacao?: boolean;
+  importante?: boolean;
   confirmado_em?: string | null;
 };
 
@@ -62,7 +64,7 @@ export function AvisoCorpo({ aviso }: { aviso: AvisoExibido }) {
       <DialogHeader>
         <div className="flex flex-wrap items-center gap-2">
           <p className="text-xs font-bold uppercase tracking-wide text-accent">{aviso.perfil_nome}</p>
-          {aviso.exige_confirmacao && <span className="aviso-tag-obrigatoria">Leitura obrigatória</span>}
+          {aviso.exige_confirmacao && <AvisoEtiqueta importante={aviso.importante} />}
         </div>
         <DialogTitle className="text-xl pr-16">{aviso.titulo}</DialogTitle>
         <DialogDescription>
@@ -287,7 +289,7 @@ export function AvisoLeitura({ aviso, onClose }: { aviso: AvisoExibido | null; o
         {aviso && <AvisoCorpo aviso={aviso} />}
         {aviso?.exige_confirmacao && aviso.id && (
           <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-4">
-            <strong className="text-sm text-accent">Leitura obrigatória</strong>
+            <strong className="text-sm text-accent">{aviso.importante ? "IMPORTANTE" : "Leitura obrigatória"}</strong>
             <Button disabled={confirmar.isPending || Boolean(aviso.confirmado_em) || confirmadoId === aviso.id} onClick={() => aviso.id && confirmar.mutate(aviso.id)}>
               {aviso.confirmado_em || confirmadoId === aviso.id ? "Ciência confirmada" : confirmar.isPending ? "Confirmando..." : "Li e estou ciente"}
             </Button>

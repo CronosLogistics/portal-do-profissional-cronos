@@ -12,6 +12,7 @@ export type AvisoRecebido = {
   lido: boolean;
   tipo: TipoAviso;
   exige_confirmacao: boolean;
+  importante?: boolean;
   confirmado_em?: string | null;
 };
 
@@ -47,6 +48,7 @@ export type AvisoEnviado = {
   ativos: number;
   tipo: TipoAviso;
   exige_confirmacao: boolean;
+  importante?: boolean;
   confirmado_em?: string | null;
 };
 
@@ -60,14 +62,20 @@ function amigavel(message?: string) {
   return new Error(m || "Não foi possível concluir a operação.");
 }
 
-export async function listarAvisos(soNaoLidos: boolean, limite = POR_PAGINA, deslocamento = 0, obrigatorios = false, avisoId?: string, priorizar = false): Promise<AvisoRecebido[]> {
-  const { data, error } = await supabase.rpc("listar_notificacoes", { _so_nao_lidos: soNaoLidos, _limite: limite, _deslocamento: deslocamento, _so_obrigatorios: obrigatorios, ...(avisoId ? { _aviso_id: avisoId } : {}), _priorizar: priorizar });
+export async function listarAvisos(soNaoLidos: boolean, limite = POR_PAGINA, deslocamento = 0, obrigatorios = false, avisoId?: string, priorizar = false, importantes = false): Promise<AvisoRecebido[]> {
+  const { data, error } = await supabase.rpc("listar_notificacoes_importantes", { _so_nao_lidos: soNaoLidos, _limite: limite, _deslocamento: deslocamento, _so_obrigatorios: obrigatorios, ...(avisoId ? { _aviso_id: avisoId } : {}), _priorizar: priorizar, _so_importantes: importantes });
   if (error) throw amigavel(error.message);
   return (data ?? []) as AvisoRecebido[];
 }
 
 export async function contarNaoLidos(): Promise<number> {
   const { data, error } = await supabase.rpc("contar_notificacoes");
+  if (error) throw amigavel(error.message);
+  return Number(data ?? 0);
+}
+
+export async function contarImportantes(): Promise<number> {
+  const { data, error } = await supabase.rpc("contar_avisos_importantes");
   if (error) throw amigavel(error.message);
   return Number(data ?? 0);
 }
@@ -83,7 +91,7 @@ export async function marcarTodosLidos() {
 }
 
 export async function avisosEnviados(): Promise<AvisoEnviado[]> {
-  const { data, error } = await supabase.rpc("avisos_enviados_destinatarios");
+  const { data, error } = await supabase.rpc("avisos_enviados_importantes");
   if (error) throw amigavel(error.message);
   return ((data ?? []) as unknown as AvisoEnviado[]).map((a) => ({ ...a, lidos: Number(a.lidos), ativos: Number(a.ativos) }));
 }
@@ -100,7 +108,7 @@ export async function departamentosDestinatarios(): Promise<{ id: string; nome: 
   return data ?? [];
 }
 
-export type DadosAviso = { perfil_id: string; titulo: string; mensagem: string; publicar_em: string; expira_em: string | null; tipo?: TipoAviso; exige_confirmacao?: boolean; permite_interacao?: boolean; departamentos_ids?: string[] };
+export type DadosAviso = { perfil_id: string; titulo: string; mensagem: string; publicar_em: string; expira_em: string | null; tipo?: TipoAviso; exige_confirmacao?: boolean; importante?: boolean; permite_interacao?: boolean; departamentos_ids?: string[] };
 
 export async function salvarAviso(dados: DadosAviso, id?: string) {
   const titulo = dados.titulo.trim();

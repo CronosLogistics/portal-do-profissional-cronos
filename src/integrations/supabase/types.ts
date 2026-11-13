@@ -63,6 +63,7 @@ export type Database = {
           exige_confirmacao: boolean
           expira_em: string | null
           id: string
+          importante: boolean
           mensagem: string
           perfil_id: string
           permite_interacao: boolean
@@ -79,6 +80,7 @@ export type Database = {
           exige_confirmacao?: boolean
           expira_em?: string | null
           id?: string
+          importante?: boolean
           mensagem?: string
           perfil_id: string
           permite_interacao?: boolean
@@ -95,6 +97,7 @@ export type Database = {
           exige_confirmacao?: boolean
           expira_em?: string | null
           id?: string
+          importante?: boolean
           mensagem?: string
           perfil_id?: string
           permite_interacao?: boolean
@@ -1679,6 +1682,7 @@ export type Database = {
         }[]
       }
       avisos_enviados_destinatarios: { Args: never; Returns: Json }
+      avisos_enviados_importantes: { Args: never; Returns: Json }
       buscar_mencionaveis: {
         Args: { _busca: string }
         Returns: {
@@ -1708,6 +1712,7 @@ export type Database = {
         }[]
       }
       confirmar_leitura_aviso: { Args: { _aviso_id: string }; Returns: string }
+      contar_avisos_importantes: { Args: never; Returns: number }
       contar_nao_lidos: { Args: never; Returns: number }
       contar_notificacoes: { Args: never; Returns: number }
       contar_questionarios_pendentes: { Args: never; Returns: number }
@@ -1909,6 +1914,31 @@ export type Database = {
           exige_confirmacao: boolean
           expira_em: string
           id: string
+          lido: boolean
+          mensagem: string
+          perfil_nome: string
+          publicar_em: string
+          tipo: string
+          titulo: string
+        }[]
+      }
+      listar_notificacoes_importantes: {
+        Args: {
+          _aviso_id?: string
+          _deslocamento?: number
+          _limite?: number
+          _priorizar?: boolean
+          _so_importantes?: boolean
+          _so_nao_lidos?: boolean
+          _so_obrigatorios?: boolean
+        }
+        Returns: {
+          confirmado_em: string
+          editado_em: string
+          exige_confirmacao: boolean
+          expira_em: string
+          id: string
+          importante: boolean
           lido: boolean
           mensagem: string
           perfil_nome: string

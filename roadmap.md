@@ -1,4 +1,8 @@
 # Atualização visual do Portal do Profissional
+## Avisos importantes
+- [x] Adicionar importância protegida por permissão, confirmação automática e preservação após publicação.
+- [x] Ajustar opções do formulário, filtro com contador e identificação na lista, leitor e sino.
+- [x] Validar 45 testes e fluxo autenticado de publicação direcionada, leitura coletiva sem ciência, sino persistente, confirmação e arquivamento; opções conferidas no computador/celular, sem erros. Agendamento e permissões negativas verificados por testes; avisos temporários arquivados.
 ## Prazo de resposta das pesquisas
 - [x] Adicionar prazo opcional na criação, rascunhos e edição, com vencimento ao final do dia em Brasília.
 - [x] Bloquear respostas vencidas e removê-las das pendências sem apagar respostas anteriores.
