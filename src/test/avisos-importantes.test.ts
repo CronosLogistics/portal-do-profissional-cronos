@@ -2,7 +2,6 @@
 import { readFileSync } from "node:fs";
 import { PGlite } from "@electric-sql/pglite";
 import { afterAll, beforeAll, expect, it } from "vitest";
-import { confirmacaoAoMarcarImportante } from "../lib/avisos-rules";
 
 let db: PGlite;
 const id = "10000000-0000-0000-0000-000000000001";
@@ -22,19 +21,16 @@ beforeAll(async () => {
   CREATE FUNCTION notificacoes_mencoes() RETURNS TABLE(id uuid,titulo text,mensagem text,perfil_nome text,publicar_em timestamptz,expira_em timestamptz,editado_em timestamptz,lido boolean,tipo text,exige_confirmacao boolean,confirmado_em timestamptz) LANGUAGE sql AS $$ SELECT * FROM notificacoes_mural() $$;
   CREATE FUNCTION avisos_enviados_confirmacao() RETURNS TABLE(id uuid,titulo text,mensagem text,perfil_id uuid,perfil_nome text,autor_id uuid,autor_nome text,publicar_em timestamptz,expira_em timestamptz,editado_em timestamptz,arquivado_em timestamptz,lidos bigint,ativos bigint,tipo text,exige_confirmacao boolean) LANGUAGE sql AS $$ SELECT id,titulo,mensagem,perfil_id,'Perfil'::text,autor_id,'Autor'::text,publicar_em,expira_em,editado_em,arquivado_em,0::bigint,1::bigint,tipo,exige_confirmacao FROM avisos $$;`);
   await db.exec(readFileSync(new URL("../../drizzle/migrations/0053_avisos_importantes.sql", import.meta.url), "utf8"));
-  await db.query("INSERT INTO avisos(id,titulo,publicar_em,importante) VALUES($1,'Importante',now()-interval '1 day',true)", [id]);
+  await db.exec(readFileSync(new URL("../../drizzle/migrations/0054_importante_independente_confirmacao.sql", import.meta.url), "utf8"));
+  await db.query("INSERT INTO avisos(id,titulo,publicar_em,importante,exige_confirmacao) VALUES($1,'Importante',now()-interval '1 day',true,true)", [id]);
 }, 30000);
 afterAll(async () => { await db.close(); });
 
-it("marcar importante ativa confirmação e desmarcar preserva a escolha", () => {
-  expect(confirmacaoAoMarcarImportante(true, false)).toBe(true);
-  expect(confirmacaoAoMarcarImportante(false, true)).toBe(true);
-  expect(confirmacaoAoMarcarImportante(false, false)).toBe(false);
-});
-it("o banco exige confirmação mesmo se o navegador enviar false", async () => {
-  expect((await db.query<{exige_confirmacao:boolean}>("SELECT exige_confirmacao FROM avisos WHERE id=$1", [id])).rows[0]?.exige_confirmacao).toBe(true);
-  await db.query("UPDATE avisos SET exige_confirmacao=false WHERE id=$1", [id]);
-  expect((await db.query<{exige_confirmacao:boolean}>("SELECT exige_confirmacao FROM avisos WHERE id=$1", [id])).rows[0]?.exige_confirmacao).toBe(true);
+it("importante pode ser publicado sem exigir confirmação de leitura", async () => {
+  const solto = "10000000-0000-0000-0000-000000000009";
+  await db.query("INSERT INTO avisos(id,publicar_em,importante,exige_confirmacao) VALUES($1,now()+interval '1 day',true,false)", [solto]);
+  expect((await db.query<{exige_confirmacao:boolean}>("SELECT exige_confirmacao FROM avisos WHERE id=$1", [solto])).rows[0]?.exige_confirmacao).toBe(false);
+  await db.query("DELETE FROM avisos WHERE id=$1", [solto]);
 });
 it("importância publicada não pode ser removida", async () => {
   await expect(db.query("UPDATE avisos SET importante=false WHERE id=$1", [id])).rejects.toThrow("não pode mudar");

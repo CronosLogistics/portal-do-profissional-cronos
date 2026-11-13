@@ -379,6 +379,13 @@
       "when": 1794578628567,
       "tag": "0053_avisos_importantes",
       "breakpoints": true
+    },
+    {
+      "idx": 54,
+      "version": "7",
+      "when": 1794593626340,
+      "tag": "0054_importante_independente_confirmacao",
+      "breakpoints": true
     }
   ]
 }

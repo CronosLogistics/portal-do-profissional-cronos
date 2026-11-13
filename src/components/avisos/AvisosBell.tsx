@@ -52,7 +52,7 @@ export function AvisosBell({ naoLidos }: { naoLidos: number }) {
               >
                 <span className="flex flex-wrap items-center gap-1.5">
                   <span className="text-[11px] font-bold uppercase text-accent">{a.perfil_nome}</span>
-                  {a.exige_confirmacao && <AvisoEtiqueta importante={a.importante} />}
+                  {(a.exige_confirmacao || a.importante) && <AvisoEtiqueta importante={a.importante} />}
                 </span>
                 <span className="line-clamp-2 text-sm text-foreground">{a.titulo}</span>
                 <span className="text-xs text-muted-foreground">{formatarDataBrasilia(a.publicar_em)}</span>

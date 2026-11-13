@@ -4,10 +4,6 @@ export type StatusAviso = "Agendado" | "Publicado" | "Expirado" | "Arquivado";
 export type DatasAviso = { publicar_em: string; expira_em: string | null; arquivado_em: string | null };
 
 export const TITULO_MAX = 120;
-/** Importância exige ciência; desmarcar preserva a escolha atual de confirmação. */
-export function confirmacaoAoMarcarImportante(importante: boolean, confirmacaoAtual: boolean): boolean {
-  return importante || confirmacaoAtual;
-}
 const OFFSET = "-03:00";
 const TZ = "America/Sao_Paulo";
 

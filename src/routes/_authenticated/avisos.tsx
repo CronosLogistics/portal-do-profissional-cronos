@@ -189,7 +189,7 @@ function Enviados({ onEdit }: { onEdit: (a: AvisoEnviado) => void }) {
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant={statusVariant[st]}>{st}</Badge>
-                {a.exige_confirmacao && <AvisoEtiqueta importante={a.importante} />}
+                {(a.exige_confirmacao || a.importante) && <AvisoEtiqueta importante={a.importante} />}
                 <span className="text-xs font-bold uppercase text-accent">{rotuloRemetente(a.perfil_nome, a.autor_nome)}</span>
                 {a.editado_em && <span className="text-xs text-muted-foreground">editado</span>}
               </div>

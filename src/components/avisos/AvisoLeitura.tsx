@@ -64,7 +64,7 @@ export function AvisoCorpo({ aviso }: { aviso: AvisoExibido }) {
       <DialogHeader>
         <div className="flex flex-wrap items-center gap-2">
           <p className="text-xs font-bold uppercase tracking-wide text-accent">{aviso.perfil_nome}</p>
-          {aviso.exige_confirmacao && <AvisoEtiqueta importante={aviso.importante} />}
+          {(aviso.exige_confirmacao || aviso.importante) && <AvisoEtiqueta importante={aviso.importante} />}
         </div>
         <DialogTitle className="text-xl pr-16">{aviso.titulo}</DialogTitle>
         <DialogDescription>
