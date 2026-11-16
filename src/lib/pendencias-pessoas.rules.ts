@@ -10,7 +10,7 @@ export const LISTAS_PESSOAS = {
   feedback: { id: "24eca013-1ae3-4f33-8e19-e165338808fe", titulo: "Feedback dos Gestores sobre NCs Reincidentes", caminho: "Feedbacks Gestores", pessoa: "AutorLookupId", campos: ["Title", "Status", "DatadoFeedback", "Classifica_x00e7__x00e3_o", "AutorLookupId", "FinalizadoFeeback_x003f_", "FeedbackReincidentedaNC"] },
 } as const;
 export type TipoPendenciaPessoas = keyof typeof LISTAS_PESSOAS;
-export type PendenciaPessoas = { id: string; nome: string; status: string; detalhe: string; data: string; responsavel: string; gestor: string; prazo: string; dias: number | null; link: string; nc?: string };
+export type PendenciaPessoas = { id: string; nome: string; status: string; detalhe: string; data: string; responsavel: string; gestor: string; prazo: string; dias: number | null; link: string; nc?: string; linkNc?: string };
 
 export function ehGestaoPessoas(perfis: { nome: string; ativo: boolean }[]): boolean {
   return perfis.some(p => p.ativo && p.nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase() === "gestao de pessoas");

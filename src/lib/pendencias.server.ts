@@ -83,3 +83,25 @@ export async function titulosNC(ids: string[], sm = false): Promise<Map<string, 
   );
   return mapa;
 }
+
+const ncIdsPorTitulo = new Map<string, { id: string | null; em: number }>();
+const NC_CONTROLE_URL = "https://cronoslogisticscombr.sharepoint.com/sites/qualityteamgroup/Lists/RQ0002%20%20Controle%20de%20NC%20%20v2/DispForm.aspx?ID=";
+
+/** Links do item no Controle de NC a partir do número (Title), com cache de 1h. */
+export async function linksNCPorTitulo(titulos: string[]): Promise<Map<string, string>> {
+  const agora = Date.now();
+  const faltam = [...new Set(titulos.map((t) => t.trim()).filter((t) => t && t !== "-"))]
+    .filter((t) => { const c = ncIdsPorTitulo.get(t); return !c || agora - c.em > 60 * 60 * 1000; });
+  for (let i = 0; i < faltam.length; i += 8) {
+    await Promise.all(faltam.slice(i, i + 8).map(async (t) => {
+      const filtro = encodeURIComponent(`fields/Title eq '${t.replace(/'/g, "''")}'`);
+      const res = await fetch(`${GATEWAY_URL}/azure_graph/v1.0/sites/${SITE}/lists/${LISTA_CONTROLE_NC}/items?$filter=${filtro}&$select=id&$top=1`, { headers: headers() });
+      if (!res.ok) { console.error(`SharePoint NC por título [${res.status}]: ${(await res.text()).slice(0, 200)}`); return; }
+      const body = (await res.json()) as { value?: { id: string }[] };
+      ncIdsPorTitulo.set(t, { id: body.value?.[0]?.id ?? null, em: agora });
+    }));
+  }
+  const out = new Map<string, string>();
+  for (const t of titulos) { const id = ncIdsPorTitulo.get(t.trim())?.id; if (id) out.set(t, NC_CONTROLE_URL + encodeURIComponent(id)); }
+  return out;
+}

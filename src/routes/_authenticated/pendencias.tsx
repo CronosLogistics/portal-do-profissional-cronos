@@ -179,6 +179,7 @@ function ListaPessoas({ tipo, itens }: { tipo: TipoPendenciaPessoas; itens: Pend
       {tipo === "experiencia" && <ThOrdenavel coluna="gestor" ordenacao={ordenacao} onOrdenar={alternar}>Gestor Responsável</ThOrdenavel>}
       {tipo !== "rq0216" && <ThOrdenavel coluna="responsavel" ordenacao={ordenacao} onOrdenar={alternar}>{tipo === "feedback" ? "Autor" : "Responsável"}</ThOrdenavel>}
       <th className="py-2"><span className="sr-only">Link para o item</span></th>
+      {tipo === "feedback" && <th className="py-2"><span className="sr-only">Link da NC</span></th>}
     </tr></thead><tbody>{ordenados.map(p => <tr key={p.id} className="border-t">
       <td className="py-2 pr-4 font-semibold text-foreground">{p.nome}</td>
       {tipo === "feedback" && <td className="py-2 pr-4">{p.nc ?? "-"}</td>}
@@ -188,6 +189,7 @@ function ListaPessoas({ tipo, itens }: { tipo: TipoPendenciaPessoas; itens: Pend
       {tipo === "experiencia" && <td className="py-2 pr-4">{p.gestor}</td>}
       {tipo !== "rq0216" && <td className="py-2 pr-4">{p.responsavel}</td>}
       <td className="py-2 text-right"><a href={p.link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 font-semibold text-primary hover:underline">Link para o item <ExternalLink className="h-3.5 w-3.5 shrink-0" /></a></td>
+      {tipo === "feedback" && <td className="py-2 pl-4 text-right whitespace-nowrap">{p.linkNc ? <a href={p.linkNc} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 font-semibold text-primary hover:underline">Link da NC <ExternalLink className="h-3.5 w-3.5 shrink-0" /></a> : "-"}</td>}
     </tr>)}</tbody>
   </table></div>;
 }

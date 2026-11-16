@@ -23,5 +23,13 @@ export const minhasPendenciasPessoas = createServerFn({ method: "GET" })
       // Liderados não herdam o acesso amplo de Gestão de Pessoas do gestor.
       liderados[tipo] = outros.length ? unirPendencias(outros, email => pessoasDoUsuario(tipo, d.listas[tipo], email, false, d.usuarios, agora)).filter(p => !meus.has(p.id)) : [];
     }
+    const feedbacks = [...listas.feedback, ...liderados.feedback];
+    if (feedbacks.length) {
+      try {
+        const { linksNCPorTitulo } = await import("./pendencias.server");
+        const links = await linksNCPorTitulo(feedbacks.map(p => p.nc ?? ""));
+        for (const p of feedbacks) { const l = p.nc ? links.get(p.nc) : undefined; if (l) p.linkNc = l; }
+      } catch (e) { console.error("Links das NCs indisponíveis", e); }
+    }
     return { listas, liderados, erros: d.erros };
   });
