@@ -39,6 +39,8 @@ import { Route as AuthenticatedCategoriasSlugRouteImport } from './routes/_authe
 import { Route as AuthenticatedParceiroSlugRouteImport } from './routes/_authenticated/parceiro.$slug'
 import { Route as AuthenticatedRecompensasIndexRouteImport } from './routes/_authenticated/recompensas.index'
 import { Route as AuthenticatedRecompensasSlugRouteImport } from './routes/_authenticated/recompensas.$slug'
+import { Route as ApiPublicAvisoDesligamentoRouteImport } from './routes/api/public/aviso-desligamento'
+import { Route as ApiPublicAvisoFeriasRouteImport } from './routes/api/public/aviso-ferias'
 import { Route as ApiPublicCompiladoElogiosRouteImport } from './routes/api/public/compilado-elogios'
 import { Route as ApiPublicPartnerLogoRouteImport } from './routes/api/public/partner-logo'
 import { Route as AuthenticatedAdminBeneficioIdRouteImport } from './routes/_authenticated/admin.beneficio.$id'
@@ -215,6 +217,17 @@ const AuthenticatedRecompensasSlugRoute =
     path: '/recompensas/$slug',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiPublicAvisoDesligamentoRoute =
+  ApiPublicAvisoDesligamentoRouteImport.update({
+    id: '/api/public/aviso-desligamento',
+    path: '/api/public/aviso-desligamento',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicAvisoFeriasRoute = ApiPublicAvisoFeriasRouteImport.update({
+  id: '/api/public/aviso-ferias',
+  path: '/api/public/aviso-ferias',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicCompiladoElogiosRoute =
   ApiPublicCompiladoElogiosRouteImport.update({
     id: '/api/public/compilado-elogios',
@@ -294,6 +307,8 @@ export interface FileRoutesByFullPath {
   '/categorias/$slug': typeof AuthenticatedCategoriasSlugRoute
   '/parceiro/$slug': typeof AuthenticatedParceiroSlugRoute
   '/recompensas/$slug': typeof AuthenticatedRecompensasSlugRoute
+  '/api/public/aviso-desligamento': typeof ApiPublicAvisoDesligamentoRoute
+  '/api/public/aviso-ferias': typeof ApiPublicAvisoFeriasRoute
   '/api/public/compilado-elogios': typeof ApiPublicCompiladoElogiosRoute
   '/api/public/partner-logo': typeof ApiPublicPartnerLogoRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
@@ -333,6 +348,8 @@ export interface FileRoutesByTo {
   '/categorias/$slug': typeof AuthenticatedCategoriasSlugRoute
   '/parceiro/$slug': typeof AuthenticatedParceiroSlugRoute
   '/recompensas/$slug': typeof AuthenticatedRecompensasSlugRoute
+  '/api/public/aviso-desligamento': typeof ApiPublicAvisoDesligamentoRoute
+  '/api/public/aviso-ferias': typeof ApiPublicAvisoFeriasRoute
   '/api/public/compilado-elogios': typeof ApiPublicCompiladoElogiosRoute
   '/api/public/partner-logo': typeof ApiPublicPartnerLogoRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
@@ -375,6 +392,8 @@ export interface FileRoutesById {
   '/_authenticated/categorias/$slug': typeof AuthenticatedCategoriasSlugRoute
   '/_authenticated/parceiro/$slug': typeof AuthenticatedParceiroSlugRoute
   '/_authenticated/recompensas/$slug': typeof AuthenticatedRecompensasSlugRoute
+  '/api/public/aviso-desligamento': typeof ApiPublicAvisoDesligamentoRoute
+  '/api/public/aviso-ferias': typeof ApiPublicAvisoFeriasRoute
   '/api/public/compilado-elogios': typeof ApiPublicCompiladoElogiosRoute
   '/api/public/partner-logo': typeof ApiPublicPartnerLogoRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
@@ -417,6 +436,8 @@ export interface FileRouteTypes {
     | '/categorias/$slug'
     | '/parceiro/$slug'
     | '/recompensas/$slug'
+    | '/api/public/aviso-desligamento'
+    | '/api/public/aviso-ferias'
     | '/api/public/compilado-elogios'
     | '/api/public/partner-logo'
     | '/admin/'
@@ -456,6 +477,8 @@ export interface FileRouteTypes {
     | '/categorias/$slug'
     | '/parceiro/$slug'
     | '/recompensas/$slug'
+    | '/api/public/aviso-desligamento'
+    | '/api/public/aviso-ferias'
     | '/api/public/compilado-elogios'
     | '/api/public/partner-logo'
     | '/admin'
@@ -497,6 +520,8 @@ export interface FileRouteTypes {
     | '/_authenticated/categorias/$slug'
     | '/_authenticated/parceiro/$slug'
     | '/_authenticated/recompensas/$slug'
+    | '/api/public/aviso-desligamento'
+    | '/api/public/aviso-ferias'
     | '/api/public/compilado-elogios'
     | '/api/public/partner-logo'
     | '/_authenticated/admin/'
@@ -515,6 +540,8 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   DefinirSenhaRoute: typeof DefinirSenhaRoute
+  ApiPublicAvisoDesligamentoRoute: typeof ApiPublicAvisoDesligamentoRoute
+  ApiPublicAvisoFeriasRoute: typeof ApiPublicAvisoFeriasRoute
   ApiPublicCompiladoElogiosRoute: typeof ApiPublicCompiladoElogiosRoute
   ApiPublicPartnerLogoRoute: typeof ApiPublicPartnerLogoRoute
   ApiPublicJobsEntraSyncRoute: typeof ApiPublicJobsEntraSyncRoute
@@ -733,6 +760,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRecompensasSlugRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/aviso-desligamento': {
+      id: '/api/public/aviso-desligamento'
+      path: '/api/public/aviso-desligamento'
+      fullPath: '/api/public/aviso-desligamento'
+      preLoaderRoute: typeof ApiPublicAvisoDesligamentoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/aviso-ferias': {
+      id: '/api/public/aviso-ferias'
+      path: '/api/public/aviso-ferias'
+      fullPath: '/api/public/aviso-ferias'
+      preLoaderRoute: typeof ApiPublicAvisoFeriasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/compilado-elogios': {
       id: '/api/public/compilado-elogios'
       path: '/api/public/compilado-elogios'
@@ -886,6 +927,8 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   DefinirSenhaRoute: DefinirSenhaRoute,
+  ApiPublicAvisoDesligamentoRoute: ApiPublicAvisoDesligamentoRoute,
+  ApiPublicAvisoFeriasRoute: ApiPublicAvisoFeriasRoute,
   ApiPublicCompiladoElogiosRoute: ApiPublicCompiladoElogiosRoute,
   ApiPublicPartnerLogoRoute: ApiPublicPartnerLogoRoute,
   ApiPublicJobsEntraSyncRoute: ApiPublicJobsEntraSyncRoute,

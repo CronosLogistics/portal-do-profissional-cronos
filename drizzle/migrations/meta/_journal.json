@@ -386,6 +386,13 @@
       "when": 1794593626340,
       "tag": "0054_importante_independente_confirmacao",
       "breakpoints": true
+    },
+    {
+      "idx": 55,
+      "version": "7",
+      "when": 1794837840556,
+      "tag": "0055_avisos_automaticos_ferias_desligamento",
+      "breakpoints": true
     }
   ]
 }

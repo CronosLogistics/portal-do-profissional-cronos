@@ -2036,6 +2036,10 @@ export type Database = {
         Returns: string
       }
       questionario_prazo_vigente: { Args: { _prazo: string }; Returns: boolean }
+      receber_aviso_automatico: {
+        Args: { _html: string; _titulo: string }
+        Returns: string
+      }
       receber_compilado: {
         Args: { _html: string; _mes_ano: string; _titulo: string }
         Returns: string
