@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Award, CakeSlice, CalendarCheck, ChevronLeft, ChevronRight, Heart, MapPin, Medal, Newspaper } from "lucide-react";
+import { Award, Briefcase, CakeSlice, CalendarCheck, CalendarHeart, ChevronLeft, ChevronRight, Heart, MapPin, Medal, Newspaper, UserPlus } from "lucide-react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { muralKey, muralVigentes, urlImagem, type PostVigente } from "@/lib/mural-client";
+import { muralKey, muralVigentes, TIPOS_MURAL_CELEBRACAO, urlImagem, type PostVigente, type TipoMural } from "@/lib/mural-client";
 import { AvisoLeitura, type AvisoExibido } from "@/components/avisos/AvisoLeitura";
 import { avisosKey, compiladoVigente, insiderVigente } from "@/lib/avisos-client";
 import { CRONOS_DAY_FIM, formatarDataBrasilia } from "@/lib/avisos-rules";
@@ -12,8 +12,9 @@ const DURACAO = 7000;
 const CRONOS_DAY_INICIO = new Date("2026-12-12T00:00:00-03:00");
 
 /**
- * Carrossel da Início. Ordem fixa: 1 Cronos Day, 2 Aniversariantes, 3 Tempo de casa,
- * 4 outras comemorações do mural, 5 Cronos Insider, 6 Compilado de elogios.
+ * Carrossel da Início. Ordem fixa: Cronos Day, slides de celebração do mural
+ * (aniversário, tempo de casa, job rotation, admissão, datas comemorativas),
+ * demais posts gerais, Cronos Insider e Compilado de elogios.
  * Posição sem conteúdo vigente não aparece; sem nenhum slide, o carrossel some.
  */
 export function HomeCarrossel() {
@@ -33,7 +34,7 @@ export function HomeCarrossel() {
   const slides: Slide[] = [];
   if (agora && agora <= CRONOS_DAY_FIM) slides.push({ id: "cronos-day", conteudo: <SlideCronosDay agora={agora} /> });
   const posts = mural.data ?? [];
-  for (const tipo of ["aniversario", "tempo_casa"] as const) {
+  for (const tipo of TIPOS_MURAL_CELEBRACAO) {
     const hoje = agora ? new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" }).format(agora) : null;
     const grupo = posts.filter((x) => x.tipo === tipo && x.data_post === hoje);
     if (grupo.length) slides.push({ id: `mural-${tipo}`, conteudo: <SlideMural posts={grupo} /> });
@@ -183,11 +184,15 @@ function SlideMural({ posts }: { posts: PostVigente[] }) {
     setTimeout(() => navigate({ to: "/mural", search: { post: post.id }, resetScroll: false }), 900);
   };
 
-  const config = {
+  const configs: Record<TipoMural, { icone: ReactNode; tag: string; sub: string; botao: string; emblema: string }> = {
     aniversario: { icone: <CakeSlice />, tag: varios ? "Aniversariantes" : "Aniversariante do dia", sub: resumo || "Hoje o dia é especial! Desejamos muito sucesso, saúde e realizações.", botao: "Enviar parabéns", emblema: "👑" },
     tempo_casa: { icone: <Medal />, tag: anos ? `${anos} ${anos === 1 ? "ano" : "anos"} de Cronos` : "Tempo de casa", sub: resumo || "Obrigado pela dedicação e por fazer parte da nossa história!", botao: "Parabenizar", emblema: anos ? `${anos}` : "★" },
-    geral: { icone: <Heart />, tag: `Mural de comemorações · ${data}`, sub: resumo || "Clique para deixar sua mensagem.", botao: "Deixar mensagem", emblema: "🎉" },
-  }[post.tipo];
+    job_rotation: { icone: <Briefcase />, tag: varios ? "Job rotations" : "Job rotation", sub: resumo || "Nova jornada, mesmas conexões. Parabéns pela movimentação!", botao: "Parabenizar", emblema: "🔄" },
+    admissao: { icone: <UserPlus />, tag: varios ? "Novas admissões" : "Nova admissão", sub: resumo || "Seja bem-vindo(a) à família Cronos!", botao: "Dar as boas-vindas", emblema: "✨" },
+    data_comemorativa: { icone: <CalendarHeart />, tag: varios ? "Datas comemorativas" : "Data comemorativa", sub: resumo || "Celebre conosco este momento especial.", botao: "Celebrar", emblema: "🎊" },
+    geral: { icone: <Heart />, tag: `Conexões e Celebrações · ${data}`, sub: resumo || "Clique para deixar sua mensagem.", botao: "Deixar mensagem", emblema: "🎉" },
+  };
+  const config = configs[post.tipo];
 
   const fotos = imgs.filter(Boolean) as string[];
   return (

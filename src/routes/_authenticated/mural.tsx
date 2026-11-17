@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { MessageCircle, Pencil, Plus, Trash2 } from "lucide-react";
+import { MessageCircle, Pencil, Plus, Trash2, X, ZoomIn, ZoomOut } from "lucide-react";
 import { toast } from "sonner";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
@@ -21,16 +22,16 @@ import { gifPermitido } from "@/lib/giphy";
 import { useCurrentUser } from "@/hooks/useAuth";
 import {
   apagarComentario, comentar, editarComentario, EMOJIS_MURAL, excluirPost, listarMural, muralKey, postAgendado, reagirPost, salvarPost, urlImagem,
-  marcarMuralLido, buscarPostAntigo, type PostVigente, type ComentarioMural, type EmojiMural, type PostMural, type TipoMural,
+  marcarMuralLido, buscarPostAntigo, LABEL_TIPO_MURAL, type PostVigente, type ComentarioMural, type EmojiMural, type PostMural, type TipoMural,
 } from "@/lib/mural-client";
 
 export const Route = createFileRoute("/_authenticated/mural")({
   validateSearch: (s: Record<string, unknown>): { post?: string } => (typeof s["post"] === "string" ? { post: s["post"] } : {}),
   head: () => ({
     meta: [
-      { title: "Mural de comemorações | Portal do Profissional Cronos" },
+      { title: "Conexões e Celebrações | Portal do Profissional Cronos" },
       { name: "description", content: "Aniversários e comemorações dos profissionais da Cronos Logistics." },
-      { property: "og:title", content: "Mural de comemorações | Portal do Profissional Cronos" },
+      { property: "og:title", content: "Conexões e Celebrações | Portal do Profissional Cronos" },
       { property: "og:description", content: "Celebre com os colegas: aniversários e conquistas da Cronos." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -41,6 +42,37 @@ export const Route = createFileRoute("/_authenticated/mural")({
 
 const hojeBrasil = () => new Date().toLocaleDateString("sv-SE", { timeZone: "America/Sao_Paulo" });
 const dataBR = (d: string) => d.split("-").reverse().join("/");
+
+/** Overlay escuro com zoom, no padrão de redes sociais. */
+function ImagemLightbox({ src, alt, onClose }: { src: string; alt: string; onClose: () => void }) {
+  const [zoom, setZoom] = useState(1);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { window.removeEventListener("keydown", onKey); document.body.style.overflow = prev; };
+  }, [onClose]);
+  const ajustar = (delta: number) => setZoom((z) => Math.min(3, Math.max(1, Math.round((z + delta) * 10) / 10)));
+  return createPortal(
+    <div className="mural-lightbox" role="dialog" aria-modal="true" aria-label={alt} onClick={onClose}>
+      <div className="mural-lightbox-barra" onClick={(e) => e.stopPropagation()}>
+        <Button size="icon" variant="ghost" className="text-white hover:bg-white/10 hover:text-white" aria-label="Diminuir zoom" disabled={zoom <= 1} onClick={() => ajustar(-0.25)}><ZoomOut /></Button>
+        <Button size="icon" variant="ghost" className="text-white hover:bg-white/10 hover:text-white" aria-label="Aumentar zoom" disabled={zoom >= 3} onClick={() => ajustar(0.25)}><ZoomIn /></Button>
+        <span className="mural-lightbox-zoom">{Math.round(zoom * 100)}%</span>
+        <Button size="icon" variant="ghost" className="text-white hover:bg-white/10 hover:text-white" aria-label="Fechar" onClick={onClose}><X /></Button>
+      </div>
+      <div
+        className="mural-lightbox-cena"
+        onClick={(e) => e.stopPropagation()}
+        onWheel={(e) => { e.preventDefault(); ajustar(e.deltaY < 0 ? 0.1 : -0.1); }}
+      >
+        <img src={src} alt={alt} className="mural-lightbox-img" style={{ transform: `scale(${zoom})` }} />
+      </div>
+    </div>,
+    document.body,
+  );
+}
 
 function ListaPosts({
   posts, vazio, foco, meuId, podeEditar, onEditar,
@@ -84,7 +116,7 @@ function MuralPage() {
     <main className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-8">
       <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Mural de comemorações</h1>
+          <h1 className="text-3xl font-bold text-foreground">Conexões e Celebrações</h1>
           <p className="mt-1 text-sm text-muted-foreground">Aniversários e conquistas da nossa equipe. Deixe sua mensagem!</p>
         </div>
         {podeEditar && <Button onClick={() => setForm({ open: true })}><Plus /> Novo post</Button>}
@@ -117,6 +149,7 @@ function PostAntigoModal({ id }: { id: string }) {
   const qc = useQueryClient();
   const q = useQuery({ queryKey: ["mural-antigo", id], queryFn: () => buscarPostAntigo(id) });
   const [img, setImg] = useState<string | null>(null);
+  const [lightbox, setLightbox] = useState(false);
   const post: PostVigente | null | undefined = q.data && q.data.data_post <= hojeBrasil() ? q.data : q.data === undefined ? undefined : null;
   useEffect(() => { if (post?.imagem_path) void urlImagem(post.imagem_path).then(setImg); }, [post?.imagem_path]);
   useEffect(() => {
@@ -135,11 +168,16 @@ function PostAntigoModal({ id }: { id: string }) {
               <strong>Comemoração anterior</strong> — este post foi publicado no Mural em {dataBR(post.data_post)} e não está mais disponível na linha do tempo.
             </p>
             {post.texto && <TextoComMencoes texto={post.texto} className="whitespace-pre-line text-sm text-foreground" />}
-            {img && <img src={img} alt={post.titulo} className="w-full rounded-md border object-cover" />}
+            {img && (
+              <button type="button" className="mural-img-botao" onClick={() => setLightbox(true)} aria-label={`Ampliar imagem: ${post.titulo}`}>
+                <img src={img} alt={post.titulo} className="w-full rounded-md border object-cover" />
+              </button>
+            )}
           </>
         ) : <p className="text-sm text-muted-foreground">Este post foi removido do Mural.</p>}
         <DialogFooter><Button onClick={fechar}>Fechar</Button></DialogFooter>
       </DialogContent>
+      {lightbox && img && <ImagemLightbox src={img} alt={post?.titulo ?? "Imagem"} onClose={() => setLightbox(false)} />}
     </Dialog>
   );
 }
@@ -153,6 +191,7 @@ function PostCard({ post, emFoco, meuId, podeEditar, onEditar }: { post: PostMur
   const ref = useRef<HTMLLIElement>(null);
   const campo = useRef<HTMLTextAreaElement>(null);
   const [img, setImg] = useState<string | null>(null);
+  const [lightbox, setLightbox] = useState(false);
   const [texto, setTexto] = useState("");
   const [mencao, setMencao] = useState(false);
   const [consultaMencao, setConsultaMencao] = useState<string | null>(null);
@@ -223,7 +262,11 @@ function PostCard({ post, emFoco, meuId, podeEditar, onEditar }: { post: PostMur
           )}
         </div>
         {post.texto && <TextoComMencoes texto={post.texto} className="mt-2 whitespace-pre-line text-sm text-foreground" />}
-        {img && <img src={img} alt={post.titulo} className="mt-4 w-full rounded-md border object-cover" loading="lazy" />}
+        {img && (
+          <button type="button" className="mural-img-botao mt-4" onClick={() => setLightbox(true)} aria-label={`Ampliar imagem: ${post.titulo}`}>
+            <img src={img} alt={post.titulo} className="w-full rounded-md border object-cover" loading="lazy" />
+          </button>
+        )}
         <div className="mt-4 flex flex-wrap items-center gap-2">
           {EMOJIS_MURAL.map((e) => {
             const r = post.reacoes.find((x) => x.emoji === e);
@@ -276,6 +319,7 @@ function PostCard({ post, emFoco, meuId, podeEditar, onEditar }: { post: PostMur
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      {lightbox && img && <ImagemLightbox src={img} alt={post.titulo} onClose={() => setLightbox(false)} />}
     </li>
   );
 }
@@ -356,7 +400,9 @@ function PostForm({ post, onClose }: { post: PostMural | null; onClose: () => vo
           <div className="grid grid-cols-2 gap-3">
             <div><Label htmlFor="mtp">Tipo de comemoração</Label>
               <select id="mtp" className="flex h-9 w-full rounded-md border border-input bg-background px-3 text-sm" value={tipo} onChange={(e) => setTipo(e.target.value as TipoMural)}>
-                <option value="geral">Geral</option><option value="aniversario">Aniversário</option><option value="tempo_casa">Tempo de casa</option>
+                {(Object.keys(LABEL_TIPO_MURAL) as TipoMural[]).map((t) => (
+                  <option key={t} value={t}>{LABEL_TIPO_MURAL[t]}</option>
+                ))}
               </select></div>
             {tipo === "tempo_casa" && <div><Label htmlFor="man">Anos de casa</Label><Input id="man" type="number" min={1} max={80} value={anos} onChange={(e) => setAnos(e.target.value)} /></div>}
           </div>
@@ -377,7 +423,7 @@ function PostForm({ post, onClose }: { post: PostMural | null; onClose: () => vo
               <div><Label htmlFor="mah">Hora</Label><Input id="mah" type="time" value={horaAgendada} onChange={(e) => setHoraAgendada(e.target.value)} /></div>
               {dataInvalida && dataAgendada && <p className="col-span-2 text-xs text-destructive">Escolha uma data e hora futuras.</p>}</div>}
           </div>
-          <p className="text-xs text-muted-foreground">O post sai automaticamente no primeiro dia útil do mês seguinte. Aniversários e tempo de casa aparecem em slides separados.</p>
+          <p className="text-xs text-muted-foreground">O post sai automaticamente no primeiro dia útil do mês seguinte. Cada tipo de celebração aparece em um slide separado no carrossel da Início.</p>
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={onClose}>Cancelar</Button>

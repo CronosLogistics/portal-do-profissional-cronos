@@ -13,7 +13,17 @@ export type PostMural = {
   tipo: TipoMural; anos_casa: number | null; publicar_em: string | null;
   reacoes: ReacaoMural[]; minha_reacao: string | null;
 };
-export type TipoMural = "geral" | "aniversario" | "tempo_casa";
+export type TipoMural = "geral" | "aniversario" | "tempo_casa" | "job_rotation" | "admissao" | "data_comemorativa";
+/** Tipos que geram slide agrupado no carrossel e notificação no sino. */
+export const TIPOS_MURAL_CELEBRACAO = ["aniversario", "tempo_casa", "job_rotation", "admissao", "data_comemorativa"] as const satisfies readonly TipoMural[];
+export const LABEL_TIPO_MURAL: Record<TipoMural, string> = {
+  geral: "Geral",
+  aniversario: "Aniversário",
+  tempo_casa: "Tempo de casa",
+  job_rotation: "Job rotation",
+  admissao: "Admissão",
+  data_comemorativa: "Datas Comemorativas",
+};
 export type PostVigente = { id: string; titulo: string; texto: string; imagem_path: string | null; data_post: string; tipo: TipoMural; anos_casa: number | null };
 
 /** Post ainda não visível ao público: data futura ou publicar_em no futuro. */

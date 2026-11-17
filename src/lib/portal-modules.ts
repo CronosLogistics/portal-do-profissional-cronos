@@ -29,7 +29,7 @@ export const PORTAL_MODULES: PortalModule[] = [
   { to: "/avisos", label: "Avisos", group: "avisos" },
   { to: "/ferias", label: "Férias Programadas", group: "avisos" },
   { to: "/pendencias", label: "Pendências" },
-  { to: "/mural", label: "Mural de comemorações" },
+  { to: "/mural", label: "Conexões e Celebrações" },
   { to: "/beneficios", label: "Benefícios", group: "beneficios" },
   { to: "/parceiros", label: "Parceiros e descontos", menuLabel: "Parceiros", group: "beneficios" },
   { to: "/recompensas", label: "Programas de Recompensas" },

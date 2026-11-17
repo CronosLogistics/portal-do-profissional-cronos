@@ -44,7 +44,7 @@ export function useAvisosAoVivo(meId: string | undefined, naoLidos: number) {
         void qc.invalidateQueries({ queryKey: avisosKey });
         if (payload.eventType !== "INSERT") return;
         const novo = payload.new as { id: string; titulo: string; autor_id: string; tipo: string };
-        if (novo.autor_id === meId || !["aniversario", "tempo_casa"].includes(novo.tipo)) return;
+        if (novo.autor_id === meId || !["aniversario", "tempo_casa", "job_rotation", "admissao", "data_comemorativa"].includes(novo.tipo)) return;
         const acessivel = await listarAvisos(true, 1, 0, false, novo.id).catch(() => []);
         if (!acessivel.length) return;
         toast(novo.titulo, { description: "Nova comemoração no mural", duration: 10_000, action: { label: "Abrir", onClick: () => void navigate({ to: "/mural", search: { post: novo.id } }) } });

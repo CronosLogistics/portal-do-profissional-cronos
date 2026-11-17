@@ -2,7 +2,7 @@ import { criarIdCliente } from "@/lib/client-id";
 import { useRef, useState, type RefObject } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowDown, ArrowUp, Eye, ImagePlus, Pencil, Plus, Save, Send, Trash2, ArrowLeft } from "lucide-react";
+import { ArrowDown, ArrowUp, Download, Eye, ImagePlus, Pencil, Plus, Save, Send, Trash2, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,9 +13,19 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { EditorTexto } from "@/components/portal/EditorTexto";
 import { avisosKey, perfisRemetentes } from "@/lib/avisos-client";
 import { enviarImagemInsider, insiderKey, listarEdicoesInsider, publicarEdicao, type EdicaoInsider } from "@/lib/insider-client";
+import { exportarInsiderDocx } from "@/lib/insider-docx";
 import { prepararEdicaoInsider, salvarEdicaoInsider } from "@/lib/insider.functions";
 import { bannersInsider, dataEventoInput, mesBrasilia, nomeMes, type ConteudoInsider, type PessoaInsider } from "@/lib/insider.rules";
 import { InsiderJornal } from "./InsiderJornal";
+
+async function baixarDocx(e: Pick<EdicaoInsider, "titulo" | "mes_ano" | "conteudo">) {
+  try {
+    await exportarInsiderDocx(e.titulo, e.mes_ano, e.conteudo);
+    toast.success("Arquivo DOCX gerado.");
+  } catch (err) {
+    toast.error(err instanceof Error ? err.message : "Não foi possível exportar o Insider.");
+  }
+}
 
 export function InsiderEditor() {
   const qc = useQueryClient();
@@ -29,7 +39,7 @@ export function InsiderEditor() {
     {lista.isPending && <p className="text-muted-foreground">Carregando edições…</p>}
     {lista.error && <p role="alert" className="text-destructive">{lista.error.message}</p>}
     {lista.data?.length === 0 && <p className="border-y py-10 text-center text-muted-foreground">Nenhuma edição preparada.</p>}
-    <div className="grid gap-3">{lista.data?.map(e => <article key={e.id} className="flex flex-wrap items-center justify-between gap-3 rounded-md border bg-card p-4"><div className="min-w-0"><span className="text-xs font-bold uppercase text-accent">{e.aviso_id ? "Publicada" : "Rascunho"}</span><h3 className="break-words font-bold">{e.titulo}</h3><p className="text-xs text-muted-foreground">{e.conteudo.aniversariantes.length} aniversariantes · {e.conteudo.tempoCasa.length} aniversários de empresa</p></div><Button variant="outline" onClick={() => setEdicao(e)}><Pencil />{e.aviso_id ? "Corrigir edição" : "Editar edição"}</Button></article>)}</div>
+    <div className="grid gap-3">{lista.data?.map(e => <article key={e.id} className="flex flex-wrap items-center justify-between gap-3 rounded-md border bg-card p-4"><div className="min-w-0"><span className="text-xs font-bold uppercase text-accent">{e.aviso_id ? "Publicada" : "Rascunho"}</span><h3 className="break-words font-bold">{e.titulo}</h3><p className="text-xs text-muted-foreground">{e.conteudo.aniversariantes.length} aniversariantes · {e.conteudo.tempoCasa.length} aniversários de empresa</p></div><div className="flex flex-wrap gap-2"><Button variant="outline" onClick={() => void baixarDocx(e)}><Download />Exportar DOCX</Button><Button variant="outline" onClick={() => setEdicao(e)}><Pencil />{e.aviso_id ? "Corrigir edição" : "Editar edição"}</Button></div></article>)}</div>
     {edicao && <EditarEdicao key={edicao.id} edicao={edicao} onClose={() => setEdicao(null)} />}
   </section>;
 }
@@ -80,7 +90,7 @@ function EditarEdicao({ edicao, onClose }: { edicao: EdicaoInsider; onClose: () 
   function mover(index: number, delta: number) { const eventos = [...conteudo.eventos]; const outro = eventos[index + delta], item = eventos[index]; if (!outro || !item) return; eventos[index] = outro; eventos[index + delta] = item; mudar("eventos", eventos); }
   const bloquearFora = (e: Event) => { if (seletorAberto.current) e.preventDefault(); };
   return <Dialog open onOpenChange={o => { if (!o && !seletorAberto.current) onClose(); }}><DialogContent className="flex max-h-[92dvh] w-[calc(100%-2rem)] max-w-5xl flex-col overflow-hidden p-4 sm:p-6" onPointerDownOutside={bloquearFora} onInteractOutside={bloquearFora} onFocusOutside={bloquearFora}><DialogHeader><DialogTitle>Cronos Insider - {nomeMes(edicao.mes_ano)}</DialogTitle><DialogDescription>{atual.aviso_id ? "Correção da edição publicada" : "Rascunho"}</DialogDescription></DialogHeader>
-    <div className="flex flex-wrap gap-2 border-b pb-3"><Button variant="outline" onClick={() => setPreview(!preview)}>{preview ? <ArrowLeft /> : <Eye />}{preview ? "Voltar à edição" : "Pré-visualizar"}</Button><Button disabled={salvar.isPending || publicar.isPending} onClick={() => salvar.mutate(undefined, { onSuccess: () => toast.success("Edição salva.") })}><Save />{salvar.isPending ? "Salvando…" : "Salvar"}</Button>{!atual.aviso_id && <Button variant="outline" disabled={salvar.isPending || publicar.isPending || !remetentes.data?.length} onClick={() => setConfirmar(true)}><Send />Publicar</Button>}</div>
+    <div className="flex flex-wrap gap-2 border-b pb-3"><Button variant="outline" onClick={() => setPreview(!preview)}>{preview ? <ArrowLeft /> : <Eye />}{preview ? "Voltar à edição" : "Pré-visualizar"}</Button><Button variant="outline" onClick={() => void baixarDocx({ titulo, mes_ano: edicao.mes_ano, conteudo })}><Download />Exportar DOCX</Button><Button disabled={salvar.isPending || publicar.isPending} onClick={() => salvar.mutate(undefined, { onSuccess: () => toast.success("Edição salva.") })}><Save />{salvar.isPending ? "Salvando…" : "Salvar"}</Button>{!atual.aviso_id && <Button variant="outline" disabled={salvar.isPending || publicar.isPending || !remetentes.data?.length} onClick={() => setConfirmar(true)}><Send />Publicar</Button>}</div>
     <div className="min-h-0 overflow-y-auto">{preview ? <InsiderJornal conteudo={conteudo} mesAno={edicao.mes_ano} /> : <div className="space-y-6 py-3">
       <div className="space-y-2"><Label htmlFor="insider-titulo">Título</Label><Input id="insider-titulo" value={titulo} maxLength={120} onChange={e => setTitulo(e.target.value)} /></div>
       <section className="space-y-3 border-t pt-5"><h3 className="font-bold">Banners da edição</h3><div className="grid gap-4 sm:grid-cols-2">{bannersInsider.map(([key, label]) => <div key={key} className="space-y-1"><p className="text-sm font-bold">{label}</p><ImagemCampo id={atual.id} value={conteudo[key] ?? ""} label={`Inserir banner: ${label}`} seletorAberto={seletorAberto} onChange={v => mudar(key, v)} /></div>)}</div></section>
