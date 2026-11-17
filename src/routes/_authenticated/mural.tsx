@@ -21,7 +21,7 @@ import { gifPermitido } from "@/lib/giphy";
 import { useCurrentUser } from "@/hooks/useAuth";
 import {
   apagarComentario, comentar, editarComentario, EMOJIS_MURAL, excluirPost, listarMural, muralKey, postAgendado, reagirPost, salvarPost, urlImagem,
-  marcarMuralLido, type ComentarioMural, type EmojiMural, type PostMural, type TipoMural,
+  marcarMuralLido, buscarPostAntigo, type PostVigente, type ComentarioMural, type EmojiMural, type PostMural, type TipoMural,
 } from "@/lib/mural-client";
 
 export const Route = createFileRoute("/_authenticated/mural")({
@@ -106,8 +106,41 @@ function MuralPage() {
       ) : !posts.isLoading ? (
         <ListaPosts posts={publicados} vazio="Nenhuma comemoração publicada ainda." foco={foco} meuId={me.data?.id} podeEditar={podeEditar} onEditar={editar} />
       ) : null}
+      {foco && posts.data && !posts.data.some((p) => p.id === foco) && <PostAntigoModal id={foco} />}
       {form.open && <PostForm post={form.post ?? null} onClose={() => setForm({ open: false })} />}
     </main>
+  );
+}
+
+function PostAntigoModal({ id }: { id: string }) {
+  const navigate = Route.useNavigate();
+  const qc = useQueryClient();
+  const q = useQuery({ queryKey: ["mural-antigo", id], queryFn: () => buscarPostAntigo(id) });
+  const [img, setImg] = useState<string | null>(null);
+  const post: PostVigente | null | undefined = q.data && q.data.data_post <= hojeBrasil() ? q.data : q.data === undefined ? undefined : null;
+  useEffect(() => { if (post?.imagem_path) void urlImagem(post.imagem_path).then(setImg); }, [post?.imagem_path]);
+  useEffect(() => {
+    if (!post || post.tipo === "geral") return;
+    void marcarMuralLido(post.id).then(() => qc.invalidateQueries({ queryKey: avisosKey })).catch(() => {});
+  }, [post, qc]);
+  const fechar = () => void navigate({ search: {} });
+  if (q.isLoading) return null;
+  return (
+    <Dialog open onOpenChange={(o) => { if (!o) fechar(); }}>
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+        <DialogHeader><DialogTitle>{post?.titulo ?? "Post não encontrado"}</DialogTitle></DialogHeader>
+        {post ? (
+          <>
+            <p className="rounded-md border border-secondary/40 bg-secondary/10 px-3 py-2 text-sm text-secondary">
+              <strong>Comemoração anterior</strong> — este post foi publicado no Mural em {dataBR(post.data_post)} e não está mais disponível na linha do tempo.
+            </p>
+            {post.texto && <TextoComMencoes texto={post.texto} className="whitespace-pre-line text-sm text-foreground" />}
+            {img && <img src={img} alt={post.titulo} className="w-full rounded-md border object-cover" />}
+          </>
+        ) : <p className="text-sm text-muted-foreground">Este post foi removido do Mural.</p>}
+        <DialogFooter><Button onClick={fechar}>Fechar</Button></DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 

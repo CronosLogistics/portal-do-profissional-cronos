@@ -103,3 +103,10 @@ export async function marcarMuralLido(postId: string) {
   const { error } = await supabase.rpc("marcar_mural_lido", { _post_id: postId });
   if (error) throw error;
 }
+
+/** Post que saiu do mural (mês anterior): leitura direta, liberada pela RLS a usuários ativos. */
+export async function buscarPostAntigo(id: string): Promise<PostVigente | null> {
+  const { data, error } = await supabase.from("mural_posts").select("id,titulo,texto,imagem_path,data_post,tipo,anos_casa").eq("id", id).maybeSingle();
+  if (error) throw error;
+  return data ? { ...data, tipo: data.tipo as TipoMural } : null;
+}
