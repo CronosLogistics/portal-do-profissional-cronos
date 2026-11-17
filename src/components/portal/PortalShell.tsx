@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { Award, BarChart3, CalendarDays, ListChecks, MessageSquareHeart, Building2, ClipboardList, FolderOpen, PartyPopper, ChevronLeft, ChevronRight, Gift, GraduationCap, Home, LogOut, Megaphone, Menu, Settings, Tag, X } from "lucide-react";
+import { Award, BarChart3, CalendarDays, ChevronDown, ListChecks, MessageSquareHeart, Building2, ClipboardList, FolderOpen, PartyPopper, ChevronLeft, ChevronRight, Gift, GraduationCap, Home, LogOut, Megaphone, Menu, Settings, Tag, UserRound, X } from "lucide-react";
 import { TourBoasVindas } from "@/components/portal/TourBoasVindas";
 import { AvisosBell } from "@/components/avisos/AvisosBell";
 import { useAvisosAoVivo, useNaoLidos } from "@/hooks/useAvisos";
@@ -9,6 +9,13 @@ import { useQuestionariosPendentes } from "@/hooks/useQuestionarios";
 import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useCurrentUser, useSignOut } from "@/hooks/useAuth";
 import { principalNav, visibleModules, type PortalModule, type PortalNavGroup } from "@/lib/portal-modules";
 import { useOffice } from "@/components/clube/OfficeContext";
@@ -122,11 +129,13 @@ export function PortalShell({ children }: { children: ReactNode }) {
   const closeMobile = () => setMobileOpen(false);
   const activeModule = modules.find((mod) => matchesPath(pathname, mod.to));
   const title =
-    pathname === "/admin/usuarios" || pathname.startsWith("/admin/usuarios/")
-      ? "Usuários e acessos"
-      : pathname.startsWith("/admin")
-        ? "Administração"
-        : (activeModule?.label ?? "Início");
+    pathname === "/perfil" || pathname.startsWith("/perfil/")
+      ? "Meu perfil"
+      : pathname === "/admin/usuarios" || pathname.startsWith("/admin/usuarios/")
+        ? "Usuários e acessos"
+        : pathname.startsWith("/admin")
+          ? "Administração"
+          : (activeModule?.label ?? "Início");
 
   const name = me.data?.fullName || "Profissional";
   const initials = name.split(" ").filter(Boolean).slice(0, 2).map(n => n[0]).join("");
@@ -245,8 +254,40 @@ export function PortalShell({ children }: { children: ReactNode }) {
           <div className="flex min-w-0 items-center gap-4">
             <span className="hidden items-center gap-2 text-sm text-muted-foreground sm:flex"><Building2 className="size-4" /><span>{office?.name || "Escritório não identificado"}</span></span>
             <AvisosBell naoLidos={naoLidos} />
-            <div className="portal-user"><span className="portal-avatar">{initials}</span><div className="min-w-0"><p className="truncate text-sm font-bold">{name}</p><p className="max-w-48 truncate text-xs text-muted-foreground" title={me.data?.departamento ?? me.data?.email}>{me.data?.departamento ?? me.data?.email}</p></div></div>
-            <Button variant="ghost" size="sm" onClick={() => void signOut()} title="Sair do portal"><LogOut className="size-4" /><span className="hidden sm:inline">Sair</span></Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className="portal-user max-w-64 rounded-md px-1 py-0.5 text-left outline-offset-2 hover:bg-muted/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring"
+                  aria-label={`Conta de ${name}`}
+                >
+                  <span className="portal-avatar">{initials}</span>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-bold">{name}</p>
+                    <p className="max-w-48 truncate text-xs text-muted-foreground" title={me.data?.departamento ?? me.data?.email}>{me.data?.departamento ?? me.data?.email}</p>
+                  </div>
+                  <ChevronDown className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="min-w-44">
+                <DropdownMenuItem asChild>
+                  <Link to="/perfil" onClick={closeMobile}>
+                    <UserRound />
+                    Perfil
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onSelect={() => {
+                    closeMobile();
+                    void signOut();
+                  }}
+                >
+                  <LogOut />
+                  Sair
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </header>
         <div className="portal-canvas">

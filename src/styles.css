@@ -464,3 +464,130 @@
 .mural-lightbox-img { max-width: 100%; max-height: 100%; object-fit: contain; transform-origin: center; transition: transform .15s ease-out; user-select: none; }
 .mural-img-botao { display: block; width: 100%; padding: 0; border: 0; background: none; cursor: zoom-in; }
 .mural-img-botao img { margin-top: 0; }
+
+.perfil-page {
+  --perfil-accent: #e31c79;
+  --perfil-card: #1a1018;
+  --perfil-border: color-mix(in oklab, white 10%, transparent);
+  color: #fff;
+}
+.perfil-card {
+  border: 1px solid var(--perfil-border);
+  border-radius: 16px;
+  background: var(--perfil-card);
+  padding: 22px;
+  box-shadow: 0 12px 40px color-mix(in oklab, #12060c 55%, transparent);
+}
+.perfil-cover {
+  height: 132px;
+  background:
+    radial-gradient(120% 160% at 85% 10%, color-mix(in oklab, var(--perfil-accent) 70%, transparent), transparent 55%),
+    linear-gradient(115deg, #2a0c1c 0%, #5a1038 42%, var(--perfil-accent) 100%);
+}
+@media (min-width: 640px) {
+  .perfil-cover { height: 168px; }
+}
+.perfil-avatar-wrap { position: relative; width: fit-content; }
+.perfil-avatar-lg {
+  display: grid;
+  place-items: center;
+  width: 104px;
+  height: 104px;
+  border-radius: 999px;
+  border: 4px solid var(--perfil-card);
+  background: linear-gradient(145deg, #ac145a, var(--perfil-accent));
+  color: #fff;
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  box-shadow: 0 10px 28px color-mix(in oklab, var(--perfil-accent) 35%, transparent);
+}
+@media (min-width: 640px) {
+  .perfil-avatar-lg { width: 120px; height: 120px; font-size: 2rem; }
+}
+.perfil-avatar-badge {
+  position: absolute;
+  right: 2px;
+  bottom: 4px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 2px solid var(--perfil-card);
+  background: var(--perfil-accent);
+  color: #fff;
+}
+.perfil-meta-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid var(--perfil-border);
+  border-radius: 999px;
+  background: color-mix(in oklab, black 25%, transparent);
+  padding: 0.3rem 0.7rem;
+}
+.perfil-stat {
+  border: 1px solid var(--perfil-border);
+  border-radius: 12px;
+  background: color-mix(in oklab, black 22%, transparent);
+  padding: 0.85rem 1rem;
+}
+.perfil-badge-tile {
+  width: 100%;
+  border: 1px solid var(--perfil-border);
+  border-radius: 14px;
+  background: color-mix(in oklab, black 20%, transparent);
+  padding: 1rem;
+  cursor: pointer;
+}
+.perfil-badge-tile:hover:not(:disabled) {
+  border-color: color-mix(in oklab, var(--perfil-accent) 45%, transparent);
+  background: color-mix(in oklab, var(--perfil-accent) 8%, black);
+}
+.perfil-badge-tile:disabled { cursor: not-allowed; }
+.perfil-badge-icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+}
+.perfil-mini-avatar {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--perfil-accent) 70%, #470c1f);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+.perfil-skill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+  border: 1px solid color-mix(in oklab, var(--perfil-accent) 45%, transparent);
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--perfil-accent) 12%, transparent);
+  padding: 0.35rem 0.7rem;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.portal-canvas:has(.perfil-page) {
+  background:
+    radial-gradient(80% 50% at 100% 0%, color-mix(in oklab, #e31c79 18%, transparent), transparent 60%),
+    #120a12;
+  margin-inline: -20px;
+  padding-inline: 20px;
+  padding-bottom: 48px;
+  min-height: calc(100dvh - var(--portal-topbar-height));
+}
+@media (max-width: 900px) {
+  .portal-canvas:has(.perfil-page) {
+    margin-inline: -8px;
+    padding-inline: 8px;
+  }
+}
