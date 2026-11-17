@@ -400,7 +400,7 @@ function PostForm({ post, onClose }: { post: PostMural | null; onClose: () => vo
           <div className="grid grid-cols-2 gap-3">
             <div><Label htmlFor="mtp">Tipo de comemoração</Label>
               <select id="mtp" className="flex h-9 w-full rounded-md border border-input bg-background px-3 text-sm" value={tipo} onChange={(e) => setTipo(e.target.value as TipoMural)}>
-                {(Object.keys(LABEL_TIPO_MURAL) as TipoMural[]).map((t) => (
+                {(Object.keys(LABEL_TIPO_MURAL) as TipoMural[]).filter((t) => t !== "geral" || post?.tipo === "geral").map((t) => (
                   <option key={t} value={t}>{LABEL_TIPO_MURAL[t]}</option>
                 ))}
               </select></div>

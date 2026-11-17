@@ -450,3 +450,17 @@
 .tour-caixa { position: fixed; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; box-shadow: 0 12px 32px rgb(0 0 0 / .25); }
 .chip-mencao { display: inline; padding: 0 .3rem; border-radius: .35rem; font-weight: 600; color: var(--accent); background: color-mix(in oklab, var(--accent) 10%, transparent); }
 .chip-mencao.is-depto { color: var(--primary); background: color-mix(in oklab, var(--primary) 10%, transparent); }
+
+/* Visualizador de imagens do Mural (overlay com desfoque e zoom) */
+.mural-lightbox {
+  position: fixed; inset: 0; z-index: 100;
+  display: flex; flex-direction: column;
+  background: color-mix(in oklab, var(--foreground) 85%, transparent);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+}
+.mural-lightbox-barra { display: flex; align-items: center; justify-content: flex-end; gap: .25rem; padding: .75rem 1rem; }
+.mural-lightbox-zoom { min-width: 3.5rem; text-align: center; font-size: .875rem; color: var(--background); }
+.mural-lightbox-cena { flex: 1; min-height: 0; overflow: auto; display: flex; align-items: center; justify-content: center; padding: 1rem; overscroll-behavior: contain; }
+.mural-lightbox-img { max-width: 100%; max-height: 100%; object-fit: contain; transform-origin: center; transition: transform .15s ease-out; user-select: none; }
+.mural-img-botao { display: block; width: 100%; padding: 0; border: 0; background: none; cursor: zoom-in; }
+.mural-img-botao img { margin-top: 0; }

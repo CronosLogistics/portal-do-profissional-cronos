@@ -400,6 +400,13 @@
       "when": 1794939381893,
       "tag": "0056_notificacoes_mural_permanentes",
       "breakpoints": true
+    },
+    {
+      "idx": 57,
+      "version": "7",
+      "when": 1794941692409,
+      "tag": "0057_mural_tipos_conexoes",
+      "breakpoints": true
     }
   ]
 }

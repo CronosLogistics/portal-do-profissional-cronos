@@ -62,6 +62,13 @@ export async function exportarInsiderDocx(tituloEdicao: string, mesAno: string, 
   filhos.push(titulo("Encerramento"), ...corpo(conteudo.encerramento));
 
   const doc = new Document({
+    // Títulos na paleta Cronos (Vinho e Cherry) em vez do azul padrão do Word.
+    styles: {
+      paragraphStyles: [
+        { id: "Heading1", name: "Heading 1", basedOn: "Normal", next: "Normal", quickFormat: true, run: { color: "470C1F", bold: true, size: 32, font: "Lato" } },
+        { id: "Heading2", name: "Heading 2", basedOn: "Normal", next: "Normal", quickFormat: true, run: { color: "AC145A", bold: true, size: 26, font: "Lato" } },
+      ],
+    },
     sections: [{ properties: {}, children: filhos }],
   });
   const blob = await Packer.toBlob(doc);
