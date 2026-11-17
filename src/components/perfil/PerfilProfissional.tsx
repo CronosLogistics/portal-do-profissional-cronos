@@ -20,6 +20,9 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { meuPerfil } from "@/lib/perfil.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -33,6 +36,10 @@ import {
 import { cn } from "@/lib/utils";
 
 const MAX_BADGES_FIXADAS = 3;
+const MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+const mesAno = (iso: string) => { const [a, m] = iso.split("-"); return `${MESES[Number(m) - 1]?.slice(0, 3)}/${a}`; };
+const diaMes = (iso: string) => { const [, m, dd] = iso.split("-"); return `${Number(dd)} de ${MESES[Number(m) - 1]}`; };
+const dataCurta = (iso: string | null) => (iso ? iso.slice(0, 10).split("-").reverse().join("/") : "");
 
 const iconesBadge = {
   rocket: Rocket,
@@ -57,7 +64,7 @@ function Secao({
   return (
     <section className={cn("perfil-card", className)}>
       <div className="mb-4 flex items-start justify-between gap-3">
-        <h2 className="text-base font-bold text-white sm:text-lg">{titulo}</h2>
+        <h2 className="text-base font-bold text-foreground sm:text-lg">{titulo}</h2>
         {acao}
       </div>
       {children}
@@ -94,13 +101,13 @@ function BadgeCard({
       <span
         className={cn(
           "perfil-badge-icon",
-          badge.bloqueada ? "bg-white/5 text-white/40" : "bg-[var(--perfil-accent)]/15 text-[var(--perfil-accent)]",
+          badge.bloqueada ? "bg-muted text-muted-foreground" : "bg-[var(--perfil-accent)]/15 text-[var(--perfil-accent)]",
         )}
       >
         {badge.bloqueada ? <Lock className="size-5" /> : <Icon className="size-5" />}
       </span>
-      <span className="mt-3 block text-sm font-semibold text-white">{badge.titulo}</span>
-      <span className="mt-1 block text-xs text-white/55">{badge.descricao}</span>
+      <span className="mt-3 block text-sm font-semibold text-foreground">{badge.titulo}</span>
+      <span className="mt-1 block text-xs text-muted-foreground">{badge.descricao}</span>
     </button>
   );
 }
@@ -110,11 +117,19 @@ export function PerfilProfissional() {
   const { office } = useOffice();
   const demo = PERFIL_DEMO;
 
-  const nome = me.data?.fullName || "Maria Gerotti";
-  const email = me.data?.email || "maria.gerotti@cronoslogistics.com.br";
-  const area = me.data?.departamento || demo.area;
-  const unidade = office?.name || demo.unidade;
-  const iniciais = iniciaisDe(nome) || "MG";
+  const buscarPerfil = useServerFn(meuPerfil);
+  const dados = useQuery({ queryKey: ["meu-perfil"], queryFn: () => buscarPerfil(), staleTime: 10 * 60_000 });
+  const d = dados.data;
+  const carregando = dados.isLoading ? "Carregando…" : "Não informado";
+  const nome = (me.data?.fullName ?? "").replace(/\s*-\s*Cronos Logistics$/i, "").trim() || "Profissional";
+  const email = me.data?.email ?? "";
+  const area = d?.departamento || me.data?.departamento || carregando;
+  const unidade = d?.escritorio || office?.name || carregando;
+  const cargo = d?.cargo || carregando;
+  const desde = d?.admissao ? mesAno(d.admissao) : carregando;
+  const gestor = d?.gestor || carregando;
+  const aniversario = d?.nascimento ? diaMes(d.nascimento) : carregando;
+  const iniciais = iniciaisDe(nome) || "?";
 
   const [badges, setBadges] = useState(demo.badges);
   const [competencias, setCompetencias] = useState(demo.competencias);
@@ -173,6 +188,7 @@ export function PerfilProfissional() {
 
   return (
     <div className="perfil-page mx-auto w-full max-w-6xl px-1 py-6 sm:px-2 sm:py-8">
+      {d?.erro && <p className="mb-4 rounded-md border border-border bg-muted px-3 py-2 text-sm text-muted-foreground">{d.erro}</p>}
       <article className="perfil-card overflow-hidden p-0">
         <div className="perfil-cover" aria-hidden="true" />
         <div className="relative px-5 pb-5 pt-0 sm:px-8 sm:pb-6">
@@ -187,22 +203,22 @@ export function PerfilProfissional() {
                 </span>
               </div>
               <div className="min-w-0 pb-1">
-                <h1 className="text-2xl font-black tracking-tight text-white sm:text-3xl">{nome}</h1>
-                <p className="mt-1 text-sm text-white/75 sm:text-base">
-                  {demo.cargo} · {area}
+                <h1 className="text-2xl font-black tracking-tight text-foreground sm:text-3xl">{nome}</h1>
+                <p className="mt-1 text-sm text-foreground/80 sm:text-base">
+                  {cargo} · {area}
                 </p>
-                <div className="mt-3 flex flex-wrap gap-2 text-xs text-white/65">
+                <div className="mt-3 flex flex-wrap gap-2 text-xs text-foreground/80">
                   <span className="perfil-meta-pill">
                     <MapPin className="size-3.5" />
                     {unidade}
                   </span>
                   <span className="perfil-meta-pill">
                     <CalendarDays className="size-3.5" />
-                    Na Cronos desde {demo.desde}
+                    Na Cronos desde {desde}
                   </span>
                   <span className="perfil-meta-pill">
                     <UserRound className="size-3.5" />
-                    Gestor: {demo.gestor}
+                    Gestor: {gestor}
                   </span>
                 </div>
               </div>
@@ -211,7 +227,7 @@ export function PerfilProfissional() {
               <Button
                 type="button"
                 variant="outline"
-                className="border-white/20 bg-transparent text-white hover:bg-white/10 hover:text-white"
+                
                 onClick={() => void copiarLink()}
               >
                 <Copy />
@@ -219,7 +235,7 @@ export function PerfilProfissional() {
               </Button>
               <Button
                 type="button"
-                className="bg-[var(--perfil-accent)] text-white hover:bg-[var(--perfil-accent)]/90"
+                className="bg-primary text-primary-foreground hover:bg-primary/90"
                 onClick={() => {
                   setEditandoSobre(true);
                   toast.message("Edição local liberada nas seções do perfil.");
@@ -234,13 +250,13 @@ export function PerfilProfissional() {
           <dl className="perfil-stats mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
             {[
               { label: "Badges", valor: demo.stats.badges },
-              { label: "Elogios recebidos", valor: demo.stats.elogios },
+              { label: "Elogios recebidos", valor: d ? d.elogiosTotal : "–" },
               { label: "Treinamentos concluídos", valor: demo.stats.treinamentos },
               { label: "Certificados", valor: demo.stats.certificados },
             ].map((item) => (
               <div key={item.label} className="perfil-stat">
-                <dt className="text-xs text-white/55">{item.label}</dt>
-                <dd className="mt-1 text-xl font-bold text-white">{item.valor}</dd>
+                <dt className="text-xs text-muted-foreground">{item.label}</dt>
+                <dd className="mt-1 text-xl font-bold text-foreground">{item.valor}</dd>
               </div>
             ))}
           </dl>
@@ -256,7 +272,7 @@ export function PerfilProfissional() {
                 <Button
                   type="button"
                   size="sm"
-                  className="bg-[var(--perfil-accent)] text-white hover:bg-[var(--perfil-accent)]/90"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90"
                   onClick={() => {
                     setEditandoSobre(false);
                     toast.success("Sobre mim atualizado (somente nesta sessão).");
@@ -272,16 +288,16 @@ export function PerfilProfissional() {
                 value={sobre}
                 onChange={(e) => setSobre(e.target.value)}
                 rows={4}
-                className="w-full resize-y rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-sm text-white/90 outline-none focus:border-[var(--perfil-accent)]"
+                className="w-full resize-y rounded-lg border border-border bg-muted/50 px-3 py-2 text-sm text-foreground/80 outline-none focus:border-[var(--perfil-accent)]"
               />
             ) : (
-              <p className="text-sm leading-relaxed text-white/70">{sobre}</p>
+              <p className="text-sm leading-relaxed text-foreground/80">{sobre}</p>
             )}
           </Secao>
 
           <Secao
             titulo="Badges e conquistas"
-            acao={<span className="text-xs text-white/45">Fixe até {MAX_BADGES_FIXADAS} no topo do perfil</span>}
+            acao={<span className="text-xs text-muted-foreground">Fixe até {MAX_BADGES_FIXADAS} no topo do perfil</span>}
           >
             {fixadas.length > 0 && (
               <div className="mb-4 grid gap-3 sm:grid-cols-3">
@@ -308,18 +324,16 @@ export function PerfilProfissional() {
             }
           >
             <ul className="space-y-4">
-              {demo.elogios.map((elogio) => (
+              {d?.elogios.length === 0 && <li className="text-sm text-muted-foreground">Nenhum elogio recebido ainda.</li>}
+              {d?.elogios.map((elogio) => (
                 <li key={elogio.id} className="flex gap-3">
-                  <span className="perfil-mini-avatar shrink-0">{elogio.iniciais}</span>
+                  <span className="perfil-mini-avatar shrink-0">{iniciaisDe(elogio.autor ?? "") || "C"}</span>
                   <div className="min-w-0">
-                    <p className="text-sm text-white/55">
-                      <span className="font-semibold text-white">{elogio.autor}</span>
-                      {" · "}
-                      {elogio.papel}
-                      {" · "}
-                      {elogio.quando}
+                    <p className="text-sm text-muted-foreground">
+                      <span className="font-semibold text-foreground">{elogio.autor ?? "Cronos"}</span>
+                      {elogio.data ? ` · ${dataCurta(elogio.data)}` : ""}
                     </p>
-                    <p className="mt-1 text-sm leading-relaxed text-white/80">{elogio.texto}</p>
+                    <p className="mt-1 line-clamp-4 text-sm leading-relaxed text-foreground/80">{elogio.texto}</p>
                   </div>
                 </li>
               ))}
@@ -329,13 +343,13 @@ export function PerfilProfissional() {
           <Secao titulo="Treinamentos e certificados">
             <ul className="space-y-3">
               {demo.treinamentos.map((item) => (
-                <li key={item.id} className="flex items-start gap-3 rounded-xl border border-white/10 bg-black/15 px-3 py-3">
+                <li key={item.id} className="flex items-start gap-3 rounded-xl border border-border bg-muted/50 px-3 py-3">
                   <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-[var(--perfil-accent)]/15 text-[var(--perfil-accent)]">
                     {item.tipo === "certificado" ? <Award className="size-5" /> : <BookOpen className="size-5" />}
                   </span>
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold text-white">{item.titulo}</p>
-                    <p className="mt-0.5 text-xs text-white/55">{item.detalhe}</p>
+                    <p className="text-sm font-semibold text-foreground">{item.titulo}</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">{item.detalhe}</p>
                   </div>
                 </li>
               ))}
@@ -347,27 +361,27 @@ export function PerfilProfissional() {
           <Secao titulo="Informações">
             <dl className="space-y-3 text-sm">
               <div>
-                <dt className="flex items-center gap-1.5 text-white/45">
+                <dt className="flex items-center gap-1.5 text-muted-foreground">
                   <Mail className="size-3.5" />
                   E-mail corporativo
                 </dt>
-                <dd className="mt-1 break-all text-white/90">{email}</dd>
+                <dd className="mt-1 break-all text-foreground/80">{email}</dd>
               </div>
               <div>
-                <dt className="text-white/45">Área</dt>
-                <dd className="mt-1 text-white/90">{area}</dd>
+                <dt className="text-muted-foreground">Área</dt>
+                <dd className="mt-1 text-foreground/80">{area}</dd>
               </div>
               <div>
-                <dt className="flex items-center gap-1.5 text-white/45">
+                <dt className="flex items-center gap-1.5 text-muted-foreground">
                   <Building2 className="size-3.5" />
                   Unidade
                 </dt>
-                <dd className="mt-1 text-white/90">{unidade}</dd>
+                <dd className="mt-1 text-foreground/80">{unidade}</dd>
               </div>
               {privacidade.mostrarAniversario && (
                 <div>
-                  <dt className="text-white/45">Aniversário</dt>
-                  <dd className="mt-1 text-white/90">{demo.aniversario}</dd>
+                  <dt className="text-muted-foreground">Aniversário</dt>
+                  <dd className="mt-1 text-foreground/80">{aniversario}</dd>
                 </div>
               )}
             </dl>
@@ -380,7 +394,7 @@ export function PerfilProfissional() {
                   {skill}
                   <button
                     type="button"
-                    className="ml-1 rounded-full p-0.5 text-white/50 hover:bg-white/10 hover:text-white"
+                    className="ml-1 rounded-full p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
                     aria-label={`Remover ${skill}`}
                     onClick={() => setCompetencias((lista) => lista.filter((c) => c !== skill))}
                   >
@@ -400,11 +414,11 @@ export function PerfilProfissional() {
                 value={novaCompetencia}
                 onChange={(e) => setNovaCompetencia(e.target.value)}
                 placeholder="Adicionar competência"
-                className="border-white/15 bg-black/20 text-white placeholder:text-white/35"
+                className="border-border bg-muted/50 text-foreground placeholder:text-muted-foreground"
               />
               <Button
                 type="submit"
-                className="shrink-0 bg-[var(--perfil-accent)] text-white hover:bg-[var(--perfil-accent)]/90"
+                className="shrink-0 bg-primary text-primary-foreground hover:bg-primary/90"
               >
                 <Plus />
                 Adicionar
@@ -422,7 +436,7 @@ export function PerfilProfissional() {
                 ] as const
               ).map(([chave, label]) => (
                 <li key={chave} className="flex items-center justify-between gap-3">
-                  <span className="text-sm text-white/80">{label}</span>
+                  <span className="text-sm text-foreground/80">{label}</span>
                   <Switch
                     checked={privacidade[chave]}
                     onCheckedChange={(checked) =>
@@ -433,7 +447,7 @@ export function PerfilProfissional() {
                 </li>
               ))}
             </ul>
-            <p className="mt-4 text-xs leading-relaxed text-white/40">
+            <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
               Gestores sempre podem ver pendências, feedbacks e elogios da equipe.
             </p>
           </Secao>
