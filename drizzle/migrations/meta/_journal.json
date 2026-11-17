@@ -393,6 +393,13 @@
       "when": 1794837840556,
       "tag": "0055_avisos_automaticos_ferias_desligamento",
       "breakpoints": true
+    },
+    {
+      "idx": 56,
+      "version": "7",
+      "when": 1794939381893,
+      "tag": "0056_notificacoes_mural_permanentes",
+      "breakpoints": true
     }
   ]
 }
