@@ -1,9 +1,10 @@
+import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { AtSign, Building2, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { buscarMencionaveis, consultaMencaoAtiva, partesMencao, type Mencionavel } from "@/lib/mencoes";
+import { buscarMencionaveis, consultaMencaoAtiva, partesMencao, UUID_RE, type Mencionavel } from "@/lib/mencoes";
 
 /** "@" button: search people or departments and hand back the chosen one. */
 export function MencaoPicker({ onSelect, open: openProp, onOpenChange, consulta }: {
@@ -61,7 +62,7 @@ export function MencaoPicker({ onSelect, open: openProp, onOpenChange, consulta 
 
 /** Plain text with mention chips (comments and mural posts). */
 export function TextoComMencoes({ texto, className }: { texto: string; className?: string }) {
-  return <p className={className}>{partesMencao(texto).map((p, i) => "texto" in p ? <span key={i}>{p.texto}</span> : <span key={i} className={`chip-mencao${p.departamento ? " is-depto" : ""}`}>@{p.nome}</span>)}</p>;
+  return <p className={className}>{partesMencao(texto).map((p, i) => "texto" in p ? <span key={i}>{p.texto}</span> : !p.departamento && UUID_RE.test(p.id) ? <Link key={i} to="/perfil/$id" params={{ id: p.id }} className="chip-mencao hover:underline">@{p.nome}</Link> : <span key={i} className={`chip-mencao${p.departamento ? " is-depto" : ""}`}>@{p.nome}</span>)}</p>;
 }
 
 /** Inserts a mention token into a textarea value at the cursor, replacing a just-typed "@query". */

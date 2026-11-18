@@ -7,7 +7,7 @@ describe("menções", () => {
     expect(tokenMencao({ tipo: "departamento", id: "3", nome: "Comercial" })).toBe("@[Comercial](d:3)");
   });
   it("separa texto e menções", () => {
-    expect(partesMencao("Oi @[Ana](u:11111111-1111-1111-1111-111111111111) e @[TI](d:2)!")).toEqual([{ texto: "Oi " }, { nome: "Ana", departamento: false }, { texto: " e " }, { nome: "TI", departamento: true }, { texto: "!" }]);
+    expect(partesMencao("Oi @[Ana](u:11111111-1111-1111-1111-111111111111) e @[TI](d:2)!")).toEqual([{ texto: "Oi " }, { nome: "Ana", departamento: false, id: "11111111-1111-1111-1111-111111111111" }, { texto: " e " }, { nome: "TI", departamento: true, id: "2" }, { texto: "!" }]);
   });
   it("escapa o nome ao virar destaque no aviso", () => {
     expect(mencoesEmHtml('@[<b>x</b>](d:1)')).toBe('<span class="chip-mencao is-depto">@&lt;b&gt;x&lt;/b&gt;</span>');
@@ -18,5 +18,13 @@ describe("menções", () => {
     expect(consultaMencaoAtiva("Oi @Maria")).toBe("Maria");
     expect(consultaMencaoAtiva("Oi @Maria ")).toBe(null);
     expect(consultaMencaoAtiva("email@cronos.com")).toBe(null);
+  });
+});
+
+describe("menções clicáveis", () => {
+  it("pessoa vira link para o perfil; setor continua sem link", () => {
+    const html = mencoesEmHtml("@[Ana](u:11111111-1111-1111-1111-111111111111) @[TI](d:2)");
+    expect(html).toContain('href="/perfil/11111111-1111-1111-1111-111111111111"');
+    expect(html).toContain('<span class="chip-mencao is-depto">@TI</span>');
   });
 });

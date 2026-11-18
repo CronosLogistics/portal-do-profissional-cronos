@@ -1,3 +1,5 @@
+import { useNavigate } from "@tanstack/react-router";
+import { AutorComentario } from "@/components/portal/AutorComentario";
 import { mencoesEmHtml } from "@/lib/mencoes";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -43,12 +45,19 @@ export type AvisoExibido = {
 
 /** Mensagem já limpa pelo banco (só negrito, itálico, listas e links). */
 export function AvisoHtml({ html }: { html: string }) {
+  const navigate = useNavigate();
   return (
     <div
       className="aviso-html"
       dangerouslySetInnerHTML={{ __html: mencoesEmHtml(html) }}
       onClick={(e) => {
         const a = (e.target as HTMLElement).closest("a");
+        const perfil = a?.getAttribute("href")?.match(/^\/perfil\/([0-9a-f-]{36})$/i);
+        if (perfil) {
+          e.preventDefault();
+          void navigate({ to: "/perfil/$id", params: { id: perfil[1]! } });
+          return;
+        }
         if (a?.href) {
           e.preventDefault();
           window.open(a.href, "_blank", "noopener,noreferrer");
@@ -250,7 +259,7 @@ function ComentarioCompiladoItem({
   return (
     <li className="rounded-md bg-muted/50 p-3">
       <div className="flex items-center justify-between gap-2">
-        <p className="text-sm font-semibold text-foreground">{c.nome}</p>
+        <AutorComentario usuarioId={c.usuario_id} nome={c.nome} />
         <div className="flex items-center gap-1 text-xs text-muted-foreground">
           {new Date(c.criado_em).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", dateStyle: "short", timeStyle: "short" })}
           {c.editado_em && " · editado"}

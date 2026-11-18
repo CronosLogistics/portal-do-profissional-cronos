@@ -1,3 +1,4 @@
+import { AutorComentario } from "@/components/portal/AutorComentario";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { createFileRoute } from "@tanstack/react-router";
@@ -337,7 +338,7 @@ function Comentario({ c, meu, podeRemover, onMudou }: { c: ComentarioMural; meu:
   return (
     <li className="rounded-md bg-muted/50 p-3">
       <div className="flex items-center justify-between gap-2">
-        <p className="text-sm font-semibold text-foreground">{c.nome}</p>
+        <AutorComentario usuarioId={c.usuario_id} nome={c.nome} />
         <div className="flex items-center gap-1 text-xs text-muted-foreground">
           {new Date(c.criado_em).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", dateStyle: "short", timeStyle: "short" })}
           {c.editado_em && " · editado"}

@@ -1,4 +1,4 @@
-import { useMinhaFoto } from "@/hooks/use-minha-foto";
+import { useFotoProfissional, useMinhaFoto } from "@/hooks/use-minha-foto";
 import { useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import {
@@ -23,7 +23,7 @@ import {
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { meuPerfil } from "@/lib/perfil.functions";
+import { meuPerfil, perfilColega } from "@/lib/perfil.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -113,25 +113,34 @@ function BadgeCard({
   );
 }
 
-export function PerfilProfissional() {
+export function PerfilProfissional({ usuarioId }: { usuarioId?: string } = {}) {
   const me = useCurrentUser();
   const { office } = useOffice();
   const demo = PERFIL_DEMO;
+  // Perfil de colega: somente leitura, dados oficiais vindos do servidor.
+  const colega = !!usuarioId && !!me.data && usuarioId !== me.data.id;
+  const proprio = !usuarioId || (!!me.data && usuarioId === me.data.id);
 
   const buscarPerfil = useServerFn(meuPerfil);
-  const dados = useQuery({ queryKey: ["meu-perfil"], queryFn: () => buscarPerfil(), staleTime: 10 * 60_000 });
+  const buscarColega = useServerFn(perfilColega);
+  const dadosMeus = useQuery({ queryKey: ["meu-perfil"], queryFn: () => buscarPerfil(), staleTime: 10 * 60_000, enabled: proprio });
+  const dadosColega = useQuery({ queryKey: ["perfil-colega", usuarioId], queryFn: () => buscarColega({ data: { userId: usuarioId! } }), staleTime: 10 * 60_000, enabled: colega });
+  const dados = colega ? dadosColega : dadosMeus;
   const d = dados.data;
-  const carregando = dados.isLoading ? "Carregando…" : "Não informado";
-  const nome = (me.data?.fullName ?? "").replace(/\s*-\s*Cronos Logistics$/i, "").trim() || "Profissional";
-  const email = me.data?.email ?? "";
-  const area = d?.departamento || me.data?.departamento || carregando;
-  const unidade = d?.escritorio || office?.name || carregando;
+  const dc = colega ? dadosColega.data : undefined;
+  const carregando = dados.isLoading || !me.data ? "Carregando…" : "Não informado";
+  const nome = (colega ? dc?.nome ?? "" : (me.data?.fullName ?? "").replace(/\s*-\s*Cronos Logistics$/i, "").trim()) || (colega && dados.isLoading ? "Carregando…" : "Profissional");
+  const email = colega ? dc?.email ?? "" : me.data?.email ?? "";
+  const area = d?.departamento || (colega ? null : me.data?.departamento) || carregando;
+  const unidade = d?.escritorio || (colega ? null : office?.name) || carregando;
   const cargo = d?.cargo || carregando;
   const desde = d?.admissao ? mesAno(d.admissao) : carregando;
   const gestor = d?.gestor || carregando;
   const aniversario = d?.nascimento ? diaMes(d.nascimento) : carregando;
   const iniciais = iniciaisDe(nome) || "?";
-  const foto = useMinhaFoto();
+  const minhaFoto = useMinhaFoto();
+  const fotoColega = useFotoProfissional(colega ? usuarioId : null);
+  const foto = colega ? fotoColega : minhaFoto;
 
   const [badges, setBadges] = useState<PerfilBadge[]>([]);
   const [competencias, setCompetencias] = useState(demo.competencias);
@@ -188,6 +197,10 @@ export function PerfilProfissional() {
     }
   }
 
+  if (colega && dc && !dc.encontrado) {
+    return <p className="mx-auto max-w-6xl px-2 py-8 text-sm text-muted-foreground">Este perfil não está disponível. <Link to="/perfil" className="font-semibold text-accent hover:underline">Ver meu perfil</Link></p>;
+  }
+
   return (
     <div className="perfil-page mx-auto w-full max-w-6xl px-1 py-6 sm:px-2 sm:py-8">
       {d?.erro && <p className="mb-4 rounded-md border border-border bg-muted px-3 py-2 text-sm text-muted-foreground">{d.erro}</p>}
@@ -222,7 +235,7 @@ export function PerfilProfissional() {
                 </div>
               </div>
             </div>
-            <div className="flex flex-wrap gap-2">
+            {!colega && <div className="flex flex-wrap gap-2">
               <Button
                 type="button"
                 variant="outline"
@@ -243,7 +256,7 @@ export function PerfilProfissional() {
                 <Pencil />
                 Editar perfil
               </Button>
-            </div>
+            </div>}
           </div>
 
           <dl className="perfil-stats mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -264,7 +277,7 @@ export function PerfilProfissional() {
 
       <div className="mt-5 grid gap-5 lg:grid-cols-[minmax(0,1.6fr)_minmax(280px,1fr)]">
         <div className="space-y-5">
-          <Secao
+          {!colega && <Secao
             titulo="Sobre mim"
             acao={
               editandoSobre ? (
@@ -292,7 +305,7 @@ export function PerfilProfissional() {
             ) : (
               <p className="text-sm leading-relaxed text-foreground/80">{sobre}</p>
             )}
-          </Secao>
+          </Secao>}
 
           <Secao
             titulo="Badges e conquistas"
@@ -316,7 +329,7 @@ export function PerfilProfissional() {
 
           <Secao
             titulo="Elogios recebidos"
-            acao={
+            acao={colega ? null :
               <Link to="/feedback" className="text-sm font-semibold text-[var(--perfil-accent)] hover:underline">
                 Ver todos
               </Link>
@@ -378,7 +391,7 @@ export function PerfilProfissional() {
                 </dt>
                 <dd className="mt-1 text-foreground/80">{unidade}</dd>
               </div>
-              {privacidade.mostrarAniversario && (
+              {(colega || privacidade.mostrarAniversario) && (
                 <div>
                   <dt className="text-muted-foreground">Aniversário</dt>
                   <dd className="mt-1 text-foreground/80">{aniversario}</dd>
@@ -387,6 +400,7 @@ export function PerfilProfissional() {
             </dl>
           </Secao>
 
+          {!colega && <>
           <Secao titulo="Competências">
             <div className="flex flex-wrap gap-2">
               {competencias.map((skill) => (
@@ -451,6 +465,7 @@ export function PerfilProfissional() {
               Gestores sempre podem ver pendências, feedbacks e elogios da equipe.
             </p>
           </Secao>
+          </>}
         </aside>
       </div>
     </div>

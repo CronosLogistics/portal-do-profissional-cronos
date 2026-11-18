@@ -38,6 +38,7 @@ import { Route as AuthenticatedBeneficiosIndexRouteImport } from './routes/_auth
 import { Route as AuthenticatedBeneficiosSlugRouteImport } from './routes/_authenticated/beneficios.$slug'
 import { Route as AuthenticatedCategoriasSlugRouteImport } from './routes/_authenticated/categorias.$slug'
 import { Route as AuthenticatedParceiroSlugRouteImport } from './routes/_authenticated/parceiro.$slug'
+import { Route as AuthenticatedPerfilIdRouteImport } from './routes/_authenticated/perfil_.$id'
 import { Route as AuthenticatedRecompensasIndexRouteImport } from './routes/_authenticated/recompensas.index'
 import { Route as AuthenticatedRecompensasSlugRouteImport } from './routes/_authenticated/recompensas.$slug'
 import { Route as ApiPublicAvisoDesligamentoRouteImport } from './routes/api/public/aviso-desligamento'
@@ -211,6 +212,11 @@ const AuthenticatedParceiroSlugRoute =
     path: '/parceiro/$slug',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedPerfilIdRoute = AuthenticatedPerfilIdRouteImport.update({
+  id: '/perfil_/$id',
+  path: '/perfil/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedRecompensasIndexRoute =
   AuthenticatedRecompensasIndexRouteImport.update({
     id: '/recompensas/',
@@ -313,6 +319,7 @@ export interface FileRoutesByFullPath {
   '/beneficios/$slug': typeof AuthenticatedBeneficiosSlugRoute
   '/categorias/$slug': typeof AuthenticatedCategoriasSlugRoute
   '/parceiro/$slug': typeof AuthenticatedParceiroSlugRoute
+  '/perfil/$id': typeof AuthenticatedPerfilIdRoute
   '/recompensas/$slug': typeof AuthenticatedRecompensasSlugRoute
   '/api/public/aviso-desligamento': typeof ApiPublicAvisoDesligamentoRoute
   '/api/public/aviso-ferias': typeof ApiPublicAvisoFeriasRoute
@@ -355,6 +362,7 @@ export interface FileRoutesByTo {
   '/beneficios/$slug': typeof AuthenticatedBeneficiosSlugRoute
   '/categorias/$slug': typeof AuthenticatedCategoriasSlugRoute
   '/parceiro/$slug': typeof AuthenticatedParceiroSlugRoute
+  '/perfil/$id': typeof AuthenticatedPerfilIdRoute
   '/recompensas/$slug': typeof AuthenticatedRecompensasSlugRoute
   '/api/public/aviso-desligamento': typeof ApiPublicAvisoDesligamentoRoute
   '/api/public/aviso-ferias': typeof ApiPublicAvisoFeriasRoute
@@ -400,6 +408,7 @@ export interface FileRoutesById {
   '/_authenticated/beneficios/$slug': typeof AuthenticatedBeneficiosSlugRoute
   '/_authenticated/categorias/$slug': typeof AuthenticatedCategoriasSlugRoute
   '/_authenticated/parceiro/$slug': typeof AuthenticatedParceiroSlugRoute
+  '/_authenticated/perfil_/$id': typeof AuthenticatedPerfilIdRoute
   '/_authenticated/recompensas/$slug': typeof AuthenticatedRecompensasSlugRoute
   '/api/public/aviso-desligamento': typeof ApiPublicAvisoDesligamentoRoute
   '/api/public/aviso-ferias': typeof ApiPublicAvisoFeriasRoute
@@ -445,6 +454,7 @@ export interface FileRouteTypes {
     | '/beneficios/$slug'
     | '/categorias/$slug'
     | '/parceiro/$slug'
+    | '/perfil/$id'
     | '/recompensas/$slug'
     | '/api/public/aviso-desligamento'
     | '/api/public/aviso-ferias'
@@ -487,6 +497,7 @@ export interface FileRouteTypes {
     | '/beneficios/$slug'
     | '/categorias/$slug'
     | '/parceiro/$slug'
+    | '/perfil/$id'
     | '/recompensas/$slug'
     | '/api/public/aviso-desligamento'
     | '/api/public/aviso-ferias'
@@ -531,6 +542,7 @@ export interface FileRouteTypes {
     | '/_authenticated/beneficios/$slug'
     | '/_authenticated/categorias/$slug'
     | '/_authenticated/parceiro/$slug'
+    | '/_authenticated/perfil_/$id'
     | '/_authenticated/recompensas/$slug'
     | '/api/public/aviso-desligamento'
     | '/api/public/aviso-ferias'
@@ -765,6 +777,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedParceiroSlugRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/perfil_/$id': {
+      id: '/_authenticated/perfil_/$id'
+      path: '/perfil/$id'
+      fullPath: '/perfil/$id'
+      preLoaderRoute: typeof AuthenticatedPerfilIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/recompensas/': {
       id: '/_authenticated/recompensas/'
       path: '/recompensas'
@@ -912,6 +931,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBeneficiosSlugRoute: typeof AuthenticatedBeneficiosSlugRoute
   AuthenticatedCategoriasSlugRoute: typeof AuthenticatedCategoriasSlugRoute
   AuthenticatedParceiroSlugRoute: typeof AuthenticatedParceiroSlugRoute
+  AuthenticatedPerfilIdRoute: typeof AuthenticatedPerfilIdRoute
   AuthenticatedRecompensasSlugRoute: typeof AuthenticatedRecompensasSlugRoute
   AuthenticatedBeneficiosIndexRoute: typeof AuthenticatedBeneficiosIndexRoute
   AuthenticatedRecompensasIndexRoute: typeof AuthenticatedRecompensasIndexRoute
@@ -936,6 +956,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBeneficiosSlugRoute: AuthenticatedBeneficiosSlugRoute,
   AuthenticatedCategoriasSlugRoute: AuthenticatedCategoriasSlugRoute,
   AuthenticatedParceiroSlugRoute: AuthenticatedParceiroSlugRoute,
+  AuthenticatedPerfilIdRoute: AuthenticatedPerfilIdRoute,
   AuthenticatedRecompensasSlugRoute: AuthenticatedRecompensasSlugRoute,
   AuthenticatedBeneficiosIndexRoute: AuthenticatedBeneficiosIndexRoute,
   AuthenticatedRecompensasIndexRoute: AuthenticatedRecompensasIndexRoute,
