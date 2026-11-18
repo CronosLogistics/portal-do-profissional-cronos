@@ -195,13 +195,13 @@ export function PerfilProfissional() {
         <div className="perfil-cover" aria-hidden="true" />
         <div className="relative px-5 pb-5 pt-0 sm:px-8 sm:pb-6">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:gap-5">
-              <div className="perfil-avatar-wrap -mt-12 sm:-mt-14 sm:self-start">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
+              <div className="perfil-avatar-wrap -mt-12 sm:-mt-14">
                 <span className="perfil-avatar-lg" aria-hidden="true">
                   {foto ? <img src={foto} alt="" className="size-full rounded-full object-cover" /> : iniciais}
                 </span>
               </div>
-              <div className="min-w-0 pb-1 pt-2 sm:pt-6">
+              <div className="min-w-0 pb-1 pt-1 sm:pt-2">
                 <h1 className="text-2xl font-black tracking-tight text-foreground sm:text-3xl">{nome}</h1>
                 <p className="mt-1 text-sm text-foreground/80 sm:text-base">
                   {cargo} · {area}
