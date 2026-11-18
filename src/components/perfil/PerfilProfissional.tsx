@@ -133,7 +133,7 @@ export function PerfilProfissional() {
   const iniciais = iniciaisDe(nome) || "?";
   const foto = useMinhaFoto();
 
-  const [badges, setBadges] = useState(demo.badges);
+  const [badges, setBadges] = useState<PerfilBadge[]>([]);
   const [competencias, setCompetencias] = useState(demo.competencias);
   const [novaCompetencia, setNovaCompetencia] = useState("");
   const [privacidade, setPrivacidade] = useState(demo.privacidade);
@@ -196,15 +196,12 @@ export function PerfilProfissional() {
         <div className="relative px-5 pb-5 pt-0 sm:px-8 sm:pb-6">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:gap-5">
-              <div className="perfil-avatar-wrap -mt-12 sm:-mt-14">
+              <div className="perfil-avatar-wrap -mt-12 sm:-mt-14 sm:self-start">
                 <span className="perfil-avatar-lg" aria-hidden="true">
                   {foto ? <img src={foto} alt="" className="size-full rounded-full object-cover" /> : iniciais}
                 </span>
-                <span className="perfil-avatar-badge" title="Badge em destaque">
-                  <Award className="size-3.5" />
-                </span>
               </div>
-              <div className="min-w-0 pb-1">
+              <div className="min-w-0 pb-1 pt-2 sm:pt-6">
                 <h1 className="text-2xl font-black tracking-tight text-foreground sm:text-3xl">{nome}</h1>
                 <p className="mt-1 text-sm text-foreground/80 sm:text-base">
                   {cargo} · {area}
@@ -251,7 +248,7 @@ export function PerfilProfissional() {
 
           <dl className="perfil-stats mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
             {[
-              { label: "Badges", valor: demo.stats.badges },
+              { label: "Badges", valor: badges.length },
               { label: "Elogios recebidos", valor: d ? d.elogiosTotal : "–" },
               { label: "Treinamentos concluídos", valor: d ? d.treinamentos.filter((t) => t.tipo === "treinamento").length : "–" },
               { label: "Certificados", valor: d ? d.treinamentos.filter((t) => t.tipo === "certificado").length : "–" },
@@ -299,8 +296,8 @@ export function PerfilProfissional() {
 
           <Secao
             titulo="Badges e conquistas"
-            acao={<span className="text-xs text-muted-foreground">Fixe até {MAX_BADGES_FIXADAS} no topo do perfil</span>}
           >
+            {badges.length === 0 && <p className="text-sm text-muted-foreground">Nenhum badge por enquanto.</p>}
             {fixadas.length > 0 && (
               <div className="mb-4 grid gap-3 sm:grid-cols-3">
                 {fixadas.map((badge) => (
