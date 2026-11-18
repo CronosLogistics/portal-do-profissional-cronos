@@ -37,4 +37,3 @@
 - Questionnaire deadlines are nullable Brazil-local dates enforced by database triggers and permission-checked atomic RPCs; expired forms leave pending feeds while management and previous responses remain accessible. Why: editing or stale open forms cannot bypass expiration or erase submissions.
 
 - Access reports: login rows in `historico_acessos` via permission-checked RPCs; `acessos.relatorios` is derived by `pode_ver_relatorios_acesso`, never assigned to profiles. Why: survives department sync.
-- Colleague profiles (`/perfil/$id`) and comment-author photos use authenticated server functions that look up only active profiles server-side and return official read-only data; editing sections render only on the own profile. Why: colleagues can identify each other without exposing editable or inactive records.
