@@ -5,7 +5,8 @@ import { useFotoProfissional } from "@/hooks/use-minha-foto";
 const iniciais = (n: string) => n.split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]?.toUpperCase()).join("") || "?";
 
 /** Foto Microsoft (ou iniciais) + nome clicável que leva ao perfil do autor. */
-export function AutorComentario({ usuarioId, nome }: { usuarioId: string; nome: string }) {
+export function AutorComentario({ usuarioId, nome: bruto }: { usuarioId: string; nome: string }) {
+  const nome = bruto.replace(/\s*-\s*Cronos Logistics$/i, "").trim() || bruto;
   const foto = useFotoProfissional(usuarioId);
   return (
     <Link to="/perfil/$id" params={{ id: usuarioId }} className="group flex min-w-0 items-center gap-2">
