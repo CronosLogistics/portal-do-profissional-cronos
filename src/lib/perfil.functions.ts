@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { selecionarGestorPerfil } from "./perfil-gestor.rules";
 
 export type ElogioPerfil = { id: string; data: string | null; texto: string; autor: string | null };
 export type DadosPerfil = {
@@ -9,7 +10,6 @@ export type DadosPerfil = {
   treinamentos: import("./treinamentos-perfil.server").TreinamentoPerfil[]; erro: string | null;
 };
 
-const ORDEM = ["lider", "coordenador", "supervisor"];
 const semSufixo = (n: string) => n.replace(/\s*-\s*Cronos Logistics$/i, "").trim();
 
 /** Perfil do próprio profissional: e-mail vem do cadastro verificado, nunca do navegador. */
@@ -61,17 +61,9 @@ async function montarPerfil(userId: string, perfil: { email: string | null; is_a
         const ids = [...new Set(rel.map((r) => r.lider_id))];
         const [{ data: pessoas }, { data: vinc }] = await Promise.all([
           supabaseAdmin.from("profiles").select("id,full_name,is_active").in("id", ids),
-          supabaseAdmin.from("usuario_perfis").select("usuario_id,perfis(departamento_sp_id,nivel_departamento)").in("usuario_id", ids),
+          supabaseAdmin.from("usuario_perfis").select("usuario_id,perfis(departamento_sp_id,nivel_departamento)").in("usuario_id", [...ids, userId]),
         ]);
-        const nivel = (lider: string, dep: string) => {
-          const v = (vinc ?? []).find((x) => x.usuario_id === lider && (x.perfis as { departamento_sp_id: string | null } | null)?.departamento_sp_id === dep);
-          return ORDEM.indexOf((v?.perfis as { nivel_departamento: string | null } | null)?.nivel_departamento ?? "");
-        };
-        // O gestor imediato é o nível mais próximo: supervisor > coordenador > líder direto.
-        const melhor = rel.map((r) => ({ id: r.lider_id, n: nivel(r.lider_id, r.departamento_id) })).sort((a, b) => b.n - a.n)
-          .find((r) => pessoas?.some((p) => p.id === r.id && p.is_active));
-        const nome = pessoas?.find((p) => p.id === melhor?.id)?.full_name;
-        return nome ? semSufixo(nome) : null;
+        return selecionarGestorPerfil(userId, rel, vinc ?? [], pessoas ?? []);
       })().catch((e) => { console.error(e); return null; }),
       import("@/lib/treinamentos-perfil.server").then((m) => m.treinamentosDoEmail(email)).catch((e) => { console.error(e); erros.push("treinamentos"); return []; }),
     ]);
