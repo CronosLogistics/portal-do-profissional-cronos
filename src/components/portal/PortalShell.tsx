@@ -1,3 +1,4 @@
+import { useMinhaFoto } from "@/hooks/use-minha-foto";
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Award, BarChart3, CalendarDays, ChevronDown, ListChecks, MessageSquareHeart, Building2, ClipboardList, FolderOpen, PartyPopper, ChevronLeft, ChevronRight, Gift, GraduationCap, Home, LogOut, Megaphone, Menu, Settings, Tag, UserRound, X } from "lucide-react";
@@ -109,6 +110,7 @@ function SidebarBranch({
 }
 
 export function PortalShell({ children }: { children: ReactNode }) {
+  const foto = useMinhaFoto();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openMenus, setOpenMenus] = useState({ beneficios: false, feedbacks: false, avisos: false, formularios: false, admin: false });
@@ -261,7 +263,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
                   className="portal-user max-w-64 rounded-md px-1 py-0.5 text-left outline-offset-2 hover:bg-muted/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring"
                   aria-label={`Conta de ${name}`}
                 >
-                  <span className="portal-avatar">{initials}</span>
+                  <span className="portal-avatar overflow-hidden">{foto ? <img src={foto} alt="" className="size-full object-cover" /> : initials}</span>
                   <div className="min-w-0">
                     <p className="truncate text-sm font-bold">{name}</p>
                     <p className="max-w-48 truncate text-xs text-muted-foreground" title={me.data?.departamento ?? me.data?.email}>{me.data?.departamento ?? me.data?.email}</p>

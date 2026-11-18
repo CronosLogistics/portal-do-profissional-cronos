@@ -1,3 +1,4 @@
+import { useMinhaFoto } from "@/hooks/use-minha-foto";
 import { useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import {
@@ -130,6 +131,7 @@ export function PerfilProfissional() {
   const gestor = d?.gestor || carregando;
   const aniversario = d?.nascimento ? diaMes(d.nascimento) : carregando;
   const iniciais = iniciaisDe(nome) || "?";
+  const foto = useMinhaFoto();
 
   const [badges, setBadges] = useState(demo.badges);
   const [competencias, setCompetencias] = useState(demo.competencias);
@@ -196,7 +198,7 @@ export function PerfilProfissional() {
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:gap-5">
               <div className="perfil-avatar-wrap -mt-12 sm:-mt-14">
                 <span className="perfil-avatar-lg" aria-hidden="true">
-                  {iniciais}
+                  {foto ? <img src={foto} alt="" className="size-full rounded-full object-cover" /> : iniciais}
                 </span>
                 <span className="perfil-avatar-badge" title="Badge em destaque">
                   <Award className="size-3.5" />
