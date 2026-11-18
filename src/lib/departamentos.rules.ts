@@ -63,7 +63,6 @@ export function montarDepartamentos(departamentos: ItemAnaliseNC[], profissionai
     for (const [email, nivel] of niveis) {
       const p = pessoas.get(email) ?? { email, departamento: null, vinculos: [] };
       p.vinculos.push({ departamento: d.id, nivel }); pessoas.set(email, p);
-      if (!permissoesDepartamento(d.fields, nivel).includes("pendencias.liderados")) continue;
       for (const [alvo, nivelAlvo] of niveis) if (alvo !== email && NIVEIS.indexOf(nivelAlvo) > NIVEIS.indexOf(nivel)) snapshot.hierarquia.push({ departamento: d.id, lider: email, liderado: alvo });
     }
   }
