@@ -5,7 +5,8 @@ export type ElogioPerfil = { id: string; data: string | null; texto: string; aut
 export type DadosPerfil = {
   cargo: string | null; departamento: string | null; escritorio: string | null;
   admissao: string | null; nascimento: string | null; gestor: string | null;
-  elogiosTotal: number; elogios: ElogioPerfil[]; erro: string | null;
+  elogiosTotal: number; elogios: ElogioPerfil[];
+  treinamentos: import("./treinamentos-perfil.server").TreinamentoPerfil[]; erro: string | null;
 };
 
 const ORDEM = ["lider", "coordenador", "supervisor"];
@@ -15,11 +16,11 @@ const semSufixo = (n: string) => n.replace(/\s*-\s*Cronos Logistics$/i, "").trim
 export const meuPerfil = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<DadosPerfil> => {
-    const vazio: DadosPerfil = { cargo: null, departamento: null, escritorio: null, admissao: null, nascimento: null, gestor: null, elogiosTotal: 0, elogios: [], erro: null };
+    const vazio: DadosPerfil = { cargo: null, departamento: null, escritorio: null, admissao: null, nascimento: null, gestor: null, elogiosTotal: 0, elogios: [], treinamentos: [], erro: null };
     const { data: perfil } = await context.supabase.from("profiles").select("email,is_active").eq("id", context.userId).maybeSingle();
     if (!perfil?.email || perfil.is_active === false) return vazio;
     const erros: string[] = [];
-    const [cadastro, elogios, gestor] = await Promise.all([
+    const [cadastro, elogios, gestor, treinamentos] = await Promise.all([
       import("@/lib/perfil.server").then((m) => m.cadastroDoEmail(perfil.email)).catch((e) => { console.error(e); erros.push("cadastro"); return null; }),
       (async () => {
         const { dadosElogios } = await import("@/lib/feedback.server");
@@ -47,9 +48,10 @@ export const meuPerfil = createServerFn({ method: "GET" })
         const nome = pessoas?.find((p) => p.id === melhor?.id)?.full_name;
         return nome ? semSufixo(nome) : null;
       })().catch((e) => { console.error(e); return null; }),
+      import("@/lib/treinamentos-perfil.server").then((m) => m.treinamentosDoEmail(perfil.email)).catch((e) => { console.error(e); erros.push("treinamentos"); return []; }),
     ]);
     return {
-      ...vazio, ...(cadastro ?? {}), gestor,
+      ...vazio, ...(cadastro ?? {}), gestor, treinamentos,
       elogiosTotal: elogios.length,
       elogios: elogios.slice(0, 3).map((e) => ({ id: e.id, data: e.data, texto: e.detalhamento, autor: e.elogiador })),
       erro: erros.length ? "Alguns dados do SharePoint não puderam ser carregados agora." : null,

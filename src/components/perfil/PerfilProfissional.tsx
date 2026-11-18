@@ -251,8 +251,8 @@ export function PerfilProfissional() {
             {[
               { label: "Badges", valor: demo.stats.badges },
               { label: "Elogios recebidos", valor: d ? d.elogiosTotal : "–" },
-              { label: "Treinamentos concluídos", valor: demo.stats.treinamentos },
-              { label: "Certificados", valor: demo.stats.certificados },
+              { label: "Treinamentos concluídos", valor: d ? d.treinamentos.filter((t) => t.tipo === "treinamento").length : "–" },
+              { label: "Certificados", valor: d ? d.treinamentos.filter((t) => t.tipo === "certificado").length : "–" },
             ].map((item) => (
               <div key={item.label} className="perfil-stat">
                 <dt className="text-xs text-muted-foreground">{item.label}</dt>
@@ -341,8 +341,9 @@ export function PerfilProfissional() {
           </Secao>
 
           <Secao titulo="Treinamentos e certificados">
+            {!d?.treinamentos.length && <p className="text-sm text-muted-foreground">{dados.isLoading ? "Carregando…" : "Nenhum treinamento aprovado registrado."}</p>}
             <ul className="space-y-3">
-              {demo.treinamentos.map((item) => (
+              {(d?.treinamentos ?? []).map((item) => (
                 <li key={item.id} className="flex items-start gap-3 rounded-xl border border-border bg-muted/50 px-3 py-3">
                   <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-[var(--perfil-accent)]/15 text-[var(--perfil-accent)]">
                     {item.tipo === "certificado" ? <Award className="size-5" /> : <BookOpen className="size-5" />}
