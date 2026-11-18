@@ -21,9 +21,10 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "sonner";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { meuPerfil, perfilColega } from "@/lib/perfil.functions";
+import { minhasCompetencias, salvarCompetencias } from "@/lib/competencias.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -143,7 +144,22 @@ export function PerfilProfissional({ usuarioId }: { usuarioId?: string } = {}) {
   const foto = colega ? fotoColega : minhaFoto;
 
   const [badges, setBadges] = useState<PerfilBadge[]>([]);
-  const [competencias, setCompetencias] = useState(demo.competencias);
+  const queryClient = useQueryClient();
+  const carregarCompetencias = useServerFn(minhasCompetencias);
+  const salvarCompetenciasFn = useServerFn(salvarCompetencias);
+  const competenciasKey = ["minhas-competencias", me.data?.id];
+  const competenciasQuery = useQuery({
+    queryKey: competenciasKey,
+    queryFn: () => carregarCompetencias(),
+    enabled: proprio && !!me.data,
+  });
+  const competencias = competenciasQuery.data ?? [];
+  const gravarCompetencias = useMutation({
+    mutationFn: (lista: string[]) => salvarCompetenciasFn({ data: { competencias: lista } }),
+    onSuccess: (lista) => queryClient.setQueryData(competenciasKey, lista),
+    onError: () => toast.error("Não foi possível salvar suas competências. Tente novamente."),
+  });
+  const competenciasIndisponiveis = !competenciasQuery.isSuccess || gravarCompetencias.isPending;
   const [novaCompetencia, setNovaCompetencia] = useState("");
   const [privacidade, setPrivacidade] = useState(demo.privacidade);
   const [editandoSobre, setEditandoSobre] = useState(false);
@@ -177,15 +193,19 @@ export function PerfilProfissional({ usuarioId }: { usuarioId?: string } = {}) {
     });
   }
 
-  function adicionarCompetencia() {
+  async function adicionarCompetencia() {
     const valor = novaCompetencia.trim();
-    if (!valor) return;
+    if (!valor || competenciasIndisponiveis) return;
     if (competencias.some((c) => c.toLowerCase() === valor.toLowerCase())) {
       toast.message("Essa competência já está no perfil.");
       return;
     }
-    setCompetencias((lista) => [...lista, valor]);
-    setNovaCompetencia("");
+    try {
+      await gravarCompetencias.mutateAsync([...competencias, valor]);
+      setNovaCompetencia("");
+    } catch {
+      // Mantém o texto digitado para tentar novamente.
+    }
   }
 
   async function copiarLink() {
@@ -402,18 +422,22 @@ export function PerfilProfissional({ usuarioId }: { usuarioId?: string } = {}) {
 
           {!colega && <>
           <Secao titulo="Competências">
+            {competenciasQuery.isError && <p className="mb-3 text-sm text-destructive">Não foi possível carregar suas competências. <Button variant="link" size="sm" onClick={() => void competenciasQuery.refetch()}>Tentar novamente</Button></p>}
             <div className="flex flex-wrap gap-2">
               {competencias.map((skill) => (
                 <span key={skill} className="perfil-skill">
                   {skill}
-                  <button
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="icon"
+                    disabled={competenciasIndisponiveis}
                     className="ml-1 rounded-full p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
                     aria-label={`Remover ${skill}`}
-                    onClick={() => setCompetencias((lista) => lista.filter((c) => c !== skill))}
+                    onClick={() => gravarCompetencias.mutate(competencias.filter((c) => c !== skill))}
                   >
                     <X className="size-3" />
-                  </button>
+                  </Button>
                 </span>
               ))}
             </div>
@@ -421,17 +445,19 @@ export function PerfilProfissional({ usuarioId }: { usuarioId?: string } = {}) {
               className="mt-4 flex gap-2"
               onSubmit={(e) => {
                 e.preventDefault();
-                adicionarCompetencia();
+                void adicionarCompetencia();
               }}
             >
               <Input
                 value={novaCompetencia}
+                disabled={competenciasIndisponiveis}
                 onChange={(e) => setNovaCompetencia(e.target.value)}
                 placeholder="Adicionar competência"
                 className="border-border bg-muted/50 text-foreground placeholder:text-muted-foreground"
               />
               <Button
                 type="submit"
+                disabled={competenciasIndisponiveis}
                 className="shrink-0 bg-primary text-primary-foreground hover:bg-primary/90"
               >
                 <Plus />

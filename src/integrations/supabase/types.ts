@@ -1087,6 +1087,29 @@ export type Database = {
           },
         ]
       }
+      perfil_competencias: {
+        Row: {
+          competencias: string[]
+          usuario_id: string
+        }
+        Insert: {
+          competencias?: string[]
+          usuario_id: string
+        }
+        Update: {
+          competencias?: string[]
+          usuario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "perfil_competencias_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       perfil_permissoes: {
         Row: {
           perfil_id: string

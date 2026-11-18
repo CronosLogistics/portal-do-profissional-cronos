@@ -10,6 +10,7 @@
 <!-- LOVABLE:END -->
 
 ## Architecture rules
+- Profile competencies persist in an owner-scoped table through authenticated server functions; corporate identity fields remain separate. Why: reloads preserve personal edits without permitting edits to other users or Microsoft data.
 - Questionnaire choice limits share one browser-safe constant across editing, import and validation, mirrored in database RPCs. Why: saved forms and submitted answers must accept the same bounds.
 - Subdirectories have their own `AGENTS.md` (e.g. `src/lib/`); read it before changing files there.
 - Browser IDs use `criarIdCliente` (UUID secure-random fallback). Why: browsers lacking `crypto.randomUUID`.
