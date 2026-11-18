@@ -193,15 +193,15 @@ export function PerfilProfissional() {
       {d?.erro && <p className="mb-4 rounded-md border border-border bg-muted px-3 py-2 text-sm text-muted-foreground">{d.erro}</p>}
       <article className="perfil-card overflow-hidden p-0">
         <div className="perfil-cover" aria-hidden="true" />
-        <div className="relative px-5 pb-5 pt-0 sm:px-8 sm:pb-6">
-          <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
-              <div className="perfil-avatar-wrap -mt-12 sm:-mt-14">
+        <div className="relative px-5 pb-5 pt-4 sm:px-8 sm:pb-6 sm:pt-5">
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-5">
+              <div className="perfil-avatar-wrap shrink-0">
                 <span className="perfil-avatar-lg" aria-hidden="true">
                   {foto ? <img src={foto} alt="" className="size-full rounded-full object-cover" /> : iniciais}
                 </span>
               </div>
-              <div className="min-w-0 pb-1 pt-1 sm:pt-2">
+              <div className="min-w-0">
                 <h1 className="text-2xl font-black tracking-tight text-foreground sm:text-3xl">{nome}</h1>
                 <p className="mt-1 text-sm text-foreground/80 sm:text-base">
                   {cargo} · {area}
@@ -222,7 +222,7 @@ export function PerfilProfissional() {
                 </div>
               </div>
             </div>
-            <div className="flex flex-wrap gap-2 sm:pb-1">
+            <div className="flex flex-wrap gap-2">
               <Button
                 type="button"
                 variant="outline"
