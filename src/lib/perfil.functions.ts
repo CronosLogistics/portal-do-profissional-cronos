@@ -6,6 +6,7 @@ export type ElogioPerfil = { id: string; data: string | null; texto: string; aut
 export type DadosPerfil = {
   cargo: string | null; departamento: string | null; escritorio: string | null;
   admissao: string | null; nascimento: string | null; gestor: string | null;
+  sobre: string;
   elogiosTotal: number; elogios: ElogioPerfil[];
   treinamentos: import("./treinamentos-perfil.server").TreinamentoPerfil[]; erro: string | null;
 };
@@ -38,14 +39,14 @@ export const perfilColega = createServerFn({ method: "GET" })
     return { ...(await montarPerfil(data.userId, perfil)), nome: semSufixo(perfil.full_name ?? ""), email: perfil.email, encontrado: true };
   });
 
-const VAZIO: DadosPerfil = { cargo: null, departamento: null, escritorio: null, admissao: null, nascimento: null, gestor: null, elogiosTotal: 0, elogios: [], treinamentos: [], erro: null };
+const VAZIO: DadosPerfil = { cargo: null, departamento: null, escritorio: null, admissao: null, nascimento: null, gestor: null, sobre: "", elogiosTotal: 0, elogios: [], treinamentos: [], erro: null };
 
 async function montarPerfil(userId: string, perfil: { email: string | null; is_active: boolean | null } | null): Promise<DadosPerfil> {
     const vazio = VAZIO;
     if (!perfil?.email || perfil.is_active === false) return vazio;
     const email = perfil.email;
     const erros: string[] = [];
-    const [cadastro, elogios, gestor, treinamentos] = await Promise.all([
+    const [cadastro, elogios, gestor, treinamentos, sobre] = await Promise.all([
       import("@/lib/perfil.server").then((m) => m.cadastroDoEmail(email)).catch((e) => { console.error(e); erros.push("cadastro"); return null; }),
       (async () => {
         const { dadosElogios } = await import("@/lib/feedback.server");
@@ -66,9 +67,15 @@ async function montarPerfil(userId: string, perfil: { email: string | null; is_a
         return selecionarGestorPerfil(userId, rel, vinc ?? [], pessoas ?? []);
       })().catch((e) => { console.error(e); return null; }),
       import("@/lib/treinamentos-perfil.server").then((m) => m.treinamentosDoEmail(email)).catch((e) => { console.error(e); erros.push("treinamentos"); return []; }),
+      // Texto pessoal: leitura server-side para o próprio perfil e para colegas ativos.
+      (async () => {
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const { data } = await supabaseAdmin.from("perfil_sobre").select("texto").eq("usuario_id", userId).maybeSingle();
+        return data?.texto ?? "";
+      })().catch((e) => { console.error(e); return ""; }),
     ]);
     return {
-      ...vazio, ...(cadastro ?? {}), gestor, treinamentos,
+      ...vazio, ...(cadastro ?? {}), gestor, treinamentos, sobre,
       elogiosTotal: elogios.length,
       elogios: elogios.slice(0, 3).map((e) => ({ id: e.id, data: e.data, texto: e.detalhamento, autor: e.elogiador })),
       erro: erros.length ? "Alguns dados do SharePoint não puderam ser carregados agora." : null,

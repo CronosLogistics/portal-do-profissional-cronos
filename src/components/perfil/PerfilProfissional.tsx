@@ -25,6 +25,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { meuPerfil, perfilColega } from "@/lib/perfil.functions";
 import { minhasCompetencias, salvarCompetencias } from "@/lib/competencias.functions";
+import { salvarSobre } from "@/lib/sobre.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -163,8 +164,20 @@ export function PerfilProfissional({ usuarioId }: { usuarioId?: string } = {}) {
   const [novaCompetencia, setNovaCompetencia] = useState("");
   const [privacidade, setPrivacidade] = useState(demo.privacidade);
   const [editandoSobre, setEditandoSobre] = useState(false);
-  const [sobre, setSobre] = useState("");
+  const [rascunhoSobre, setRascunhoSobre] = useState("");
   const sobrePlaceholder = "Insira aqui informações sobre você...";
+  const sobreSalvo = d?.sobre ?? "";
+  const sobreVisivel = sobreSalvo.trim();
+  const salvarSobreFn = useServerFn(salvarSobre);
+  const gravarSobre = useMutation({
+    mutationFn: (texto: string) => salvarSobreFn({ data: { texto } }),
+    onSuccess: (texto) => {
+      queryClient.setQueryData(["meu-perfil"], (atual: typeof d) => (atual ? { ...atual, sobre: texto } : atual));
+      setEditandoSobre(false);
+      toast.success("Sobre mim atualizado.");
+    },
+    onError: () => toast.error("Não foi possível salvar o Sobre mim. Tente novamente."),
+  });
 
   const fixadas = badges.filter((b) => b.fixada && !b.bloqueada);
 
@@ -270,8 +283,8 @@ export function PerfilProfissional({ usuarioId }: { usuarioId?: string } = {}) {
                 type="button"
                 className="bg-primary text-primary-foreground hover:bg-primary/90"
                 onClick={() => {
+                  setRascunhoSobre(sobreSalvo);
                   setEditandoSobre(true);
-                  toast.message("Edição local liberada nas seções do perfil.");
                 }}
               >
                 <Pencil />
@@ -298,35 +311,34 @@ export function PerfilProfissional({ usuarioId }: { usuarioId?: string } = {}) {
 
       <div className="mt-5 grid gap-5 lg:grid-cols-[minmax(0,1.6fr)_minmax(280px,1fr)]">
         <div className="space-y-5">
-          {!colega && <Secao
+          {(proprio || !!sobreVisivel) && <Secao
             titulo="Sobre mim"
             acao={
-              editandoSobre ? (
+              proprio && editandoSobre ? (
                 <Button
                   type="button"
                   size="sm"
+                  disabled={gravarSobre.isPending}
                   className="bg-primary text-primary-foreground hover:bg-primary/90"
-                  onClick={() => {
-                    setEditandoSobre(false);
-                    toast.success("Sobre mim atualizado (somente nesta sessão).");
-                  }}
+                  onClick={() => gravarSobre.mutate(rascunhoSobre)}
                 >
                   Salvar
                 </Button>
               ) : null
             }
           >
-            {editandoSobre ? (
+            {proprio && editandoSobre ? (
               <textarea
-                value={sobre}
-                onChange={(e) => setSobre(e.target.value)}
+                value={rascunhoSobre}
+                onChange={(e) => setRascunhoSobre(e.target.value)}
                 placeholder={sobrePlaceholder}
+                maxLength={1000}
                 rows={4}
                 className="w-full resize-y rounded-lg border border-border bg-muted/50 px-3 py-2 text-sm text-foreground/80 outline-none placeholder:text-muted-foreground focus:border-[var(--perfil-accent)]"
               />
             ) : (
-              <p className={cn("text-sm leading-relaxed", sobre.trim() ? "text-foreground/80" : "text-muted-foreground")}>
-                {sobre.trim() || sobrePlaceholder}
+              <p className={cn("text-sm leading-relaxed", sobreVisivel ? "text-foreground/80" : "text-muted-foreground")}>
+                {sobreVisivel || sobrePlaceholder}
               </p>
             )}
           </Secao>}

@@ -1110,6 +1110,29 @@ export type Database = {
           },
         ]
       }
+      perfil_sobre: {
+        Row: {
+          texto: string
+          usuario_id: string
+        }
+        Insert: {
+          texto?: string
+          usuario_id: string
+        }
+        Update: {
+          texto?: string
+          usuario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "perfil_sobre_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       perfil_permissoes: {
         Row: {
           perfil_id: string

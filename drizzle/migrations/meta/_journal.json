@@ -414,6 +414,13 @@
       "when": 1795025044044,
       "tag": "0058_perfil_competencias_persistentes",
       "breakpoints": true
+    },
+    {
+      "idx": 59,
+      "version": "7",
+      "when": 1795100000000,
+      "tag": "0059_perfil_sobre",
+      "breakpoints": true
     }
   ]
 }
