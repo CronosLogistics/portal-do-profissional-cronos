@@ -1,9 +1,11 @@
 import { createStart, createCsrfMiddleware, createMiddleware } from "@tanstack/react-start";
 
 import { renderErrorPage } from "./lib/error-page";
+import { instalarGraphLocal } from "./lib/graph-local";
 import { attachSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 
 const errorMiddleware = createMiddleware().server(async ({ next }) => {
+  instalarGraphLocal();
   try {
     return await next();
   } catch (error) {
