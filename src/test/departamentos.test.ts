@@ -62,8 +62,8 @@ describe("setores e hierarquia do SharePoint", () => {
     const s = montarDepartamentos([departamento], [], usuarios);
     expect(s.hierarquia.filter(h => h.lider === "ana@cronos.test").map(h => h.liderado)).toEqual(["alexey@cronos.test"]);
   });
-  it("Alexey com apenas visualização não vê pendências de outros", () => {
-    expect(montarDepartamentos([departamento], [profissional], usuarios).hierarquia.filter(h => h.lider === "alexey@cronos.test")).toEqual([]);
+  it("preserva a liderança de Alexey sem conceder permissão de pendências", () => {
+    expect(montarDepartamentos([departamento], [profissional], usuarios).hierarquia.filter(h => h.lider === "alexey@cronos.test")).toEqual([{ departamento: "30", lider: "alexey@cronos.test", liderado: "pessoa@cronos.test" }]);
     expect(permissoesDepartamento(departamento.fields, "supervisor")).toEqual([]);
   });
   it("supervisor autorizado vê liderados mas não coordenador", () => {

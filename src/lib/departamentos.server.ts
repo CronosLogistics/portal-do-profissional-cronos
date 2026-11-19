@@ -35,6 +35,8 @@ export async function consultarDepartamentos(): Promise<SnapshotDepartamentos> {
 }
 /** Called only after authenticating a user or validating the existing scheduled job. No caller-supplied mappings. */
 export async function sincronizarDepartamentos(force = false) {
+  // Local development cannot perform privileged writes; keep the existing RLS reads.
+  if (import.meta.env.DEV && !process.env["SUPABASE_SERVICE_ROLE_KEY"]) return;
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: status, error } = await supabaseAdmin.from("departamentos_sincronizacao").select("atualizado_em,erro").eq("id", true).maybeSingle();
   if (error) throw new Error("Não foi possível verificar a sincronização de setores.");

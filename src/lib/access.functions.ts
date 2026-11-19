@@ -25,6 +25,16 @@ export const registrarAcesso = createServerFn({ method: "POST" })
     providerToken: typeof input?.providerToken === "string" ? input.providerToken : null,
   }))
   .handler(async ({ data, context }) => {
+    if (import.meta.env.DEV && !process.env["SUPABASE_SERVICE_ROLE_KEY"]) {
+      const { data: perfil, error } = await context.supabase
+        .from("profiles")
+        .select("is_active")
+        .eq("id", context.userId)
+        .maybeSingle();
+      if (error || perfil?.is_active !== true) throw new Error("Profissional não disponível.");
+      // Do not fabricate access records or update corporate identity without admin credentials.
+      return { ok: true, registroIgnorado: true };
+    }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: au, error } = await supabaseAdmin.auth.admin.getUserById(context.userId);
     if (error || !au.user) throw new Error("Não foi possível identificar o usuário.");

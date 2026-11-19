@@ -1,4 +1,7 @@
 # Atualização visual do Portal do Profissional
+## Uso local no Cursor
+- [x] Evitar gravações administrativas de acesso e sincronização de setores no desenvolvimento sem credencial privilegiada, mantendo autenticação e consulta protegida.
+- [x] Validar caminhos locais sem credencial e preservação da sincronização com credencial: 25 testes aprovados e compilação automática OK; verificação visual indisponível por timeout do preview.
 ## Avisos importantes
 - [x] Adicionar importância protegida por permissão, confirmação automática e preservação após publicação.
 - [x] Ajustar opções do formulário, filtro com contador e identificação na lista, leitor e sino.
