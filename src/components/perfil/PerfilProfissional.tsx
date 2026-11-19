@@ -163,7 +163,8 @@ export function PerfilProfissional({ usuarioId }: { usuarioId?: string } = {}) {
   const [novaCompetencia, setNovaCompetencia] = useState("");
   const [privacidade, setPrivacidade] = useState(demo.privacidade);
   const [editandoSobre, setEditandoSobre] = useState(false);
-  const [sobre, setSobre] = useState(demo.sobre);
+  const [sobre, setSobre] = useState("");
+  const sobrePlaceholder = "Insira aqui informações sobre você...";
 
   const fixadas = badges.filter((b) => b.fixada && !b.bloqueada);
 
@@ -319,11 +320,14 @@ export function PerfilProfissional({ usuarioId }: { usuarioId?: string } = {}) {
               <textarea
                 value={sobre}
                 onChange={(e) => setSobre(e.target.value)}
+                placeholder={sobrePlaceholder}
                 rows={4}
-                className="w-full resize-y rounded-lg border border-border bg-muted/50 px-3 py-2 text-sm text-foreground/80 outline-none focus:border-[var(--perfil-accent)]"
+                className="w-full resize-y rounded-lg border border-border bg-muted/50 px-3 py-2 text-sm text-foreground/80 outline-none placeholder:text-muted-foreground focus:border-[var(--perfil-accent)]"
               />
             ) : (
-              <p className="text-sm leading-relaxed text-foreground/80">{sobre}</p>
+              <p className={cn("text-sm leading-relaxed", sobre.trim() ? "text-foreground/80" : "text-muted-foreground")}>
+                {sobre.trim() || sobrePlaceholder}
+              </p>
             )}
           </Secao>}
 

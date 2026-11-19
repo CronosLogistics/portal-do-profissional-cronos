@@ -57,8 +57,7 @@ export const PERFIL_DEMO: PerfilDemo = {
   desde: "mar/2021",
   gestor: "Rafael Lima",
   aniversario: "22 de abril",
-  sobre:
-    "Profissional de tecnologia focada em integrações, dados e melhoria contínua. Gosto de transformar processos manuais em fluxos claros e de apoiar o time com soluções práticas no dia a dia da Cronos.",
+  sobre: "",
   stats: {
     badges: 12,
     elogios: 27,
