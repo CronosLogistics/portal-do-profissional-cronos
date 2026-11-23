@@ -32,7 +32,7 @@ function InventarioPage() {
   const ehVitoria = normalizar(`${inv?.titulo ?? ""} ${inv?.escritorio ?? ""}`).includes("vitoria");
   const colunas = (inv?.colunas ?? []).filter((c) => !ehVitoria || !["data da aprovacao", "data de aprovacao", "estorno"].includes(normalizar(c.titulo)));
   const termo = busca.trim().toLocaleLowerCase("pt-BR");
-  const linhas = (inv?.linhas ?? []).filter((l) => !termo || Object.values(l).some((v) => v.toLocaleLowerCase("pt-BR").includes(termo)));
+  const linhas = (inv?.linhas ?? []).filter((l) => !termo || colunas.some((c) => (l[c.nome] ?? "").toLocaleLowerCase("pt-BR").includes(termo)));
   return (
     <div className="space-y-5 p-4 md:p-8">
       <div>
