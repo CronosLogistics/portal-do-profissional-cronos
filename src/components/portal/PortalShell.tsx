@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Award, BarChart3, CalendarDays, ChevronDown, ListChecks, MessageSquareHeart, Building2, ClipboardList, FolderOpen, PartyPopper, ChevronLeft, ChevronRight, Gift, GraduationCap, Home, LogOut, Megaphone, Menu, Settings, Tag, UserRound, X } from "lucide-react";
 import { TourBoasVindas } from "@/components/portal/TourBoasVindas";
 import { AvisosBell } from "@/components/avisos/AvisosBell";
+import { BuscaColegas } from "@/components/portal/BuscaColegas";
 import { useAvisosAoVivo, useNaoLidos } from "@/hooks/useAvisos";
 import { useAlertaPendenciasLogin, useTotalPendencias } from "@/hooks/usePendencias";
 import { useQuestionariosPendentes } from "@/hooks/useQuestionarios";
@@ -255,6 +256,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
           <div className="flex min-w-0 items-center gap-3"><Button variant="ghost" size="icon" className="portal-mobile-toggle" onClick={() => setMobileOpen(true)} aria-label="Abrir menu"><Menu /></Button><span className="text-sm text-muted-foreground">{title}</span></div>
           <div className="flex min-w-0 items-center gap-4">
             <span className="hidden items-center gap-2 text-sm text-muted-foreground sm:flex"><Building2 className="size-4" /><span>{office?.name || "Escritório não identificado"}</span></span>
+            <BuscaColegas />
             <AvisosBell naoLidos={naoLidos} />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
