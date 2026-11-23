@@ -21,6 +21,7 @@ import { Route as AuthenticatedFeedbackGestorRouteImport } from './routes/_authe
 import { Route as AuthenticatedFeriasRouteImport } from './routes/_authenticated/ferias'
 import { Route as AuthenticatedFormulariosRouteImport } from './routes/_authenticated/formularios'
 import { Route as AuthenticatedFormulariosInternosRouteImport } from './routes/_authenticated/formularios-internos'
+import { Route as AuthenticatedInventarioBrindesRouteImport } from './routes/_authenticated/inventario-brindes'
 import { Route as AuthenticatedMuralRouteImport } from './routes/_authenticated/mural'
 import { Route as AuthenticatedParceirosRouteImport } from './routes/_authenticated/parceiros'
 import { Route as AuthenticatedPendenciasRouteImport } from './routes/_authenticated/pendencias'
@@ -113,6 +114,12 @@ const AuthenticatedFormulariosInternosRoute =
   AuthenticatedFormulariosInternosRouteImport.update({
     id: '/formularios-internos',
     path: '/formularios-internos',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedInventarioBrindesRoute =
+  AuthenticatedInventarioBrindesRouteImport.update({
+    id: '/inventario-brindes',
+    path: '/inventario-brindes',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedMuralRoute = AuthenticatedMuralRouteImport.update({
@@ -304,6 +311,7 @@ export interface FileRoutesByFullPath {
   '/ferias': typeof AuthenticatedFeriasRoute
   '/formularios': typeof AuthenticatedFormulariosRoute
   '/formularios-internos': typeof AuthenticatedFormulariosInternosRoute
+  '/inventario-brindes': typeof AuthenticatedInventarioBrindesRoute
   '/mural': typeof AuthenticatedMuralRoute
   '/parceiros': typeof AuthenticatedParceirosRoute
   '/pendencias': typeof AuthenticatedPendenciasRoute
@@ -346,6 +354,7 @@ export interface FileRoutesByTo {
   '/ferias': typeof AuthenticatedFeriasRoute
   '/formularios': typeof AuthenticatedFormulariosRoute
   '/formularios-internos': typeof AuthenticatedFormulariosInternosRoute
+  '/inventario-brindes': typeof AuthenticatedInventarioBrindesRoute
   '/mural': typeof AuthenticatedMuralRoute
   '/parceiros': typeof AuthenticatedParceirosRoute
   '/pendencias': typeof AuthenticatedPendenciasRoute
@@ -392,6 +401,7 @@ export interface FileRoutesById {
   '/_authenticated/ferias': typeof AuthenticatedFeriasRoute
   '/_authenticated/formularios': typeof AuthenticatedFormulariosRoute
   '/_authenticated/formularios-internos': typeof AuthenticatedFormulariosInternosRoute
+  '/_authenticated/inventario-brindes': typeof AuthenticatedInventarioBrindesRoute
   '/_authenticated/mural': typeof AuthenticatedMuralRoute
   '/_authenticated/parceiros': typeof AuthenticatedParceirosRoute
   '/_authenticated/pendencias': typeof AuthenticatedPendenciasRoute
@@ -439,6 +449,7 @@ export interface FileRouteTypes {
     | '/ferias'
     | '/formularios'
     | '/formularios-internos'
+    | '/inventario-brindes'
     | '/mural'
     | '/parceiros'
     | '/pendencias'
@@ -481,6 +492,7 @@ export interface FileRouteTypes {
     | '/ferias'
     | '/formularios'
     | '/formularios-internos'
+    | '/inventario-brindes'
     | '/mural'
     | '/parceiros'
     | '/pendencias'
@@ -526,6 +538,7 @@ export interface FileRouteTypes {
     | '/_authenticated/ferias'
     | '/_authenticated/formularios'
     | '/_authenticated/formularios-internos'
+    | '/_authenticated/inventario-brindes'
     | '/_authenticated/mural'
     | '/_authenticated/parceiros'
     | '/_authenticated/pendencias'
@@ -656,6 +669,13 @@ declare module '@tanstack/react-router' {
       path: '/formularios-internos'
       fullPath: '/formularios-internos'
       preLoaderRoute: typeof AuthenticatedFormulariosInternosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/inventario-brindes': {
+      id: '/_authenticated/inventario-brindes'
+      path: '/inventario-brindes'
+      fullPath: '/inventario-brindes'
+      preLoaderRoute: typeof AuthenticatedInventarioBrindesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/mural': {
@@ -921,6 +941,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFeriasRoute: typeof AuthenticatedFeriasRoute
   AuthenticatedFormulariosRoute: typeof AuthenticatedFormulariosRoute
   AuthenticatedFormulariosInternosRoute: typeof AuthenticatedFormulariosInternosRoute
+  AuthenticatedInventarioBrindesRoute: typeof AuthenticatedInventarioBrindesRoute
   AuthenticatedMuralRoute: typeof AuthenticatedMuralRoute
   AuthenticatedParceirosRoute: typeof AuthenticatedParceirosRoute
   AuthenticatedPendenciasRoute: typeof AuthenticatedPendenciasRoute
@@ -946,6 +967,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFeriasRoute: AuthenticatedFeriasRoute,
   AuthenticatedFormulariosRoute: AuthenticatedFormulariosRoute,
   AuthenticatedFormulariosInternosRoute: AuthenticatedFormulariosInternosRoute,
+  AuthenticatedInventarioBrindesRoute: AuthenticatedInventarioBrindesRoute,
   AuthenticatedMuralRoute: AuthenticatedMuralRoute,
   AuthenticatedParceirosRoute: AuthenticatedParceirosRoute,
   AuthenticatedPendenciasRoute: AuthenticatedPendenciasRoute,

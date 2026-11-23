@@ -41,3 +41,4 @@
 - Questionnaire deadlines are nullable Brazil-local dates enforced by database triggers and permission-checked atomic RPCs; expired forms leave pending feeds while management and previous responses remain accessible. Why: editing or stale open forms cannot bypass expiration or erase submissions.
 
 - Access reports: login rows in `historico_acessos` via permission-checked RPCs; `acessos.relatorios` is derived by `pode_ver_relatorios_acesso`, never assigned to profiles. Why: survives department sync.
+- Gift inventory access is computed server-side by a pure tested rule from the SharePoint "Responsáveis pelos Escritórios" list (coordinator lookup → email), admin role and synced department; each responsible row is a separate inventory and lists/columns are resolved dynamically from its link. Why: SharePoint stays the source of truth without hardcoded users.

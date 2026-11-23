@@ -20,6 +20,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useCurrentUser, useSignOut } from "@/hooks/useAuth";
 import { principalNav, visibleModules, type PortalModule, type PortalNavGroup } from "@/lib/portal-modules";
+import { useQuery } from "@tanstack/react-query";
+import { Package } from "lucide-react";
+import { acessoInventario } from "@/lib/inventario.functions";
 import { useOffice } from "@/components/clube/OfficeContext";
 import logo from "@/assets/cronos-full-logo.png.asset.json";
 
@@ -42,6 +45,7 @@ const moduleIcons: Record<PortalModule["to"], LucideIcon> = {
   "/feedback": MessageSquareHeart,
   "/feedback-gestor": MessageSquareHeart,
   "/pendencias": ListChecks,
+  "/inventario-brindes": Package,
 };
 
 const groupIcons: Record<PortalNavGroup, LucideIcon> = { beneficios: Gift, feedbacks: MessageSquareHeart, avisos: Megaphone, formularios: ClipboardList };
@@ -126,8 +130,10 @@ export function PortalShell({ children }: { children: ReactNode }) {
   const { office } = useOffice();
   const { pathname } = useLocation();
   const roles = me.data?.roles ?? [];
-  const modules = visibleModules(roles);
-  const entries = principalNav(roles);
+  const inventario = useQuery({ queryKey: ["inventario-acesso", me.data?.id], queryFn: () => acessoInventario(), enabled: !!me.data?.id, staleTime: 5 * 60_000 });
+  const ocultar: PortalModule["to"][] = inventario.data?.permitido ? [] : ["/inventario-brindes"];
+  const modules = visibleModules(roles, ocultar);
+  const entries = principalNav(roles, ocultar);
   const iconOnly = collapsed && !mobileOpen;
   const closeMobile = () => setMobileOpen(false);
   const activeModule = modules.find((mod) => matchesPath(pathname, mod.to));

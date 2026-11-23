@@ -8,7 +8,7 @@ export type PortalRole = "admin" | "rh" | "funcionario";
 export type PortalNavGroup = "beneficios" | "feedbacks" | "avisos" | "formularios";
 
 export type PortalModule = {
-  to: "/avisos" | "/ferias" | "/mural" | "/beneficios" | "/parceiros" | "/recompensas" | "/treinamentos" | "/formularios" | "/formularios-internos" | "/documentos" | "/feedback" | "/feedback-gestor" | "/pendencias";
+  to: "/avisos" | "/ferias" | "/mural" | "/beneficios" | "/parceiros" | "/recompensas" | "/treinamentos" | "/formularios" | "/formularios-internos" | "/documentos" | "/feedback" | "/feedback-gestor" | "/pendencias" | "/inventario-brindes";
   label: string;
   /** Texto do item quando o módulo aparece como submenu. */
   menuLabel?: string;
@@ -37,6 +37,7 @@ export const PORTAL_MODULES: PortalModule[] = [
   { to: "/formularios-internos", label: "Pesquisas", group: "formularios" },
   { to: "/formularios", label: "Central de Formulários Internos", group: "formularios" },
   { to: "/documentos", label: "Documentos Cronos" },
+  { to: "/inventario-brindes", label: "Inventário de Brindes (Comercial)", menuLabel: "Inventário de Brindes" },
   { to: "/feedback", label: "Elogios", menuLabel: "Elogios", group: "feedbacks" },
   { to: "/feedback-gestor", label: "Feedback do gestor", group: "feedbacks" },
 ];
@@ -56,14 +57,14 @@ export type PrincipalNavGroup = {
 
 export type PrincipalNavEntry = PrincipalNavLink | PrincipalNavGroup;
 
-export function visibleModules(roles: PortalRole[]) {
-  return PORTAL_MODULES.filter((m) => !m.roles?.length || m.roles.some((r) => roles.includes(r)));
+export function visibleModules(roles: PortalRole[], ocultar: PortalModule["to"][] = []) {
+  return PORTAL_MODULES.filter((m) => !ocultar.includes(m.to) && (!m.roles?.length || m.roles.some((r) => roles.includes(r))));
 }
 
 /** Menu principal: Início e os módulos visíveis, com grupos (Avisos, Benefícios, Formulários, Feedbacks) nos submenus. */
-export function principalNav(roles: PortalRole[]): PrincipalNavEntry[] {
+export function principalNav(roles: PortalRole[], ocultar: PortalModule["to"][] = []): PrincipalNavEntry[] {
   const entries: PrincipalNavEntry[] = [{ type: "link", to: "/", label: "Início" }];
-  for (const mod of visibleModules(roles)) {
+  for (const mod of visibleModules(roles, ocultar)) {
     if (!mod.group) {
       entries.push({ type: "link", to: mod.to, label: mod.label });
       continue;
