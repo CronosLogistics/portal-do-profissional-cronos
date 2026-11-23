@@ -1,12 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
-import { Search } from "lucide-react";
+import { Check, ChevronsUpDown, Search } from "lucide-react";
 import { useState } from "react";
 import { listarInventarios } from "@/lib/inventario.functions";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 const inventariosQuery = queryOptions({ queryKey: ["inventarios-brindes"], queryFn: () => listarInventarios(), staleTime: 60_000 });
+const tituloComercial = (titulo: string) => titulo.replace(/\bCOMERCIAL\b/g, "Comercial");
 
 export const Route = createFileRoute("/_authenticated/inventario-brindes")({
   loader: ({ context }) => context.queryClient.ensureQueryData(inventariosQuery),
@@ -27,6 +31,7 @@ function InventarioPage() {
   const { inventarios } = useSuspenseQuery(inventariosQuery).data;
   const [ativo, setAtivo] = useState(inventarios[0]?.id ?? "");
   const [busca, setBusca] = useState("");
+  const [seletorAberto, setSeletorAberto] = useState(false);
   const inv = inventarios.find((i) => i.id === ativo) ?? inventarios[0];
   const normalizar = (valor: string) => valor.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLocaleLowerCase("pt-BR");
   const ehVitoria = normalizar(`${inv?.titulo ?? ""} ${inv?.escritorio ?? ""}`).includes("vitoria");
@@ -39,26 +44,44 @@ function InventarioPage() {
         <h1 className="text-2xl font-bold text-primary">Inventário de Brindes (Comercial)</h1>
         <p className="text-sm text-muted-foreground">Consulta dos saldos registrados no SharePoint. Alterações devem ser feitas nas listas originais.</p>
       </div>
-      {inventarios.length > 1 && (
-        <div className="flex flex-wrap gap-2" role="tablist">
-          {inventarios.map((i) => (
-            <button key={i.id} role="tab" aria-selected={i.id === inv?.id} onClick={() => setAtivo(i.id)}
-              className={`rounded-md border px-3 py-1.5 text-sm font-medium transition-colors ${i.id === inv?.id ? "border-accent bg-accent text-accent-foreground" : "border-border bg-card text-foreground hover:bg-muted"}`}>
-              {i.titulo}{i.escritorio ? ` · ${i.escritorio}` : ""}
-            </button>
-          ))}
-        </div>
-      )}
       {inv && (
         <section className="rounded-lg border bg-card">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b p-4">
             <div>
-              <h2 className="font-semibold text-secondary">{inv.titulo}</h2>
+              <h2 className="font-semibold text-secondary">{tituloComercial(inv.titulo)}</h2>
               {inv.escritorio && <p className="text-xs text-muted-foreground">{inv.escritorio} · {inv.linhas.length} itens</p>}
             </div>
-            <div className="relative w-full max-w-xs">
+            <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
+              {inventarios.length > 1 && (
+                <Popover open={seletorAberto} onOpenChange={setSeletorAberto}>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" role="combobox" aria-expanded={seletorAberto} aria-label="Selecionar escritório" className="w-full justify-between sm:w-64">
+                      <span className="min-w-0 truncate">{tituloComercial(inv.titulo)}{inv.escritorio ? ` · ${inv.escritorio}` : ""}</span>
+                      <ChevronsUpDown className="text-muted-foreground" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent align="start" className="w-[var(--radix-popover-trigger-width)] p-0">
+                    <Command>
+                      <CommandInput placeholder="Buscar escritório…" aria-label="Buscar escritório" />
+                      <CommandList>
+                        <CommandEmpty>Nenhum escritório encontrado.</CommandEmpty>
+                        <CommandGroup>
+                          {inventarios.map((i) => (
+                            <CommandItem key={i.id} value={i.id} keywords={[i.titulo, i.escritorio]} onSelect={() => { setAtivo(i.id); setBusca(""); setSeletorAberto(false); }}>
+                              <span className="min-w-0 flex-1 break-words">{tituloComercial(i.titulo)}{i.escritorio ? ` · ${i.escritorio}` : ""}</span>
+                              {i.id === inv.id && <Check className="text-secondary" />}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              )}
+            <div className="relative w-full sm:w-64">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Buscar item" className="pl-8" />
+            </div>
             </div>
           </div>
           {inv.erro ? <p className="p-4 text-sm text-destructive">{inv.erro}</p> : (

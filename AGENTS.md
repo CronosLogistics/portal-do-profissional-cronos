@@ -42,3 +42,4 @@
 
 - Access reports: login rows in `historico_acessos` via permission-checked RPCs; `acessos.relatorios` is derived by `pode_ver_relatorios_acesso`, never assigned to profiles. Why: survives department sync.
 - Gift inventory access is computed server-side by a pure tested rule from the SharePoint "Responsáveis pelos Escritórios" list (coordinator lookup → email), admin role and synced department; each responsible row is a separate inventory and lists/columns are resolved dynamically from its link. Why: SharePoint stays the source of truth without hardcoded users.
+- Inventory office selection uses a searchable combobox only when multiple authorized inventories are returned. Why: growing office lists must not crowd the table or add controls for single-office viewers.
