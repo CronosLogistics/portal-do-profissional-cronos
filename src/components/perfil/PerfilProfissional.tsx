@@ -293,12 +293,13 @@ export function PerfilProfissional({ usuarioId }: { usuarioId?: string } = {}) {
             </div>}
           </div>
 
-          <dl className="perfil-stats mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <dl className={`perfil-stats mt-6 grid grid-cols-2 gap-3 ${d?.pontos != null ? "sm:grid-cols-5" : "sm:grid-cols-4"}`}>
             {[
               { label: "Badges", valor: badges.length },
               { label: "Elogios recebidos", valor: d ? d.elogiosTotal : "–" },
               { label: "Treinamentos concluídos", valor: d ? d.treinamentos.filter((t) => t.tipo === "treinamento").length : "–" },
               { label: "Certificados", valor: d ? d.treinamentos.filter((t) => t.tipo === "certificado").length : "–" },
+              ...(d?.pontos != null ? [{ label: "Pontos em treinamentos", valor: `${d.pontos} pts` }] : []),
             ].map((item) => (
               <div key={item.label} className="perfil-stat">
                 <dt className="text-xs text-muted-foreground">{item.label}</dt>
