@@ -25,3 +25,4 @@
 - Profile trainings/certificates read SharePoint "01 - Treinamentos" server-side: approved rows whose createdBy email equals the caller's verified email; attachment = certificate. Why: only the person's own courses reach the browser.
 - Microsoft profile photo is fetched server-side for the caller's own entra_oid only (`foto.functions.ts`) and returned as a data URL, cached 24h client-side; initials are the fallback. Why: Graph credentials never reach the browser.
 - Colleague profiles and comment-author photos: server functions read only active profiles, read-only for others. Why: no exposure of inactive/editable data.
+- Training podium reads SharePoint semester scores server-side (20-min cache), keeps only the latest semester top 3 with shared positions on ties, and resolves names via active profiles. Why: ranking shows without exposing the whole list.

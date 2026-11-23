@@ -11,6 +11,7 @@ import { Footer } from "@/components/clube/Footer";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { TableHeadOrdenavel } from "@/components/ui/cabecalho-ordenavel";
+import { PodioTreinamentos } from "@/components/treinamentos/PodioTreinamentos";
 import { TreinamentosEditor } from "@/components/treinamentos/TreinamentosEditor";
 import { useCurrentUser } from "@/hooks/useAuth";
 import { useOrdenacaoTabela } from "@/hooks/useOrdenacaoTabela";
@@ -166,6 +167,7 @@ function TreinamentosPage() {
           <p className="mb-8 text-lg text-muted-foreground">
             A pontuação varia conforme a classificação da capacitação. Confira abaixo os valores atuais aplicados pela Gestão de Pessoas.
           </p>
+          <PodioTreinamentos />
           <div className="glass-card overflow-hidden rounded-2xl">
             <Table>
               <TableHeader>
