@@ -28,6 +28,9 @@ function InventarioPage() {
   const [ativo, setAtivo] = useState(inventarios[0]?.id ?? "");
   const [busca, setBusca] = useState("");
   const inv = inventarios.find((i) => i.id === ativo) ?? inventarios[0];
+  const normalizar = (valor: string) => valor.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLocaleLowerCase("pt-BR");
+  const ehVitoria = normalizar(`${inv?.titulo ?? ""} ${inv?.escritorio ?? ""}`).includes("vitoria");
+  const colunas = (inv?.colunas ?? []).filter((c) => !ehVitoria || !["data da aprovacao", "data de aprovacao", "estorno"].includes(normalizar(c.titulo)));
   const termo = busca.trim().toLocaleLowerCase("pt-BR");
   const linhas = (inv?.linhas ?? []).filter((l) => !termo || Object.values(l).some((v) => v.toLocaleLowerCase("pt-BR").includes(termo)));
   return (
@@ -60,11 +63,11 @@ function InventarioPage() {
           </div>
           {inv.erro ? <p className="p-4 text-sm text-destructive">{inv.erro}</p> : (
             <Table>
-              <TableHeader><TableRow>{inv.colunas.map((c) => <TableHead key={c.nome} className={c.tipo === "texto" ? "" : "text-right"}>{c.titulo}</TableHead>)}</TableRow></TableHeader>
+              <TableHeader><TableRow>{colunas.map((c) => <TableHead key={c.nome} className={c.tipo === "texto" ? "" : "text-right"}>{c.titulo}</TableHead>)}</TableRow></TableHeader>
               <TableBody>
-                {linhas.length === 0 ? <TableRow><TableCell colSpan={inv.colunas.length || 1} className="text-center text-muted-foreground">Nenhum item encontrado.</TableCell></TableRow>
+                {linhas.length === 0 ? <TableRow><TableCell colSpan={colunas.length || 1} className="text-center text-muted-foreground">Nenhum item encontrado.</TableCell></TableRow>
                   : linhas.map((l, n) => (
-                    <TableRow key={n}>{inv.colunas.map((c) => <TableCell key={c.nome} className={c.tipo === "texto" ? "" : "text-right tabular-nums"}>{l[c.nome] || "-"}</TableCell>)}</TableRow>
+                    <TableRow key={n}>{colunas.map((c) => <TableCell key={c.nome} className={c.tipo === "texto" ? "" : "text-right tabular-nums"}>{l[c.nome] || "-"}</TableCell>)}</TableRow>
                   ))}
               </TableBody>
             </Table>
