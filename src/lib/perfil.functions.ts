@@ -81,3 +81,26 @@ async function montarPerfil(userId: string, perfil: { email: string | null; is_a
       erro: erros.length ? "Alguns dados do SharePoint não puderam ser carregados agora." : null,
     };
   }
+
+/** Cargo e setor (SharePoint) de até 8 colegas ativos, para a pesquisa do topo. */
+export const subtitulosColegas = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { ids: string[] }) => {
+    if (!d || !Array.isArray(d.ids) || d.ids.length > 8 || d.ids.some((i) => typeof i !== "string" || !/^[0-9a-f-]{36}$/i.test(i))) throw new Error("Pesquisa inválida");
+    return d;
+  })
+  .handler(async ({ context, data }): Promise<Record<string, string>> => {
+    const { data: eu } = await context.supabase.from("profiles").select("is_active").eq("id", context.userId).maybeSingle();
+    if (!eu || eu.is_active === false) throw new Error("Unauthorized");
+    if (!data.ids.length) return {};
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: perfis } = await supabaseAdmin.from("profiles").select("id,email,is_active").in("id", data.ids);
+    const { cadastroDoEmail } = await import("@/lib/perfil.server");
+    const out: Record<string, string> = {};
+    await Promise.all((perfis ?? []).filter((p) => p.email && p.is_active !== false).map(async (p) => {
+      const c = await cadastroDoEmail(p.email!).catch(() => null);
+      const s = [c?.cargo, c?.departamento].filter(Boolean).join(" · ");
+      if (s) out[p.id] = s;
+    }));
+    return out;
+  });

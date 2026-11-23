@@ -4,6 +4,16 @@ import { useQuery } from "@tanstack/react-query";
 import { Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { buscarMencionaveis } from "@/lib/mencoes";
+import { subtitulosColegas } from "@/lib/perfil.functions";
+import { useFotoProfissional } from "@/hooks/use-minha-foto";
+
+const semSufixo = (n: string) => n.replace(/\s*-\s*Cronos Logistics$/i, "").trim();
+const iniciais = (n: string) => n.split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]?.toUpperCase()).join("") || "?";
+
+function Avatar({ id, nome }: { id: string; nome: string }) {
+  const foto = useFotoProfissional(id);
+  return <span className="grid size-8 shrink-0 place-items-center overflow-hidden rounded-full bg-primary/10 text-xs font-bold text-primary">{foto ? <img src={foto} alt="" className="size-full object-cover" /> : iniciais(nome)}</span>;
+}
 
 export function BuscaColegas() {
   const [aberta, setAberta] = useState(false);
@@ -30,6 +40,14 @@ export function BuscaColegas() {
     staleTime: 60_000,
   });
 
+  const ids = data.map((p) => p.id);
+  const { data: subs = {} } = useQuery({
+    queryKey: ["busca-colegas-sub", ids],
+    queryFn: () => subtitulosColegas({ data: { ids } }),
+    enabled: ids.length > 0,
+    staleTime: 15 * 60_000,
+  });
+
   function fechar() { setAberta(false); setTermo(""); setBusca(""); setAtivo(0); }
   function ir(id: string) { fechar(); void navigate({ to: "/perfil/$id", params: { id } }); }
 
@@ -50,11 +68,15 @@ export function BuscaColegas() {
         <button type="button" onClick={fechar} aria-label="Fechar pesquisa" className="text-muted-foreground"><X className="size-4" /></button>
       </div>
       {busca.length >= 2 && (
-        <ul className="absolute right-0 top-11 z-50 w-full overflow-hidden rounded-md border border-border bg-popover text-popover-foreground shadow-md">
+        <ul className="absolute right-0 top-11 z-50 w-80 max-w-[90vw] overflow-hidden rounded-md border border-border bg-popover text-popover-foreground shadow-md">
           {data.length === 0 ? <li className="px-3 py-2 text-sm text-muted-foreground">{isFetching ? "Buscando..." : "Nenhum colega encontrado"}</li>
             : data.map((p, i) => (
               <li key={p.id}><button type="button" onMouseEnter={() => setAtivo(i)} onClick={() => ir(p.id)}
-                className={`w-full px-3 py-2 text-left text-sm ${i === ativo ? "bg-accent text-accent-foreground" : ""}`}>{p.nome.replace(/\s*-\s*Cronos Logistics$/i, "")}</button></li>
+                className={`flex w-full items-center gap-3 px-3 py-2 text-left ${i === ativo ? "bg-muted" : ""}`}>
+                <Avatar id={p.id} nome={semSufixo(p.nome)} />
+                <span className="min-w-0"><span className="block truncate text-sm font-semibold text-foreground">{semSufixo(p.nome)}</span>
+                  {subs[p.id] && <span className="block truncate text-xs text-muted-foreground">{subs[p.id]}</span>}</span>
+              </button></li>
             ))}
         </ul>
       )}
