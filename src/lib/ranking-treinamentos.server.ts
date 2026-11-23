@@ -3,8 +3,8 @@ const SITE = "cronoslogisticscombr.sharepoint.com,dc6d3de3-d3ee-4d0d-b0ba-b86afc
 const LISTA = "887d02b2-e357-41bb-acf2-2b9b4f70eb41";
 const GATEWAY = "https://connector-gateway.lovable.dev/azure_graph";
 
-export type LinhaPontuacao = { email: string; pontos: number; ano: string; semestre: string };
-type Item = { fields: { Title?: string; TotaldePontua_x00e7__x00e3_o?: number | string; Ano?: number | string; Semestre?: number | string } };
+export type LinhaPontuacao = { email: string; pontos: number; ano: string; semestre: string; data: string };
+type Item = { createdDateTime?: string; lastModifiedDateTime?: string; fields: { Title?: string; TotaldePontua_x00e7__x00e3_o?: number | string; Ano?: number | string; Semestre?: number | string } };
 
 let cache: { em: number; linhas: LinhaPontuacao[] } | null = null;
 
@@ -17,7 +17,7 @@ export async function pontuacoesSemestre(): Promise<LinhaPontuacao[]> {
   if (!res.ok) throw new Error(`Não foi possível ler a pontuação [${res.status}]: ${await res.text()}`);
   const data = (await res.json()) as { value: Item[] };
   const linhas = data.value
-    .map((i) => ({ email: (i.fields.Title ?? "").trim().toLowerCase(), pontos: Number(i.fields.TotaldePontua_x00e7__x00e3_o ?? 0), ano: String(i.fields.Ano ?? ""), semestre: String(i.fields.Semestre ?? "") }))
+    .map((i) => ({ email: (i.fields.Title ?? "").trim().toLowerCase(), pontos: Number(i.fields.TotaldePontua_x00e7__x00e3_o ?? 0), ano: String(i.fields.Ano ?? ""), semestre: String(i.fields.Semestre ?? ""), data: i.lastModifiedDateTime ?? i.createdDateTime ?? "" }))
     .filter((l) => l.email.includes("@") && Number.isFinite(l.pontos));
   cache = { em: Date.now(), linhas };
   return linhas;
