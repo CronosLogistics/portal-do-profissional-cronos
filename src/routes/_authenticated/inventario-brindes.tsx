@@ -52,8 +52,9 @@ function valorOrdenacao(valor: string | undefined, tipo: ColunaInventario["tipo"
 }
 
 function colunasVisiveis(inv: Inventario): ColunaInventario[] {
-  const ehVitoria = normalizar(`${inv.titulo} ${inv.escritorio}`).includes("vitoria");
-  return inv.colunas.filter((c) => !ehVitoria || !["data da aprovacao", "data de aprovacao", "estorno"].includes(normalizar(c.titulo)));
+  const alvo = normalizar(`${inv.titulo} ${inv.escritorio}`);
+  const ocultar = ["vitoria", "itajai", "sc", "tld"].some((k) => new RegExp(`\\b${k}\\b`).test(alvo));
+  return inv.colunas.filter((c) => !ocultar || !["data da aprovacao", "data de aprovacao", "estorno"].includes(normalizar(c.titulo)));
 }
 
 function InventarioPage() {
