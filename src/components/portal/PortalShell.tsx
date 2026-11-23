@@ -46,9 +46,10 @@ const moduleIcons: Record<PortalModule["to"], LucideIcon> = {
   "/feedback-gestor": MessageSquareHeart,
   "/pendencias": ListChecks,
   "/inventario-brindes": Package,
+  "/organograma": FolderOpen,
 };
 
-const groupIcons: Record<PortalNavGroup, LucideIcon> = { beneficios: Gift, feedbacks: MessageSquareHeart, avisos: Megaphone, formularios: ClipboardList };
+const groupIcons: Record<PortalNavGroup, LucideIcon> = { beneficios: Gift, feedbacks: MessageSquareHeart, avisos: Megaphone, formularios: ClipboardList, documentos: FolderOpen };
 
 type NavTarget = "/" | PortalModule["to"] | "/admin" | "/admin/usuarios";
 
@@ -118,7 +119,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
   const foto = useMinhaFoto();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [openMenus, setOpenMenus] = useState({ beneficios: false, feedbacks: false, avisos: false, formularios: false, admin: false });
+  const [openMenus, setOpenMenus] = useState({ beneficios: false, feedbacks: false, avisos: false, formularios: false, documentos: false, admin: false });
   const me = useCurrentUser();
   const navigate = useNavigate();
   const signOut = useSignOut();

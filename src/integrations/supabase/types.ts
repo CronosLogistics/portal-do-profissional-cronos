@@ -897,6 +897,38 @@ export type Database = {
         }
         Relationships: []
       }
+      organograma_ajustes: {
+        Row: {
+          area: string | null
+          atualizado_em: string
+          atualizado_por: string | null
+          oculto: boolean
+          usuario_id: string
+        }
+        Insert: {
+          area?: string | null
+          atualizado_em?: string
+          atualizado_por?: string | null
+          oculto?: boolean
+          usuario_id: string
+        }
+        Update: {
+          area?: string | null
+          atualizado_em?: string
+          atualizado_por?: string | null
+          oculto?: boolean
+          usuario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organograma_ajustes_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       partner_attachments: {
         Row: {
           created_at: string
@@ -2069,6 +2101,7 @@ export type Database = {
           titulo: string
         }[]
       }
+      pode_editar_organograma: { Args: never; Returns: boolean }
       pode_enviar_como: { Args: { _perfil_id: string }; Returns: boolean }
       pode_interagir_compilado: {
         Args: { _aviso_id: string }
@@ -2165,6 +2198,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      salvar_organograma: { Args: { _ajustes: Json }; Returns: undefined }
       tem_permissao: { Args: { _permissao: string }; Returns: boolean }
       tour_pendente: { Args: never; Returns: boolean }
       usuario_tem_permissao: {

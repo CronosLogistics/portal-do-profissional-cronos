@@ -521,3 +521,9 @@
   color: var(--secondary); font-size: .8rem; font-weight: 600;
 }
 .perfil-card.p-0 { padding: 0; }
+
+.org-canvas-edicao {
+  background-color: var(--muted);
+  background-image: radial-gradient(color-mix(in oklab, var(--muted-foreground) 35%, transparent) 1px, transparent 1px);
+  background-size: 18px 18px;
+}

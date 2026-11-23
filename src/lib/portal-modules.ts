@@ -5,10 +5,10 @@
  */
 export type PortalRole = "admin" | "rh" | "funcionario";
 
-export type PortalNavGroup = "beneficios" | "feedbacks" | "avisos" | "formularios";
+export type PortalNavGroup = "beneficios" | "feedbacks" | "avisos" | "formularios" | "documentos";
 
 export type PortalModule = {
-  to: "/avisos" | "/ferias" | "/mural" | "/beneficios" | "/parceiros" | "/recompensas" | "/treinamentos" | "/formularios" | "/formularios-internos" | "/documentos" | "/feedback" | "/feedback-gestor" | "/pendencias" | "/inventario-brindes";
+  to: "/avisos" | "/ferias" | "/mural" | "/beneficios" | "/parceiros" | "/recompensas" | "/treinamentos" | "/formularios" | "/formularios-internos" | "/documentos" | "/feedback" | "/feedback-gestor" | "/pendencias" | "/inventario-brindes" | "/organograma";
   label: string;
   /** Texto do item quando o módulo aparece como submenu. */
   menuLabel?: string;
@@ -23,6 +23,7 @@ export const PORTAL_NAV_GROUPS: Record<PortalNavGroup, { label: string }> = {
   beneficios: { label: "Benefícios" },
   feedbacks: { label: "Feedbacks" },
   formularios: { label: "Formulários" },
+  documentos: { label: "Documentos Cronos" },
 };
 
 export const PORTAL_MODULES: PortalModule[] = [
@@ -36,7 +37,8 @@ export const PORTAL_MODULES: PortalModule[] = [
   { to: "/treinamentos", label: "Treinamentos" },
   { to: "/formularios-internos", label: "Pesquisas", group: "formularios" },
   { to: "/formularios", label: "Central de Formulários Internos", group: "formularios" },
-  { to: "/documentos", label: "Documentos Cronos" },
+  { to: "/documentos", label: "Documentos Cronos", menuLabel: "Documentos", group: "documentos" },
+  { to: "/organograma", label: "Organograma", group: "documentos" },
   { to: "/inventario-brindes", label: "Inventário de Brindes (Comercial)", menuLabel: "Inventário de Brindes" },
   { to: "/feedback", label: "Elogios", menuLabel: "Elogios", group: "feedbacks" },
   { to: "/feedback-gestor", label: "Feedback do gestor", group: "feedbacks" },

@@ -33,7 +33,7 @@ async function ler<T>(path: string): Promise<T[]> {
 /** Datas do SharePoint chegam em UTC à meia-noite de Brasília. */
 const dataCivil = (v?: string) => (v ? new Date(v).toLocaleDateString("sv-SE", { timeZone: "America/Sao_Paulo" }) : null);
 
-export async function cadastroDoEmail(email: string): Promise<DadosCadastro | null> {
+async function carregar() {
   if (!cache || Date.now() - cache.em > 15 * 60_000) {
     const [rows, users] = await Promise.all([
       ler<{ id: string; fields: Campos }>(`lists/${PROFISSIONAIS}/items?$select=id&$expand=fields($select=field_1,field_3,field_4,DATADENASC_x002e_,Cargo0,CARGO,DEPARTAMENTOATUAL,E_x002d_MAILCORPORATIVOLookupId)&$top=500`),
@@ -41,8 +41,31 @@ export async function cadastroDoEmail(email: string): Promise<DadosCadastro | nu
     ]);
     cache = { em: Date.now(), rows, usuarios: new Map(users.map((u) => [u.id, normalizarEmail(u.fields.EMail ?? "")])) };
   }
+  return cache!;
+}
+
+const ativo = (f: Campos) => ["ATIVO", "EFETIVADO/ATIVO"].includes(f.field_1?.trim().toUpperCase() ?? "");
+
+/** Cargo e departamento de todos os ativos, por e-mail corporativo (ignora e-mails duplicados). */
+export async function cadastrosAtivos(): Promise<Map<string, { cargo: string | null; departamento: string | null }>> {
+  const c = await carregar();
+  const out = new Map<string, { cargo: string | null; departamento: string | null }>();
+  const dup = new Set<string>();
+  for (const r of c.rows) {
+    if (!ativo(r.fields)) continue;
+    const e = c.usuarios.get(String(r.fields.E_x002d_MAILCORPORATIVOLookupId));
+    if (!e) continue;
+    if (out.has(e)) dup.add(e);
+    out.set(e, { cargo: r.fields.Cargo0?.trim() || r.fields.CARGO?.trim() || null, departamento: r.fields.DEPARTAMENTOATUAL?.trim() || null });
+  }
+  dup.forEach((e) => out.delete(e));
+  return out;
+}
+
+export async function cadastroDoEmail(email: string): Promise<DadosCadastro | null> {
+  const cache = await carregar();
   const alvo = normalizarEmail(email);
-  const meus = cache.rows.filter((r) => ["ATIVO", "EFETIVADO/ATIVO"].includes(r.fields.field_1?.trim().toUpperCase() ?? "") && cache!.usuarios.get(String(r.fields.E_x002d_MAILCORPORATIVOLookupId)) === alvo);
+  const meus = cache.rows.filter((r) => ["ATIVO", "EFETIVADO/ATIVO"].includes(r.fields.field_1?.trim().toUpperCase() ?? "") && cache.usuarios.get(String(r.fields.E_x002d_MAILCORPORATIVOLookupId)) === alvo);
   if (meus.length !== 1) return null;
   const f = meus[0]!.fields;
   return {
