@@ -108,8 +108,8 @@ export function areaFinal(ajuste: string | null | undefined, dep: string | null,
   return (AREAS as readonly string[]).includes(ajuste ?? "") ? (ajuste as Area) : areaDoDepartamento(dep, cargo);
 }
 
-/** Posição visual do gestor do grupo oficial, sem alterar departamento ou permissões. */
-export function areaVisualOrganograma(pessoa: { nome: string; area: Area }): Area {
+/** Gestão exibida no cabeçalho, sem mover o cartão do departamento da pessoa. */
+export function grupoGestaoOrganograma(pessoa: { nome: string; area: Area; nivel: Nivel }): Area | null {
   if (
     ["Comercial SC", "Comercial ES"].includes(pessoa.area) &&
     /^CAMILA\b.*\bTOPANOTTI\b/.test(norm(pessoa.nome))
@@ -118,7 +118,12 @@ export function areaVisualOrganograma(pessoa: { nome: string; area: Area }): Are
     ["Comercial RS", "Adm. Caxias do Sul"].includes(pessoa.area) &&
     /^ANA\b.*\bBUENO\b/.test(norm(pessoa.nome))
   ) return "Comercial RS e Caxias do Sul";
-  return pessoa.area;
+  const grupos = idsGrupos(ESTRUTURA);
+  return grupos.includes(pessoa.area) && ["Gerência", "Coordenação", "Supervisão"].includes(pessoa.nivel) ? pessoa.area : null;
+}
+
+function idsGrupos(nos: NoOrganograma[]): string[] {
+  return nos.flatMap((n) => [...(n.tipo === "grupo" ? [n.id] : []), ...idsGrupos(n.filhos ?? [])]);
 }
 
 /**

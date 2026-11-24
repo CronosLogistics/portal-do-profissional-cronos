@@ -1,4 +1,7 @@
 # Atualização visual do Portal do Profissional
+## Padronização dos gestores no organograma
+- [x] Mostrar Gestão nos cabeçalhos dos quatro grupos e manter os cartões das gestoras em suas áreas, abaixo dos cabeçalhos.
+- [x] Validar 14 testes, os quatro grupos na tela autenticada, seleção, edição e recarga; computador e celular sem erros ou transbordamento.
 ## Atualização automática do organograma
 - [x] Incluir admitidos ativos na sincronização Microsoft existente, sem criar contas para convidados ou usuários técnicos e sem duplicar perfis; lote idempotente limitado a 50.
 - [x] Preservar exclusão de desligados, setores, liderança e ajustes manuais; atualização forçada não informa sucesso se a trava de setores impedir a aplicação.

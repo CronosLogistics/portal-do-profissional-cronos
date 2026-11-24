@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useFotoProfissional } from "@/hooks/use-minha-foto";
 import { carregarOrganograma, salvarOrganograma, type PessoaOrganograma } from "@/lib/organograma.functions";
-import { AREAS, ESTRUTURA, NIVEIS, areaVisualOrganograma, liderImediato, type Area, type NoOrganograma } from "@/lib/organograma.rules";
+import { AREAS, ESTRUTURA, NIVEIS, grupoGestaoOrganograma, liderImediato, type Area, type NoOrganograma } from "@/lib/organograma.rules";
 import { cn } from "@/lib/utils";
 
 const orgQuery = queryOptions({ queryKey: ["organograma"], queryFn: () => carregarOrganograma(), staleTime: 5 * 60_000 });
@@ -57,14 +57,26 @@ function OrganogramaPage() {
   const conteudo = useRef<HTMLDivElement>(null);
   const arrasto = useRef<{ x: number; y: number; vx: number; vy: number } | null>(null);
 
-  const pessoas = useMemo(() => data.pessoas.map((p) => ({ ...p, area: areaVisualOrganograma(p), ...(rascunho[p.id] ?? {}) })), [data.pessoas, rascunho]);
+  const pessoas = useMemo(() => data.pessoas.map((p) => ({ ...p, ...(rascunho[p.id] ?? {}) })), [data.pessoas, rascunho]);
   const visiveis = pessoas.filter((p) => !p.oculto);
   const termo = busca.trim().toLowerCase();
   const porArea = useMemo(() => {
     const m = new Map<Area, PessoaOrganograma[]>();
     for (const a of AREAS) m.set(a, []);
-    for (const p of visiveis) m.get(p.area)!.push(p);
+    for (const p of visiveis) m.get(p.area)?.push(p);
     for (const l of m.values()) l.sort((a, b) => NIVEIS.indexOf(a.nivel) - NIVEIS.indexOf(b.nivel) || a.nome.localeCompare(b.nome, "pt-BR"));
+    return m;
+  }, [visiveis]);
+  const gestoresPorGrupo = useMemo(() => {
+    const m = new Map<Area, PessoaOrganograma[]>();
+    for (const p of visiveis) {
+      const grupo = grupoGestaoOrganograma(p);
+      if (!grupo) continue;
+      const gestores = m.get(grupo) ?? [];
+      gestores.push(p);
+      m.set(grupo, gestores);
+    }
+    for (const gestores of m.values()) gestores.sort((a, b) => NIVEIS.indexOf(a.nivel) - NIVEIS.indexOf(b.nivel) || a.nome.localeCompare(b.nome, "pt-BR"));
     return m;
   }, [visiveis]);
   const filhos = useMemo(() => {
@@ -73,8 +85,9 @@ function OrganogramaPage() {
     for (const p of visiveis) {
       const pai = liderImediato(p, p.lideres.map((id) => porId.get(id)).filter((l): l is PessoaOrganograma => !!l));
       const k = pai ?? `area:${p.area}`;
-      if (!m.has(k)) m.set(k, []);
-      m.get(k)!.push(p);
+      const lista = m.get(k) ?? [];
+      lista.push(p);
+      m.set(k, lista);
     }
     for (const l of m.values()) l.sort((a, b) => NIVEIS.indexOf(a.nivel) - NIVEIS.indexOf(b.nivel) || a.nome.localeCompare(b.nome, "pt-BR"));
     return m;
@@ -113,7 +126,11 @@ function OrganogramaPage() {
     window.addEventListener("keydown", onKey);
     return () => { el.removeEventListener("wheel", onWheel); window.removeEventListener("keydown", onKey); };
   }, [ajustar]);
-  const zoomBotao = (f: number) => { const r = box.current!.getBoundingClientRect(); zoomEm(view.z * f, r.width / 2, r.height / 2); };
+  const zoomBotao = (f: number) => {
+    const r = box.current?.getBoundingClientRect();
+    if (!r) return;
+    zoomEm(view.z * f, r.width / 2, r.height / 2);
+  };
 
   const mudar = (p: PessoaOrganograma, d: Partial<Ajuste>) => setRascunho((r) => ({ ...r, [p.id]: { area: p.area, oculto: p.oculto, ...r[p.id], ...d } }));
   const gravar = async () => {
@@ -171,7 +188,7 @@ function OrganogramaPage() {
     );
   };
 
-  const diretoria = porArea.get("Diretoria")!;
+  const diretoria = porArea.get("Diretoria") ?? [];
   const total = (n: NoOrganograma): number => (n.tipo === "exec" ? 0 : porArea.get(n.id)?.length ?? 0) + (n.filhos ?? []).reduce((t, f) => t + total(f), 0);
   const Pessoas = ({ id }: { id: string }) => <div className="space-y-1.5">{(filhos.get(`area:${id}`) ?? []).map((p) => <Ramo key={p.id} p={p} />)}</div>;
   const Filhos = ({ nos }: { nos: NoOrganograma[] }) => {
@@ -194,14 +211,31 @@ function OrganogramaPage() {
   };
   const No = ({ n }: { n: NoOrganograma }) => {
     const q = total(n), proprios = porArea.get(n.id)?.length ?? 0;
+    const gestores = gestoresPorGrupo.get(n.id) ?? [];
     return (
       <div className="flex flex-col items-center">
         <section className={cn("rounded-xl border bg-card/95 p-3 shadow-sm", n.tipo === "dep" ? "w-72" : "min-w-72")}>
-          <h2 className={cn("rounded-md px-3 py-1.5 text-center text-xs font-bold uppercase tracking-wide", n.tipo === "grupo" ? "border-2 border-sidebar text-sidebar" : "bg-sidebar text-sidebar-foreground", (proprios > 0 || n.tipo === "dep") && "mb-2")}>
+          <h2 className={cn("rounded-md px-3 py-1.5 text-center text-xs font-bold uppercase tracking-wide", n.tipo === "grupo" ? "border-2 border-sidebar text-sidebar" : "bg-sidebar text-sidebar-foreground", ((proprios > 0 && n.tipo !== "grupo") || n.tipo === "dep" || gestores.length > 0) && "mb-2")}>
             {n.titulo} <span className="font-normal opacity-80">({q})</span>
           </h2>
-          {proprios > 0 && <Pessoas id={n.id} />}
+          {n.tipo === "grupo" && gestores.length > 0 && (
+            <div className="flex max-w-72 flex-wrap items-center justify-center gap-x-1 text-xs text-muted-foreground" onPointerDown={(e) => e.stopPropagation()}>
+              <span>Gestão:</span>
+              {gestores.map((p, i) => (
+                <span key={p.id} className="inline-flex max-w-full items-center">
+                  {i > 0 && <span className="mr-1">·</span>}
+                  <Button variant="link" size="sm" className={cn("h-auto min-w-0 whitespace-normal p-0 text-center text-xs text-accent", selecionado === p.id && "underline")} onClick={() => setSelecionado(p.id)}>
+                    {p.nome.replace(/\s*[-–—]\s*Cronos Logistics.*$/i, "")}
+                  </Button>
+                </span>
+              ))}
+            </div>
+          )}
+          {proprios > 0 && n.tipo !== "grupo" && <Pessoas id={n.id} />}
         </section>
+        {proprios > 0 && n.tipo === "grupo" && (
+          <div className="mt-2 w-72"><Pessoas id={n.id} /></div>
+        )}
         {n.filhos && <Filhos nos={n.filhos} />}
       </div>
     );
