@@ -52,4 +52,19 @@ describe("estrutura oficial do organograma", () => {
     expect(areaVisualOrganograma({ nome: "Carla Bello", area: "Comercial SC" })).toBe("Comercial SC");
     expect(areaVisualOrganograma({ nome: "Camila Topanotti", area: "Marketing" })).toBe("Marketing");
   });
+  it("Ana Bueno lidera Comercial RS e Adm. Caxias do Sul sem mudar seu departamento", () => {
+    const area = areaDoDepartamento("COMERCIAL RS", "COORDENADOR COMERCIAL");
+    expect(area).toBe("Comercial RS");
+    expect(areaVisualOrganograma({ nome: "Ana Bueno - Cronos Logistics", area })).toBe("Comercial RS e Caxias do Sul");
+    expect(areaVisualOrganograma({ nome: "ANA JULIA BUENO", area })).toBe("Comercial RS e Caxias do Sul");
+    expect(areaVisualOrganograma({ nome: "Ana Bueno", area: "Adm. Caxias do Sul" })).toBe("Comercial RS e Caxias do Sul");
+    const grupo = ESTRUTURA.find((e) => e.id === "Diretoria CEO")?.filhos?.find((f) => f.id === "Comercial RS e Caxias do Sul");
+    expect(grupo?.filhos?.map((f) => f.id)).toEqual(["Comercial RS", "Adm. Caxias do Sul"]);
+  });
+  it("mantém a equipe de RS e Caxias em suas caixas e não move Ana de outra área", () => {
+    expect(areaVisualOrganograma({ nome: "Alexey Kurunczi", area: "Comercial RS" })).toBe("Comercial RS");
+    expect(areaVisualOrganograma({ nome: "Rayssa Sousa", area: "Adm. Caxias do Sul" })).toBe("Adm. Caxias do Sul");
+    expect(areaVisualOrganograma({ nome: "Ana Bueno", area: "Marketing" })).toBe("Marketing");
+    expect(areaVisualOrganograma({ nome: "Ana Beatriz", area: "Comercial RS" })).toBe("Comercial RS");
+  });
 });

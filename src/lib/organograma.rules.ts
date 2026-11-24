@@ -114,6 +114,10 @@ export function areaVisualOrganograma(pessoa: { nome: string; area: Area }): Are
     ["Comercial SC", "Comercial ES"].includes(pessoa.area) &&
     /^CAMILA\b.*\bTOPANOTTI\b/.test(norm(pessoa.nome))
   ) return "Comercial SC e ES";
+  if (
+    ["Comercial RS", "Adm. Caxias do Sul"].includes(pessoa.area) &&
+    /^ANA\b.*\bBUENO\b/.test(norm(pessoa.nome))
+  ) return "Comercial RS e Caxias do Sul";
   return pessoa.area;
 }
 
