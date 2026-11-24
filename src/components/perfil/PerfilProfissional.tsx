@@ -25,6 +25,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { meuPerfil, perfilColega } from "@/lib/perfil.functions";
 import { minhasCompetencias, salvarCompetencias } from "@/lib/competencias.functions";
+import { PRIVACIDADE_PADRAO, salvarPrivacidade, type PrivacidadePerfil } from "@/lib/privacidade.functions";
 import { salvarSobre } from "@/lib/sobre.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,7 +34,6 @@ import { useOffice } from "@/components/clube/OfficeContext";
 import { useCurrentUser } from "@/hooks/useAuth";
 import {
   iniciaisDe,
-  PERFIL_DEMO,
   type PerfilBadge,
 } from "@/lib/perfil.mock";
 import { cn } from "@/lib/utils";
@@ -118,7 +118,6 @@ function BadgeCard({
 export function PerfilProfissional({ usuarioId }: { usuarioId?: string } = {}) {
   const me = useCurrentUser();
   const { office } = useOffice();
-  const demo = PERFIL_DEMO;
   // Perfil de colega: somente leitura, dados oficiais vindos do servidor.
   const colega = !!usuarioId && !!me.data && usuarioId !== me.data.id;
   const proprio = !usuarioId || (!!me.data && usuarioId === me.data.id);
@@ -162,7 +161,7 @@ export function PerfilProfissional({ usuarioId }: { usuarioId?: string } = {}) {
   });
   const competenciasIndisponiveis = !competenciasQuery.isSuccess || gravarCompetencias.isPending;
   const [novaCompetencia, setNovaCompetencia] = useState("");
-  const [privacidade, setPrivacidade] = useState(demo.privacidade);
+  const privacidade = d?.privacidade ?? PRIVACIDADE_PADRAO;
   const [editandoSobre, setEditandoSobre] = useState(false);
   const [rascunhoSobre, setRascunhoSobre] = useState("");
   const sobrePlaceholder = "Insira aqui informações sobre você...";
@@ -177,6 +176,23 @@ export function PerfilProfissional({ usuarioId }: { usuarioId?: string } = {}) {
       toast.success("Sobre mim atualizado.");
     },
     onError: () => toast.error("Não foi possível salvar o Sobre mim. Tente novamente."),
+  });
+  const salvarPrivacidadeFn = useServerFn(salvarPrivacidade);
+  const gravarPrivacidade = useMutation({
+    mutationFn: (prefs: PrivacidadePerfil) => salvarPrivacidadeFn({ data: prefs }),
+    onMutate: async (prefs) => {
+      await queryClient.cancelQueries({ queryKey: ["meu-perfil"] });
+      const anterior = queryClient.getQueryData<typeof d>(["meu-perfil"]);
+      queryClient.setQueryData(["meu-perfil"], (atual: typeof d) => (atual ? { ...atual, privacidade: prefs } : atual));
+      return { anterior };
+    },
+    onError: (_err, _prefs, ctx) => {
+      if (ctx?.anterior !== undefined) queryClient.setQueryData(["meu-perfil"], ctx.anterior);
+      toast.error("Não foi possível salvar suas preferências de privacidade. Tente novamente.");
+    },
+    onSuccess: (prefs) => {
+      queryClient.setQueryData(["meu-perfil"], (atual: typeof d) => (atual ? { ...atual, privacidade: prefs } : atual));
+    },
   });
 
   const fixadas = badges.filter((b) => b.fixada && !b.bloqueada);
@@ -344,6 +360,7 @@ export function PerfilProfissional({ usuarioId }: { usuarioId?: string } = {}) {
             )}
           </Secao>}
 
+          {(proprio || privacidade.mostrarBadges) && (
           <Secao
             titulo="Badges e conquistas"
           >
@@ -363,7 +380,9 @@ export function PerfilProfissional({ usuarioId }: { usuarioId?: string } = {}) {
                 ))}
             </div>
           </Secao>
+          )}
 
+          {(proprio || privacidade.mostrarElogios) && (
           <Secao
             titulo="Elogios recebidos"
             acao={colega ? null :
@@ -388,6 +407,7 @@ export function PerfilProfissional({ usuarioId }: { usuarioId?: string } = {}) {
               ))}
             </ul>
           </Secao>
+          )}
 
           <Secao titulo="Treinamentos e certificados">
             {!d?.treinamentos.length && <p className="text-sm text-muted-foreground">{dados.isLoading ? "Carregando…" : "Nenhum treinamento aprovado registrado."}</p>}
@@ -428,7 +448,7 @@ export function PerfilProfissional({ usuarioId }: { usuarioId?: string } = {}) {
                 </dt>
                 <dd className="mt-1 text-foreground/80">{unidade}</dd>
               </div>
-              {(colega || privacidade.mostrarAniversario) && (
+              {((proprio && privacidade.mostrarAniversario) || (colega && !!d?.nascimento)) && (
                 <div>
                   <dt className="text-muted-foreground">Aniversário</dt>
                   <dd className="mt-1 text-foreground/80">{aniversario}</dd>
@@ -496,8 +516,9 @@ export function PerfilProfissional({ usuarioId }: { usuarioId?: string } = {}) {
                   <span className="text-sm text-foreground/80">{label}</span>
                   <Switch
                     checked={privacidade[chave]}
+                    disabled={!dadosMeus.isSuccess || gravarPrivacidade.isPending}
                     onCheckedChange={(checked) =>
-                      setPrivacidade((atual) => ({ ...atual, [chave]: checked }))
+                      gravarPrivacidade.mutate({ ...privacidade, [chave]: checked })
                     }
                     aria-label={label}
                   />

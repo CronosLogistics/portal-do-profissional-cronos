@@ -43,11 +43,6 @@ export type PerfilDemo = {
   elogios: PerfilElogio[];
   treinamentos: PerfilTreinamento[];
   competencias: string[];
-  privacidade: {
-    mostrarBadges: boolean;
-    mostrarAniversario: boolean;
-    mostrarElogios: boolean;
-  };
 };
 
 export const PERFIL_DEMO: PerfilDemo = {
@@ -156,11 +151,6 @@ export const PERFIL_DEMO: PerfilDemo = {
     },
   ],
   competencias: ["Python", "Integração de sistemas", "SQL", "Power BI", "Comunicação"],
-  privacidade: {
-    mostrarBadges: true,
-    mostrarAniversario: true,
-    mostrarElogios: false,
-  },
 };
 
 export function iniciaisDe(nome: string) {

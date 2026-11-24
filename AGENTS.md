@@ -14,6 +14,7 @@
 - Local development without privileged database credentials skips login writes and department synchronization, retaining authenticated active-profile checks and RLS reads; hosted execution still requires credentials. Why: Cursor can consult existing data without weakening permissions or fabricating audit records.
 - Profile manager selection is shared in a pure tested rule applied server-side using the viewed professional's department memberships, independently of priority permissions. Why: own and colleague profiles must resolve the same corporate manager.
 - Profile competencies persist in an owner-scoped table through authenticated server functions; corporate identity fields remain separate. Why: reloads preserve personal edits without permitting edits to other users or Microsoft data.
+- Profile privacy toggles persist in owner-scoped `perfil_privacidade` via authenticated server functions; colleague profile assembly applies the saved flags before returning birthday and praise. Why: refresh keeps preferences and colleagues never receive hidden fields.
 - Questionnaire choice limits share one browser-safe constant across editing, import and validation, mirrored in database RPCs. Why: saved forms and submitted answers must accept the same bounds.
 - Subdirectories have their own `AGENTS.md` (e.g. `src/lib/`); read it before changing files there.
 - Browser IDs use `criarIdCliente` (UUID secure-random fallback). Why: browsers lacking `crypto.randomUUID`.

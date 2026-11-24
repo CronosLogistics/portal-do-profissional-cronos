@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { selecionarGestorPerfil } from "./perfil-gestor.rules";
+import { PRIVACIDADE_PADRAO, privacidadeDaLinha, type PrivacidadePerfil } from "./privacidade.functions";
 import { elegivelRanking } from "./ranking.rules";
 
 export type ElogioPerfil = { id: string; data: string | null; texto: string; autor: string | null };
@@ -8,6 +9,7 @@ export type DadosPerfil = {
   cargo: string | null; departamento: string | null; escritorio: string | null;
   admissao: string | null; nascimento: string | null; gestor: string | null;
   sobre: string;
+  privacidade: PrivacidadePerfil;
   /** Pontos do semestre mais recente; null para coordenadores/supervisores ou sem registro. */
   pontos: number | null;
   elogiosTotal: number; elogios: ElogioPerfil[];
@@ -21,7 +23,7 @@ export const meuPerfil = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<DadosPerfil> => {
     const { data: perfil } = await context.supabase.from("profiles").select("email,is_active").eq("id", context.userId).maybeSingle();
-    return montarPerfil(context.userId, perfil);
+    return montarPerfil(context.userId, perfil, context.userId);
   });
 
 export type PerfilColega = DadosPerfil & { nome: string; email: string | null; encontrado: boolean };
@@ -39,17 +41,18 @@ export const perfilColega = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: perfil } = await supabaseAdmin.from("profiles").select("email,is_active,full_name").eq("id", data.userId).maybeSingle();
     if (!perfil || perfil.is_active === false) return { ...VAZIO, nome: "", email: null, encontrado: false };
-    return { ...(await montarPerfil(data.userId, perfil)), nome: semSufixo(perfil.full_name ?? ""), email: perfil.email, encontrado: true };
+    return { ...(await montarPerfil(data.userId, perfil, context.userId)), nome: semSufixo(perfil.full_name ?? ""), email: perfil.email, encontrado: true };
   });
 
-const VAZIO: DadosPerfil = { cargo: null, departamento: null, escritorio: null, admissao: null, nascimento: null, gestor: null, sobre: "", pontos: null, elogiosTotal: 0, elogios: [], treinamentos: [], erro: null };
+const VAZIO: DadosPerfil = { cargo: null, departamento: null, escritorio: null, admissao: null, nascimento: null, gestor: null, sobre: "", privacidade: { ...PRIVACIDADE_PADRAO }, pontos: null, elogiosTotal: 0, elogios: [], treinamentos: [], erro: null };
 
-async function montarPerfil(userId: string, perfil: { email: string | null; is_active: boolean | null } | null): Promise<DadosPerfil> {
+async function montarPerfil(userId: string, perfil: { email: string | null; is_active: boolean | null } | null, viewerId: string): Promise<DadosPerfil> {
     const vazio = VAZIO;
     if (!perfil?.email || perfil.is_active === false) return vazio;
     const email = perfil.email;
+    const proprio = viewerId === userId;
     const erros: string[] = [];
-    const [cadastro, elogios, gestor, treinamentos, sobre, pontuacao] = await Promise.all([
+    const [cadastro, elogios, gestor, treinamentos, sobre, privacidade, pontuacao] = await Promise.all([
       import("@/lib/perfil.server").then((m) => m.cadastroDoEmail(email)).catch((e) => { console.error(e); erros.push("cadastro"); return null; }),
       (async () => {
         const { dadosElogios } = await import("@/lib/feedback.server");
@@ -76,6 +79,12 @@ async function montarPerfil(userId: string, perfil: { email: string | null; is_a
         const { data } = await supabaseAdmin.from("perfil_sobre").select("texto").eq("usuario_id", userId).maybeSingle();
         return data?.texto ?? "";
       })().catch((e) => { console.error(e); return ""; }),
+      // Preferências de privacidade: dono edita; colegas só recebem o recorte já aplicado.
+      (async () => {
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const { data } = await supabaseAdmin.from("perfil_privacidade").select("mostrar_badges,mostrar_aniversario,mostrar_elogios").eq("usuario_id", userId).maybeSingle();
+        return privacidadeDaLinha(data);
+      })().catch((e) => { console.error(e); return { ...PRIVACIDADE_PADRAO }; }),
       (async () => {
         const { pontuacoesSemestre } = await import("./ranking-treinamentos.server");
         const { consultarDepartamentos } = await import("./departamentos.server");
@@ -89,10 +98,12 @@ async function montarPerfil(userId: string, perfil: { email: string | null; is_a
       })().catch((e) => { console.error(e); return null; }),
     ]);
     const pontos = pontuacao && elegivelRanking(cadastro?.cargo ?? null, pontuacao.niveis) ? pontuacao.pontos : null;
+    const elogiosPublicos = proprio || privacidade.mostrarElogios ? elogios : [];
+    const nascimento = proprio || privacidade.mostrarAniversario ? (cadastro?.nascimento ?? null) : null;
     return {
-      ...vazio, ...(cadastro ?? {}), gestor, treinamentos, sobre, pontos,
-      elogiosTotal: elogios.length,
-      elogios: elogios.slice(0, 3).map((e) => ({ id: e.id, data: e.data, texto: e.detalhamento, autor: e.elogiador })),
+      ...vazio, ...(cadastro ?? {}), nascimento, gestor, treinamentos, sobre, privacidade, pontos,
+      elogiosTotal: elogiosPublicos.length,
+      elogios: elogiosPublicos.slice(0, 3).map((e) => ({ id: e.id, data: e.data, texto: e.detalhamento, autor: e.elogiador })),
       erro: erros.length ? "Alguns dados do SharePoint não puderam ser carregados agora." : null,
     };
   }

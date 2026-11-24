@@ -1142,6 +1142,35 @@ export type Database = {
           },
         ]
       }
+      perfil_privacidade: {
+        Row: {
+          mostrar_aniversario: boolean
+          mostrar_badges: boolean
+          mostrar_elogios: boolean
+          usuario_id: string
+        }
+        Insert: {
+          mostrar_aniversario?: boolean
+          mostrar_badges?: boolean
+          mostrar_elogios?: boolean
+          usuario_id: string
+        }
+        Update: {
+          mostrar_aniversario?: boolean
+          mostrar_badges?: boolean
+          mostrar_elogios?: boolean
+          usuario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "perfil_privacidade_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       perfil_permissoes: {
         Row: {
           perfil_id: string
