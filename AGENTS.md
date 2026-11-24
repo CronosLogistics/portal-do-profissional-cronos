@@ -24,7 +24,7 @@
 - User administration (invite, edit, activate/deactivate) runs only in `src/lib/users.functions.ts` server functions that call `requireAdmin` before using the admin client; deactivation also bans the auth user. Why: no client can grant itself access.
 - Administrative permission codes are effective only for active system-Administrator membership and are excluded from department sync and non-system assignments. Why: departmental permissions must never promote employees to system administrators.
 - Benefits/partners/rewards/offices/site texts live only in this portal's database (migrated once from the legacy Espaço do Profissional), are read via `requireSupabaseAuth` server functions and edited in the internal /admin forms. Why: single, fully internal source of content.
-- Public sign-up is disabled; accounts are created only by admin invite, and users set their password at `/definir-senha` (also used for password reset). Why: admin-invite-only access model.
+- Public sign-up is disabled; accounts originate from admin invites or bounded corporate admission sync, never browser input. Password setup/reset remains `/definir-senha`. Why: controlled corporate access.
 
 - Render portal navigation once through PortalShell in the authenticated parent layout; child pages contain only their content. Why: every existing and future module shares scalable navigation without duplicating the shell.
 - Login registration runs once per session via `registrarAcesso` (src/lib/access.functions.ts) in the _authenticated gate; profile identity fields come from Microsoft (Graph /me or the verified auth identity), never from browser input. Why: the professionals table must mirror Entra, not user-editable data.

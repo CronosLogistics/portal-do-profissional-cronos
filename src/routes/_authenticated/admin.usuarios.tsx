@@ -79,11 +79,15 @@ function UsersPage() {
     mutationFn: () => runSync(),
     onSuccess: (r) => {
       if (r.emAndamento) toast.info(r.erro ?? "Sincronização em andamento.");
-      else if (r.sucesso) toast.success(`${r.alterados} profissional(is) atualizado(s).`);
+      else if (r.sucesso) {
+        toast.success(`${r.incluidos} novo(s) profissional(is) incluído(s) · ${r.alterados - r.incluidos} atualizado(s).`);
+        if (r.pendentes > 0) toast.info(`${r.pendentes} admissão(ões) restante(s) para a próxima sincronização.`);
+      }
       else toast.error(r.erro ?? "A sincronização falhou.");
       refresh();
       void qc.invalidateQueries({ queryKey: currentUserQueryKey });
       void qc.invalidateQueries({ queryKey: ["perfis"] });
+      void qc.invalidateQueries({ queryKey: ["organograma"] });
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "A sincronização falhou."),
   });

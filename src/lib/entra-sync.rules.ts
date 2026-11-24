@@ -6,6 +6,7 @@ export type EntraUser = {
   userPrincipalName: string | null;
   accountEnabled: boolean | null;
   employeeId: string | null;
+  userType?: string | null;
 };
 
 export type ProfileRow = {
@@ -27,6 +28,27 @@ export type ProfilePatch = {
 
 export function entraEmail(u: EntraUser) {
   return (u.mail || u.userPrincipalName || "").trim().toLowerCase();
+}
+
+/** Bounded, idempotent admission: only active corporate members also listed as active in SharePoint. */
+export const MAX_ADMISSOES_POR_SYNC = 50;
+
+export function novosAdmitidos(users: EntraUser[], profiles: ProfileRow[], ativosSharePoint: ReadonlySet<string>) {
+  const oids = new Set(profiles.map((p) => p.entra_oid).filter(Boolean));
+  const emails = new Set(profiles.map((p) => p.email.trim().toLowerCase()));
+  const ativos = new Set([...ativosSharePoint].map((e) => e.trim().toLowerCase()));
+  const contagens = new Map<string, number>();
+  for (const u of users) {
+    const email = entraEmail(u);
+    contagens.set(email, (contagens.get(email) ?? 0) + 1);
+  }
+  return users.filter((u) => {
+    const email = entraEmail(u);
+    return u.accountEnabled === true && u.userType === "Member" && !!u.displayName?.trim()
+      && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(u.id)
+      && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && !email.includes("#ext#")
+      && contagens.get(email) === 1 && ativos.has(email) && !oids.has(u.id) && !emails.has(email);
+  }).sort((a, b) => entraEmail(a).localeCompare(entraEmail(b)));
 }
 
 /** Localiza o colaborador do diretório pelo ID Microsoft; usa o e-mail só quando ainda não há vínculo. */

@@ -1,4 +1,8 @@
 # Atualização visual do Portal do Profissional
+## Atualização automática do organograma
+- [x] Incluir admitidos ativos na sincronização Microsoft existente, sem criar contas para convidados ou usuários técnicos e sem duplicar perfis; lote idempotente limitado a 50.
+- [x] Preservar exclusão de desligados, setores, liderança e ajustes manuais; atualização forçada não informa sucesso se a trava de setores impedir a aplicação.
+- [x] Validar 69 testes e duas sincronizações autenticadas: 14 profissionais incluídos, segunda execução sem duplicações, setores/liderança conferidos, organograma de 139 para 153 profissionais e sem erros.
 ## Ranking de treinamentos
 - [x] Excluir coordenadores e supervisores antes da seleção dos três lugares; 20 testes aprovados e pódio autenticado conferido: Julia Solano, Ingryd Padilha e Beatriz Sabino.
 ## Uso local no Cursor

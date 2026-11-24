@@ -44,7 +44,8 @@ export async function sincronizarDepartamentos(force = false) {
   const lock = await supabaseAdmin.rpc("reservar_departamentos");
   if (lock.error) throw new Error("Não foi possível iniciar a sincronização de setores.");
   if (!lock.data) {
-    if (status?.atualizado_em) return;
+    // A forced post-admission refresh must actually apply the new professionals.
+    if (!force && status?.atualizado_em) return;
     throw new Error("Setores em atualização. Tente novamente em instantes.");
   }
   try {
