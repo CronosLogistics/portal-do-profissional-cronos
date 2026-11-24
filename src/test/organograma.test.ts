@@ -19,7 +19,7 @@ describe("liderImediato", () => {
   });
 });
 
-import { areaDoDepartamento, ESTRUTURA } from "@/lib/organograma.rules";
+import { areaDoDepartamento, areaVisualOrganograma, ESTRUTURA } from "@/lib/organograma.rules";
 
 describe("estrutura oficial do organograma", () => {
   it("TI e Tecnologia ficam na mesma caixa", () => {
@@ -38,5 +38,18 @@ describe("estrutura oficial do organograma", () => {
   it("Operação Multimodal fica no grupo Operação e diretores na Diretoria", () => {
     expect(areaDoDepartamento(" OPERAÇÃO MULTIMODAL ", "GERENTE")).toBe("Operação");
     expect(areaDoDepartamento(null, "DIRETOR COO")).toBe("Diretoria");
+  });
+  it("Camila lidera o grupo acima de Comercial SC e ES sem mudar seu departamento", () => {
+    const area = areaDoDepartamento("COMERCIAL SC", "COORDENADOR COMERCIAL");
+    expect(area).toBe("Comercial SC");
+    expect(areaVisualOrganograma({ nome: "Camila Topanotti - Cronos Logistics", area })).toBe("Comercial SC e ES");
+    expect(areaVisualOrganograma({ nome: "CAMILA FARIAS TOPANOTTI", area })).toBe("Comercial SC e ES");
+    const grupo = ESTRUTURA.find((e) => e.id === "Diretoria CEO")?.filhos?.find((f) => f.id === "Comercial SC e ES");
+    expect(grupo?.filhos?.map((f) => f.id)).toEqual(["Comercial SC", "Comercial ES"]);
+  });
+  it("mantém Aline e a equipe em suas caixas e não move Camila de outra área", () => {
+    expect(areaVisualOrganograma({ nome: "Aline Senger - Cronos Logistics", area: "Comercial ES" })).toBe("Comercial ES");
+    expect(areaVisualOrganograma({ nome: "Carla Bello", area: "Comercial SC" })).toBe("Comercial SC");
+    expect(areaVisualOrganograma({ nome: "Camila Topanotti", area: "Marketing" })).toBe("Marketing");
   });
 });

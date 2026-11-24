@@ -108,6 +108,15 @@ export function areaFinal(ajuste: string | null | undefined, dep: string | null,
   return (AREAS as readonly string[]).includes(ajuste ?? "") ? (ajuste as Area) : areaDoDepartamento(dep, cargo);
 }
 
+/** Posição visual do gestor do grupo oficial, sem alterar departamento ou permissões. */
+export function areaVisualOrganograma(pessoa: { nome: string; area: Area }): Area {
+  if (
+    ["Comercial SC", "Comercial ES"].includes(pessoa.area) &&
+    /^CAMILA\b.*\bTOPANOTTI\b/.test(norm(pessoa.nome))
+  ) return "Comercial SC e ES";
+  return pessoa.area;
+}
+
 /**
  * Líder imediato no organograma: entre os líderes sincronizados do SharePoint que estão visíveis na mesma área,
  * escolhe o de nível mais próximo acima do liderado (supervisor antes de coordenador, antes de gerência/diretoria).

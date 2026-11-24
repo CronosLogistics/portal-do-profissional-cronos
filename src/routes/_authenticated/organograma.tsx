@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useFotoProfissional } from "@/hooks/use-minha-foto";
 import { carregarOrganograma, salvarOrganograma, type PessoaOrganograma } from "@/lib/organograma.functions";
-import { AREAS, ESTRUTURA, NIVEIS, liderImediato, type Area, type NoOrganograma } from "@/lib/organograma.rules";
+import { AREAS, ESTRUTURA, NIVEIS, areaVisualOrganograma, liderImediato, type Area, type NoOrganograma } from "@/lib/organograma.rules";
 import { cn } from "@/lib/utils";
 
 const orgQuery = queryOptions({ queryKey: ["organograma"], queryFn: () => carregarOrganograma(), staleTime: 5 * 60_000 });
@@ -57,7 +57,7 @@ function OrganogramaPage() {
   const conteudo = useRef<HTMLDivElement>(null);
   const arrasto = useRef<{ x: number; y: number; vx: number; vy: number } | null>(null);
 
-  const pessoas = useMemo(() => data.pessoas.map((p) => ({ ...p, ...(rascunho[p.id] ?? {}) })), [data.pessoas, rascunho]);
+  const pessoas = useMemo(() => data.pessoas.map((p) => ({ ...p, area: areaVisualOrganograma(p), ...(rascunho[p.id] ?? {}) })), [data.pessoas, rascunho]);
   const visiveis = pessoas.filter((p) => !p.oculto);
   const termo = busca.trim().toLowerCase();
   const porArea = useMemo(() => {
