@@ -231,8 +231,8 @@ function OrganogramaPage() {
       <div className="flex min-h-0 flex-1 gap-4">
         <div
           ref={box}
-          className={cn("relative min-w-0 flex-1 cursor-grab touch-none overflow-hidden rounded-xl border active:cursor-grabbing", editando ? "org-canvas-edicao" : "bg-muted/40")}
-          onPointerDown={(e) => { arrasto.current = { x: e.clientX, y: e.clientY, vx: view.x, vy: view.y }; (e.target as HTMLElement).setPointerCapture?.(e.pointerId); }}
+          className={cn("relative min-w-0 flex-1 cursor-grab touch-none select-none overflow-hidden rounded-xl border active:cursor-grabbing", editando ? "org-canvas-edicao" : "bg-muted/40")}
+          onPointerDown={(e) => { e.preventDefault(); window.getSelection()?.removeAllRanges(); arrasto.current = { x: e.clientX, y: e.clientY, vx: view.x, vy: view.y }; (e.target as HTMLElement).setPointerCapture?.(e.pointerId); }}
           onPointerMove={(e) => { const a = arrasto.current; if (a) setView((v) => ({ ...v, x: a.vx + e.clientX - a.x, y: a.vy + e.clientY - a.y })); }}
           onPointerUp={() => { arrasto.current = null; }}
         >
