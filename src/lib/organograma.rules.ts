@@ -41,3 +41,22 @@ export function areaDoDepartamento(dep: string | null | undefined, cargo?: strin
 export function areaFinal(ajuste: string | null | undefined, dep: string | null, cargo: string | null): Area {
   return (AREAS as readonly string[]).includes(ajuste ?? "") ? (ajuste as Area) : areaDoDepartamento(dep, cargo);
 }
+
+/**
+ * Líder imediato no organograma: entre os líderes sincronizados do SharePoint que estão visíveis na mesma área,
+ * escolhe o de nível mais próximo acima do liderado (supervisor antes de coordenador, antes de gerência/diretoria).
+ * Líderes de nível igual ou inferior são ignorados para evitar ciclos.
+ */
+export function liderImediato(
+  pessoa: { nivel: Nivel; area: Area },
+  lideres: { id: string; nivel: Nivel; area: Area }[],
+): string | null {
+  const meu = NIVEIS.indexOf(pessoa.nivel);
+  let melhor: { id: string; i: number } | null = null;
+  for (const l of lideres) {
+    const i = NIVEIS.indexOf(l.nivel);
+    if (l.area !== pessoa.area || i >= meu) continue;
+    if (!melhor || i > melhor.i || (i === melhor.i && l.id < melhor.id)) melhor = { id: l.id, i };
+  }
+  return melhor?.id ?? null;
+}

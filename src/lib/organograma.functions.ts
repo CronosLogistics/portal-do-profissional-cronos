@@ -3,7 +3,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { AREAS, areaFinal, nivelDoCargo, type Area, type Nivel } from "./organograma.rules";
 import { normalizarEmail } from "./departamentos.rules";
 
-export type PessoaOrganograma = { id: string; nome: string; cargo: string | null; departamento: string | null; area: Area; nivel: Nivel; oculto: boolean };
+export type PessoaOrganograma = { id: string; nome: string; cargo: string | null; departamento: string | null; area: Area; nivel: Nivel; oculto: boolean; lideres: string[] };
 
 export const carregarOrganograma = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -26,6 +26,9 @@ export const carregarOrganograma = createServerFn({ method: "GET" })
       console.error("Organograma SharePoint", e);
       erro = "Não foi possível ler os cargos do SharePoint agora.";
     }
+    const { data: rel } = await supabaseAdmin.from("departamento_liderados").select("lider_id,liderado_id").limit(10000);
+    const lid = new Map<string, Set<string>>();
+    for (const r of rel ?? []) { if (!lid.has(r.liderado_id)) lid.set(r.liderado_id, new Set()); lid.get(r.liderado_id)!.add(r.lider_id); }
     const aj = new Map((ajustes ?? []).map((a) => [a.usuario_id, a]));
     const pessoas = (perfis ?? [])
       .map((p) => ({ p, c: cad.get(normalizarEmail(p.email ?? "")) }))
@@ -33,7 +36,7 @@ export const carregarOrganograma = createServerFn({ method: "GET" })
       .map(({ p, c }) => {
         const a = aj.get(p.id);
         const cargo = c?.cargo ?? null, departamento = c?.departamento ?? null;
-        return { id: p.id, nome: p.full_name || p.email, cargo, departamento, area: areaFinal(a?.area, departamento, cargo), nivel: nivelDoCargo(cargo), oculto: a?.oculto ?? false };
+        return { id: p.id, nome: p.full_name || p.email, cargo, departamento, area: areaFinal(a?.area, departamento, cargo), nivel: nivelDoCargo(cargo), oculto: a?.oculto ?? false, lideres: [...(lid.get(p.id) ?? [])] };
       });
     return { podeEditar: pode === true, pessoas, erro };
   });

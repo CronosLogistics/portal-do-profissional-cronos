@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useFotoProfissional } from "@/hooks/use-minha-foto";
 import { carregarOrganograma, salvarOrganograma, type PessoaOrganograma } from "@/lib/organograma.functions";
-import { AREAS, NIVEIS, type Area } from "@/lib/organograma.rules";
+import { AREAS, NIVEIS, liderImediato, type Area } from "@/lib/organograma.rules";
 import { cn } from "@/lib/utils";
 
 const orgQuery = queryOptions({ queryKey: ["organograma"], queryFn: () => carregarOrganograma(), staleTime: 5 * 60_000 });
@@ -64,6 +64,18 @@ function OrganogramaPage() {
     const m = new Map<Area, PessoaOrganograma[]>();
     for (const a of AREAS) m.set(a, []);
     for (const p of visiveis) m.get(p.area)!.push(p);
+    for (const l of m.values()) l.sort((a, b) => NIVEIS.indexOf(a.nivel) - NIVEIS.indexOf(b.nivel) || a.nome.localeCompare(b.nome, "pt-BR"));
+    return m;
+  }, [visiveis]);
+  const filhos = useMemo(() => {
+    const porId = new Map(visiveis.map((p) => [p.id, p]));
+    const m = new Map<string, PessoaOrganograma[]>();
+    for (const p of visiveis) {
+      const pai = liderImediato(p, p.lideres.map((id) => porId.get(id)).filter((l): l is PessoaOrganograma => !!l));
+      const k = pai ?? `area:${p.area}`;
+      if (!m.has(k)) m.set(k, []);
+      m.get(k)!.push(p);
+    }
     for (const l of m.values()) l.sort((a, b) => NIVEIS.indexOf(a.nivel) - NIVEIS.indexOf(b.nivel) || a.nome.localeCompare(b.nome, "pt-BR"));
     return m;
   }, [visiveis]);
@@ -143,6 +155,22 @@ function OrganogramaPage() {
     );
   };
 
+  const Ramo = ({ p }: { p: PessoaOrganograma }) => {
+    const f = filhos.get(p.id) ?? [];
+    return (
+      <div>
+        <Cartao p={p} />
+        {f.length > 0 && (
+          <div className="ml-4 mt-1.5 space-y-1.5 border-l-2 border-primary/60 pl-3">
+            {f.map((c) => (
+              <div key={c.id} className="relative before:absolute before:-left-3 before:top-6 before:h-0.5 before:w-3 before:bg-primary/60"><Ramo p={c} /></div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const diretoria = porArea.get("Diretoria")!;
   const areas = AREAS.filter((a) => a !== "Diretoria" && porArea.get(a)!.length);
 
@@ -183,9 +211,9 @@ function OrganogramaPage() {
                 {areas.map((a) => (
                   <div key={a} className="flex flex-col items-center">
                     <div className="h-6 w-0.5 bg-primary" />
-                    <section className="w-64 rounded-xl border bg-card/95 p-3 shadow-sm">
+                    <section className="w-80 rounded-xl border bg-card/95 p-3 shadow-sm">
                       <h2 className="mb-2 rounded-md bg-sidebar px-3 py-1.5 text-center text-xs font-bold uppercase tracking-wide text-sidebar-foreground">{a} <span className="font-normal opacity-80">({porArea.get(a)!.length})</span></h2>
-                      <div className="space-y-1.5">{porArea.get(a)!.map((p) => <Cartao key={p.id} p={p} />)}</div>
+                      <div className="space-y-1.5">{(filhos.get(`area:${a}`) ?? []).map((p) => <Ramo key={p.id} p={p} />)}</div>
                     </section>
                   </div>
                 ))}
