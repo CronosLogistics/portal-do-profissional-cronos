@@ -38,7 +38,7 @@ export const PORTAL_MODULES: PortalModule[] = [
   { to: "/formularios-internos", label: "Pesquisas", group: "formularios" },
   { to: "/formularios", label: "Central de Formulários Internos", group: "formularios" },
   { to: "/documentos", label: "Documentos Cronos", menuLabel: "Documentos", group: "documentos" },
-  { to: "/organograma", label: "Organograma", group: "documentos" },
+  { to: "/organograma", label: "Organograma (DR-02-02)", group: "documentos" },
   { to: "/inventario-brindes", label: "Inventário de Brindes (Comercial)", menuLabel: "Inventário de Brindes" },
   { to: "/feedback", label: "Elogios", menuLabel: "Elogios", group: "feedbacks" },
   { to: "/feedback-gestor", label: "Feedback do gestor", group: "feedbacks" },
