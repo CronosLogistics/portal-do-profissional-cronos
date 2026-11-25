@@ -326,7 +326,7 @@ function OrganogramaPage() {
           </div>
           <p className="pointer-events-none absolute bottom-4 left-3 hidden text-xs text-muted-foreground md:block">Arraste para mover · Ctrl + roda (ou pinça) para zoom · Shift+1 ajusta à tela</p>
         </div>
-        <aside className="hidden w-72 shrink-0 overflow-y-auto rounded-xl border bg-card p-4 lg:block">
+        <aside className="hidden w-72 shrink-0 flex-col overflow-y-auto rounded-xl border bg-card p-4 lg:flex">
           {sel ? (
             <div>
               <button type="button" onClick={() => setSelecionado(null)} className="mb-3 text-xs text-accent hover:underline">← Detalhes gerais</button>
@@ -344,7 +344,7 @@ function OrganogramaPage() {
             </div>
           ) : (
             <div>
-              <h2 className="font-bold text-foreground">Organograma Cronos</h2>
+              <h2 className="font-bold text-foreground">Organograma Cronos Brasil</h2>
               <div className="mt-3 grid grid-cols-2 gap-2 text-center">
                 <div className="rounded-lg bg-muted p-2"><p className="text-xl font-bold text-primary">{visiveis.length}</p><p className="text-xs text-muted-foreground">profissionais ativos</p></div>
                 <div className="rounded-lg bg-muted p-2"><p className="text-xl font-bold text-primary">{deps}</p><p className="text-xs text-muted-foreground">departamentos</p></div>
@@ -371,6 +371,14 @@ function OrganogramaPage() {
               )}
             </div>
           )}
+          <footer className="mt-auto pt-4 text-xs text-muted-foreground">
+            <p className="border-t pt-3">Última atualização</p>
+            {data.atualizadoEm ? (
+              <time dateTime={data.atualizadoEm} className="mt-1 block">
+                {new Intl.DateTimeFormat("pt-BR", { timeZone: "America/Sao_Paulo", day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }).format(new Date(data.atualizadoEm))} (Brasília)
+              </time>
+            ) : <p className="mt-1">Sem atualização registrada</p>}
+          </footer>
         </aside>
       </div>
     </main>

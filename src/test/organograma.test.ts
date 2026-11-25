@@ -1,5 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { liderImediato } from "@/lib/organograma.rules";
+import { liderImediato, ultimaAtualizacaoOrganograma } from "@/lib/organograma.rules";
+
+describe("última atualização registrada do organograma", () => {
+  it("seleciona a edição ou sincronização mais recente independentemente da ordem", () => {
+    expect(ultimaAtualizacaoOrganograma(["2026-11-25T13:00:00Z", "2026-11-25T14:43:00Z", "2026-11-24T16:00:00Z"])).toBe("2026-11-25T14:43:00.000Z");
+  });
+  it("compara instantes reais mesmo com fusos diferentes", () => {
+    expect(ultimaAtualizacaoOrganograma(["2026-11-25T11:43:00-03:00", "2026-11-25T14:42:00Z"])).toBe("2026-11-25T14:43:00.000Z");
+  });
+  it("não inventa data de atualização quando não há registro válido", () => {
+    expect(ultimaAtualizacaoOrganograma([null, undefined, "", "inválida"])).toBeNull();
+  });
+});
 
 describe("liderImediato", () => {
   it("analista fica sob o supervisor, não o coordenador", () => {

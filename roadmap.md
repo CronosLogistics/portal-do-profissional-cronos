@@ -1,4 +1,7 @@
 # Atualização visual do Portal do Profissional
+## Identificação e atualização do organograma
+- [x] Renomear o resumo para Organograma Cronos Brasil e exibir, ao final, a data e hora registrada da sincronização ou edição mais recente, no horário de Brasília.
+- [x] Validar 28 testes e leitura na tela autenticada: data no rodapé, mantida ao recarregar, sem erros na página.
 ## Pricing Internacional
 - [x] Incluir Pricing Internacional no grupo de Pricing Aéreo, abaixo da coordenação da Paloma, mantendo o departamento original e a estrutura fixa separada da sincronização.
 - [x] Validar 25 testes e tela autenticada no computador/celular: Paloma acima das três áreas, Thaina em Pricing Internacional, setores preservados na edição e agrupamento mantido na recarga, sem erros ou transbordamento.

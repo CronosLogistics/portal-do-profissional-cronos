@@ -59,6 +59,17 @@ export type Area = string;
 export const NIVEIS = ["Diretoria", "Gerência", "Coordenação", "Supervisão", "Especialista", "Analista/consultor", "Sales ops/SDR", "Assistente", "Estágio", "Auxiliar", "Sem cargo"] as const;
 export type Nivel = (typeof NIVEIS)[number];
 
+/** Usa apenas datas persistidas de sincronização e edição; consultar a página não é uma atualização. */
+export function ultimaAtualizacaoOrganograma(datas: (string | null | undefined)[]): string | null {
+  let ultima: number | null = null;
+  for (const data of datas) {
+    if (!data) continue;
+    const instante = Date.parse(data);
+    if (Number.isFinite(instante) && (ultima === null || instante > ultima)) ultima = instante;
+  }
+  return ultima === null ? null : new Date(ultima).toISOString();
+}
+
 const norm = (s: string | null | undefined) => (s ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().replace(/\s+/g, " ").trim();
 
 /** Departamentos do SharePoint → nó do organograma. Registros "guarda-chuva" ficam no grupo correspondente. */
