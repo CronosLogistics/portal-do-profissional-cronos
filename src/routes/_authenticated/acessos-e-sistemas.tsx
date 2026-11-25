@@ -100,7 +100,7 @@ function AcessosSistemasPage() {
                 <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{descricao}</p>
               </div>
             </div>
-            <div className="grid auto-rows-fr grid-cols-1 gap-3 sm:grid-cols-2 min-[60rem]:grid-cols-3">
+            <div className="grid auto-rows-fr grid-cols-1 gap-3 sm:grid-cols-2 2xl:grid-cols-4">
               {SISTEMAS_CRONOS.filter((sistema) => sistema.grupo === id).map((sistema) => (
                 <CartaoSistema key={sistema.id} sistema={sistema} />
               ))}
