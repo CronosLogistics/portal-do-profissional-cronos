@@ -19,7 +19,7 @@ describe("liderImediato", () => {
   });
 });
 
-import { areaDoDepartamento, areasVisuaisOrganograma, grupoGestaoOrganograma, ESTRUTURA, ESTRUTURA_VISUAL, AREAS, type NoOrganograma } from "@/lib/organograma.rules";
+import { areaDoDepartamento, areaFinal, areasVisuaisOrganograma, grupoGestaoOrganograma, ESTRUTURA, ESTRUTURA_VISUAL, AREAS, type NoOrganograma } from "@/lib/organograma.rules";
 
 describe("reporte conjunto no organograma visual", () => {
   const ids = (nos: NoOrganograma[]): string[] => nos.flatMap((n) => [n.id, ...ids(n.filhos ?? [])]);
@@ -45,6 +45,23 @@ describe("reporte conjunto no organograma visual", () => {
 });
 
 describe("estrutura oficial do organograma", () => {
+  it("Pricing Internacional fica sob a coordenação de Pricing Aéreo junto das duas áreas aéreas", () => {
+    const pricing = ESTRUTURA_VISUAL.executivos.find((n) => n.id === "Diretoria COO")?.filhos?.find((n) => n.id === "Pricing");
+    const aereo = pricing?.filhos?.find((n) => n.id === "Pricing Aéreo");
+    expect(aereo?.filhos?.map((n) => n.id)).toEqual(["Pricing Importação Aérea", "Pricing Exportação Aérea", "Pricing Internacional"]);
+    expect(pricing?.filhos?.map((n) => n.id)).toEqual(["Pricing Marítimo", "Pricing Aéreo"]);
+  });
+  it("a leitura sincronizada mantém os departamentos de Thaina e Paloma dentro do agrupamento fixo", () => {
+    const thaina = areaFinal(null, "PRICING INTERNACIONAL", "ANALISTA DE PRICING INTERNACIONAL");
+    const paloma = areaFinal(null, "PRICING IMPORTAÇÃO E EXPORTAÇÃO AÉREA", "COORDENADOR DE PRICING AÉREO");
+    expect(thaina).toBe("Pricing Internacional");
+    expect(paloma).toBe("Pricing Aéreo");
+    expect(grupoGestaoOrganograma({ nome: "Paloma Busarello", area: paloma, nivel: "Coordenação" })).toBe("Pricing Aéreo");
+    const aereo = ESTRUTURA_VISUAL.executivos.find((n) => n.id === "Diretoria COO")?.filhos?.find((n) => n.id === "Pricing")?.filhos?.find((n) => n.id === paloma);
+    expect(aereo?.filhos?.map((n) => n.id)).toContain(thaina);
+    expect(AREAS).toContain(thaina);
+    expect(areaFinal("Pricing Internacional", "PRICING INTERNACIONAL", "ANALISTA DE PRICING INTERNACIONAL")).toBe(thaina);
+  });
   it("TI e Tecnologia ficam na mesma caixa", () => {
     expect(areaDoDepartamento("TI", "ANALISTA")).toBe("Tecnologia");
     expect(areaDoDepartamento("TECNOLOGIA", "ANALISTA")).toBe("Tecnologia");

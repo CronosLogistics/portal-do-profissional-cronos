@@ -20,8 +20,7 @@ export const ESTRUTURA: NoOrganograma[] = [
     ]),
     grupo("Pricing", [
       grupo("Pricing Marítimo", [dep("Pricing Importação Marítima", "Importação Marítima"), dep("Pricing Exportação Marítima", "Exportação Marítima")]),
-      grupo("Pricing Aéreo", [dep("Pricing Importação Aérea", "Importação Aérea"), dep("Pricing Exportação Aérea", "Exportação Aérea")]),
-      dep("Pricing Internacional", "Internacional"),
+      grupo("Pricing Aéreo", [dep("Pricing Importação Aérea", "Importação Aérea"), dep("Pricing Exportação Aérea", "Exportação Aérea"), dep("Pricing Internacional")]),
     ]),
     dep("TLD"),
     dep("Comercial Nordeste"),
@@ -114,7 +113,8 @@ export function nivelDoCargo(cargo: string | null | undefined): Nivel {
 export function areaDoDepartamento(dep: string | null | undefined, cargo?: string | null): Area {
   if (nivelDoCargo(cargo) === "Diretoria") return "Diretoria";
   const d = norm(dep);
-  if (MAPA[d]) return MAPA[d]!;
+  const area = MAPA[d];
+  if (area) return area;
   if (/DIRETORIA/.test(d)) return "Diretoria";
   return "Outros";
 }

@@ -1,4 +1,7 @@
 # Atualização visual do Portal do Profissional
+## Pricing Internacional
+- [x] Incluir Pricing Internacional no grupo de Pricing Aéreo, abaixo da coordenação da Paloma, mantendo o departamento original e a estrutura fixa separada da sincronização.
+- [x] Validar 25 testes e tela autenticada no computador/celular: Paloma acima das três áreas, Thaina em Pricing Internacional, setores preservados na edição e agrupamento mantido na recarga, sem erros ou transbordamento.
 ## Coordenação de Administrativo e Gestão de Pessoas
 - [x] Remover o grupo conjunto e repetir o cartão da Gabrielle como coordenadora nos dois setores, preservando cadastros, contagem de pessoas e reporte à Diretoria.
 - [x] Validar 23 testes e tela autenticada: 153 cadastros únicos, Gabrielle acima das duas equipes, três setas rosas preservadas, edição compartilhada/cancelamento/recarga e celular sem transbordamento ou erros.
