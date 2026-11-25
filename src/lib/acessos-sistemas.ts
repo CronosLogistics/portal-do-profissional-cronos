@@ -44,8 +44,8 @@ export const SISTEMAS_CRONOS = [
     acesso: "Uso do Comercial",
   },
   {
-    id: "visualizacao-qbr",
-    nome: "Visualização QBr",
+    id: "qbr",
+    nome: "QBr",
     descricao: "Consulta de apresentações e relatórios QBr.",
     url: "https://insight-guide-share-cronos.lovable.app/",
     grupo: "especificos",
