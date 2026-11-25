@@ -20,7 +20,7 @@ export const Route = createFileRoute("/_authenticated/acessos-e-sistemas")({
   head: () => ({
     meta: [
       { title: "Acessos e Sistemas | Portal do Profissional Cronos" },
-      { name: "description", content: "Guia rápido de acesso ao Skyline, Sólides, BI Explorer, Portal Office, Logcomex, Reembolso, Visualização QBr e Cronos Insights." },
+      { name: "description", content: "Guia rápido de acesso ao Skyline, Sólides, BI Explorer, Portal Office, Logcomex, Reembolso, QBr e Cronos Insights." },
       { property: "og:title", content: "Acessos e Sistemas | Portal do Profissional Cronos" },
       { property: "og:description", content: "Links dos sistemas e plataformas utilizados na Cronos Logistics." },
       { property: "og:type", content: "website" },
@@ -38,7 +38,7 @@ const icones: Record<SistemaCronos["id"], LucideIcon> = {
   "bi-explorer": BarChart3,
   logcomex: Boxes,
   "cronos-insights": ChartNoAxesCombined,
-  "visualizacao-qbr": BarChart3,
+  qbr: BarChart3,
 };
 
 const grupos = [
