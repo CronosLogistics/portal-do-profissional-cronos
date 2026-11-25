@@ -9,6 +9,7 @@ import {
   LockKeyhole,
   Monitor,
   MonitorUp,
+  Receipt,
   UsersRound,
   type LucideIcon,
 } from "lucide-react";
@@ -19,7 +20,7 @@ export const Route = createFileRoute("/_authenticated/acessos-e-sistemas")({
   head: () => ({
     meta: [
       { title: "Acessos e Sistemas | Portal do Profissional Cronos" },
-      { name: "description", content: "Guia rápido de acesso ao Skyline, Sólides, BI Explorer, Portal Office, Logcomex e Cronos Insights." },
+      { name: "description", content: "Guia rápido de acesso ao Skyline, Sólides, BI Explorer, Portal Office, Logcomex, Reembolso, Visualização QBr e Cronos Insights." },
       { property: "og:title", content: "Acessos e Sistemas | Portal do Profissional Cronos" },
       { property: "og:description", content: "Links dos sistemas e plataformas utilizados na Cronos Logistics." },
       { property: "og:type", content: "website" },
@@ -30,12 +31,14 @@ export const Route = createFileRoute("/_authenticated/acessos-e-sistemas")({
 });
 
 const icones: Record<SistemaCronos["id"], LucideIcon> = {
+  reembolso: Receipt,
   skyline: Cloud,
   solides: UsersRound,
   office: Monitor,
   "bi-explorer": BarChart3,
   logcomex: Boxes,
   "cronos-insights": ChartNoAxesCombined,
+  "visualizacao-qbr": BarChart3,
 };
 
 const grupos = [

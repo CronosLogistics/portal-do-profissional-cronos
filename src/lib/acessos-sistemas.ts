@@ -1,6 +1,13 @@
 /** Catálogo de atalhos; a autorização pertence a cada sistema de destino. */
 export const SISTEMAS_CRONOS = [
   {
+    id: "reembolso",
+    nome: "Reembolso",
+    descricao: "Solicitações e acompanhamento de reembolsos no Espresso.",
+    url: "https://app.espressoapp.com.br/users/sign_in",
+    grupo: "corporativos",
+  },
+  {
     id: "skyline",
     nome: "Skyline",
     descricao: "Gestão de operações e processos logísticos.",
@@ -37,10 +44,17 @@ export const SISTEMAS_CRONOS = [
     acesso: "Uso do Comercial",
   },
   {
+    id: "visualizacao-qbr",
+    nome: "Visualização QBr",
+    descricao: "Consulta de apresentações e relatórios QBr.",
+    url: "https://insight-guide-share-cronos.lovable.app/",
+    grupo: "especificos",
+  },
+  {
     id: "cronos-insights",
     nome: "Cronos Insights",
-    descricao: "Informações e recursos do Cronos Insights.",
-    url: "https://insight-guide-share-cronos.lovable.app/",
+    descricao: "Análise e gestão de cotações logísticas.",
+    url: "https://cronos-pricing-flow.lovable.app/",
     grupo: "especificos",
   },
 ] as const;

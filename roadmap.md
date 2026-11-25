@@ -1,5 +1,6 @@
 # Atualização visual do Portal do Profissional
 ## Acessos e Sistemas
+- [x] Adicionar Reembolso e Cronos Insights, renomear o atalho anterior para Visualização QBr; 12 testes aprovados e oito destinos conferidos na tela autenticada, preservados após recarga sem transbordamento ou erros. Logins externos não exercitados.
 - [x] Adicionar submenu em Documentos Cronos e guia com os seis links, visível a todos os profissionais, com identificação do Logcomex para Comercial e login Sólides sem sessão compartilhada.
 - [x] Validar 11 testes, sessão real, submenu e recarga, seis links em novas abas e telas de 991px, 1364px e 390px sem transbordamento; logins dos sistemas externos não exercitados.
 ## Identificação e atualização do organograma

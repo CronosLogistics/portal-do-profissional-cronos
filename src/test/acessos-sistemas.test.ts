@@ -17,7 +17,9 @@ describe("Acessos e Sistemas", () => {
     ["bi-explorer", "https://cronoslogistics.reportload.com/signin?redirect=/"],
     ["office", "https://portal.office.com/"],
     ["logcomex", "https://plataforma.logcomex.io/"],
-    ["cronos-insights", "https://insight-guide-share-cronos.lovable.app/"],
+    ["visualizacao-qbr", "https://insight-guide-share-cronos.lovable.app/"],
+    ["cronos-insights", "https://cronos-pricing-flow.lovable.app/"],
+    ["reembolso", "https://app.espressoapp.com.br/users/sign_in"],
   ])("mantém o destino corporativo de %s", (id, url) => {
     expect(SISTEMAS_CRONOS.find((sistema) => sistema.id === id)?.url).toBe(url);
   });
