@@ -8,7 +8,7 @@ export type PortalRole = "admin" | "rh" | "funcionario";
 export type PortalNavGroup = "beneficios" | "feedbacks" | "avisos" | "formularios" | "documentos";
 
 export type PortalModule = {
-  to: "/avisos" | "/ferias" | "/mural" | "/beneficios" | "/parceiros" | "/recompensas" | "/treinamentos" | "/formularios" | "/formularios-internos" | "/documentos" | "/feedback" | "/feedback-gestor" | "/pendencias" | "/inventario-brindes" | "/organograma";
+  to: "/avisos" | "/ferias" | "/mural" | "/beneficios" | "/parceiros" | "/recompensas" | "/treinamentos" | "/formularios" | "/formularios-internos" | "/documentos" | "/feedback" | "/feedback-gestor" | "/pendencias" | "/inventario-brindes" | "/organograma" | "/acessos-e-sistemas";
   label: string;
   /** Texto do item quando o módulo aparece como submenu. */
   menuLabel?: string;
@@ -37,6 +37,7 @@ export const PORTAL_MODULES: PortalModule[] = [
   { to: "/treinamentos", label: "Treinamentos" },
   { to: "/formularios-internos", label: "Pesquisas", group: "formularios" },
   { to: "/formularios", label: "Central de Formulários Internos", group: "formularios" },
+  { to: "/acessos-e-sistemas", label: "Acessos e Sistemas", group: "documentos" },
   { to: "/documentos", label: "Documentos Cronos", menuLabel: "Documentos", group: "documentos" },
   { to: "/organograma", label: "DR-02-02: Organograma", group: "documentos" },
   { to: "/inventario-brindes", label: "Inventário de Brindes (Comercial)", menuLabel: "Inventário de Brindes" },

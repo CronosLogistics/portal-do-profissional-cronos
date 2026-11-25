@@ -1,7 +1,7 @@
 import { useMinhaFoto } from "@/hooks/use-minha-foto";
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { Award, BarChart3, CalendarDays, ChevronDown, ListChecks, MessageSquareHeart, Building2, ClipboardList, FolderOpen, PartyPopper, ChevronLeft, ChevronRight, Gift, GraduationCap, Home, LogOut, Megaphone, Menu, Settings, Tag, UserRound, X } from "lucide-react";
+import { Award, BarChart3, CalendarDays, ChevronDown, ListChecks, MessageSquareHeart, Building2, ClipboardList, FolderOpen, PartyPopper, ChevronLeft, ChevronRight, Gift, GraduationCap, Home, LogOut, Megaphone, Menu, MonitorUp, Settings, Tag, UserRound, X } from "lucide-react";
 import { TourBoasVindas } from "@/components/portal/TourBoasVindas";
 import { AvisosBell } from "@/components/avisos/AvisosBell";
 import { BuscaColegas } from "@/components/portal/BuscaColegas";
@@ -47,6 +47,7 @@ const moduleIcons: Record<PortalModule["to"], LucideIcon> = {
   "/pendencias": ListChecks,
   "/inventario-brindes": Package,
   "/organograma": FolderOpen,
+  "/acessos-e-sistemas": MonitorUp,
 };
 
 const groupIcons: Record<PortalNavGroup, LucideIcon> = { beneficios: Gift, feedbacks: MessageSquareHeart, avisos: Megaphone, formularios: ClipboardList, documentos: FolderOpen };

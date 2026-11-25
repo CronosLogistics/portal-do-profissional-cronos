@@ -1,4 +1,7 @@
 # Atualização visual do Portal do Profissional
+## Acessos e Sistemas
+- [x] Adicionar submenu em Documentos Cronos e guia com os seis links, visível a todos os profissionais, com identificação do Logcomex para Comercial e login Sólides sem sessão compartilhada.
+- [x] Validar 11 testes, sessão real, submenu e recarga, seis links em novas abas e telas de 991px, 1364px e 390px sem transbordamento; logins dos sistemas externos não exercitados.
 ## Identificação e atualização do organograma
 - [x] Renomear o resumo para Organograma Cronos Brasil e exibir, ao final, a data e hora registrada da sincronização ou edição mais recente, no horário de Brasília.
 - [x] Validar 28 testes e leitura na tela autenticada: data no rodapé, mantida ao recarregar, sem erros na página.

@@ -13,6 +13,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as DefinirSenhaRouteImport } from './routes/definir-senha'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as AuthenticatedAcessosESistemasRouteImport } from './routes/_authenticated/acessos-e-sistemas'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAvisosRouteImport } from './routes/_authenticated/avisos'
 import { Route as AuthenticatedDocumentosRouteImport } from './routes/_authenticated/documentos'
@@ -74,6 +75,12 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAcessosESistemasRoute =
+  AuthenticatedAcessosESistemasRouteImport.update({
+    id: '/acessos-e-sistemas',
+    path: '/acessos-e-sistemas',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -310,6 +317,7 @@ export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/auth': typeof AuthRoute
   '/definir-senha': typeof DefinirSenhaRoute
+  '/acessos-e-sistemas': typeof AuthenticatedAcessosESistemasRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/avisos': typeof AuthenticatedAvisosRoute
   '/documentos': typeof AuthenticatedDocumentosRoute
@@ -355,6 +363,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/definir-senha': typeof DefinirSenhaRoute
+  '/acessos-e-sistemas': typeof AuthenticatedAcessosESistemasRoute
   '/avisos': typeof AuthenticatedAvisosRoute
   '/documentos': typeof AuthenticatedDocumentosRoute
   '/feedback': typeof AuthenticatedFeedbackRoute
@@ -402,6 +411,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/definir-senha': typeof DefinirSenhaRoute
+  '/_authenticated/acessos-e-sistemas': typeof AuthenticatedAcessosESistemasRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/avisos': typeof AuthenticatedAvisosRoute
   '/_authenticated/documentos': typeof AuthenticatedDocumentosRoute
@@ -451,6 +461,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/definir-senha'
+    | '/acessos-e-sistemas'
     | '/admin'
     | '/avisos'
     | '/documentos'
@@ -496,6 +507,7 @@ export interface FileRouteTypes {
   to:
     | '/auth'
     | '/definir-senha'
+    | '/acessos-e-sistemas'
     | '/avisos'
     | '/documentos'
     | '/feedback'
@@ -542,6 +554,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/definir-senha'
+    | '/_authenticated/acessos-e-sistemas'
     | '/_authenticated/admin'
     | '/_authenticated/avisos'
     | '/_authenticated/documentos'
@@ -626,6 +639,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/acessos-e-sistemas': {
+      id: '/_authenticated/acessos-e-sistemas'
+      path: '/acessos-e-sistemas'
+      fullPath: '/acessos-e-sistemas'
+      preLoaderRoute: typeof AuthenticatedAcessosESistemasRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin': {
@@ -953,6 +973,7 @@ const AuthenticatedAdminRouteWithChildren =
   AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAcessosESistemasRoute: typeof AuthenticatedAcessosESistemasRoute
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedAvisosRoute: typeof AuthenticatedAvisosRoute
   AuthenticatedDocumentosRoute: typeof AuthenticatedDocumentosRoute
@@ -980,6 +1001,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAcessosESistemasRoute: AuthenticatedAcessosESistemasRoute,
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedAvisosRoute: AuthenticatedAvisosRoute,
   AuthenticatedDocumentosRoute: AuthenticatedDocumentosRoute,
