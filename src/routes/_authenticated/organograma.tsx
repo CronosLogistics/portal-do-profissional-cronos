@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { OrganogramaConexoes } from "@/components/organograma-conexoes";
 import { useFotoProfissional } from "@/hooks/use-minha-foto";
 import { carregarOrganograma, salvarOrganograma, type PessoaOrganograma } from "@/lib/organograma.functions";
-import { AREAS, ESTRUTURA_VISUAL, NIVEIS, grupoGestaoOrganograma, liderImediato, type Area, type NoOrganograma } from "@/lib/organograma.rules";
+import { AREAS, ESTRUTURA_VISUAL, NIVEIS, areasVisuaisOrganograma, grupoGestaoOrganograma, liderImediato, type Area, type NoOrganograma } from "@/lib/organograma.rules";
 import { cn } from "@/lib/utils";
 
 const orgQuery = queryOptions({ queryKey: ["organograma"], queryFn: () => carregarOrganograma(), staleTime: 5 * 60_000 });
@@ -64,7 +64,9 @@ function OrganogramaPage() {
   const porArea = useMemo(() => {
     const m = new Map<Area, PessoaOrganograma[]>();
     for (const a of AREAS) m.set(a, []);
-    for (const p of visiveis) m.get(p.area)?.push(p);
+    for (const p of visiveis) {
+      for (const area of areasVisuaisOrganograma(p)) m.get(area)?.push({ ...p, area });
+    }
     for (const l of m.values()) l.sort((a, b) => NIVEIS.indexOf(a.nivel) - NIVEIS.indexOf(b.nivel) || a.nome.localeCompare(b.nome, "pt-BR"));
     return m;
   }, [visiveis]);
@@ -81,18 +83,20 @@ function OrganogramaPage() {
     return m;
   }, [visiveis]);
   const filhos = useMemo(() => {
-    const porId = new Map(visiveis.map((p) => [p.id, p]));
     const m = new Map<string, PessoaOrganograma[]>();
-    for (const p of visiveis) {
-      const pai = liderImediato(p, p.lideres.map((id) => porId.get(id)).filter((l): l is PessoaOrganograma => !!l));
-      const k = pai ?? `area:${p.area}`;
-      const lista = m.get(k) ?? [];
-      lista.push(p);
-      m.set(k, lista);
+    for (const listaArea of porArea.values()) {
+      const porId = new Map(listaArea.map((p) => [p.id, p]));
+      for (const p of listaArea) {
+        const pai = liderImediato(p, p.lideres.map((id) => porId.get(id)).filter((l): l is PessoaOrganograma => !!l));
+        const k = pai ? `${p.area}:${pai}` : `area:${p.area}`;
+        const lista = m.get(k) ?? [];
+        lista.push(p);
+        m.set(k, lista);
+      }
     }
     for (const l of m.values()) l.sort((a, b) => NIVEIS.indexOf(a.nivel) - NIVEIS.indexOf(b.nivel) || a.nome.localeCompare(b.nome, "pt-BR"));
     return m;
-  }, [visiveis]);
+  }, [porArea]);
   const niveis = NIVEIS.map((n) => ({ n, q: visiveis.filter((p) => p.nivel === n).length })).filter((x) => x.q);
   const maxNivel = Math.max(1, ...niveis.map((x) => x.q));
   const deps = new Set(visiveis.map((p) => p.departamento).filter(Boolean)).size;
@@ -133,7 +137,11 @@ function OrganogramaPage() {
     zoomEm(view.z * f, r.width / 2, r.height / 2);
   };
 
-  const mudar = (p: PessoaOrganograma, d: Partial<Ajuste>) => setRascunho((r) => ({ ...r, [p.id]: { area: p.area, oculto: p.oculto, ...r[p.id], ...d } }));
+  const mudar = (p: PessoaOrganograma, d: Partial<Ajuste>) => {
+    const original = pessoas.find((pessoa) => pessoa.id === p.id);
+    if (!original) return;
+    setRascunho((r) => ({ ...r, [p.id]: { area: original.area, oculto: original.oculto, ...r[p.id], ...d } }));
+  };
   const gravar = async () => {
     setSalvando(true);
     try {
@@ -149,8 +157,11 @@ function OrganogramaPage() {
 
   const Cartao = ({ p }: { p: PessoaOrganograma }) => {
     const destaque = termo && p.nome.toLowerCase().includes(termo);
+    const areaOriginal = pessoas.find((pessoa) => pessoa.id === p.id)?.area ?? p.area;
     return (
       <div
+        data-org-pessoa={p.id}
+        data-org-area={p.area}
         onPointerDown={(e) => e.stopPropagation()}
         onClick={() => setSelecionado(p.id)}
         className={cn("flex w-full cursor-pointer items-center gap-2 rounded-lg border bg-card p-2 text-left shadow-sm transition hover:border-primary",
@@ -161,7 +172,7 @@ function OrganogramaPage() {
           <p className="truncate text-sm font-semibold text-foreground">{p.nome}</p>
           <p className="truncate text-xs text-muted-foreground">{p.cargo ?? "Sem cargo"}</p>
           {editando && (
-            <select value={p.area} onChange={(e) => mudar(p, { area: e.target.value as Area })} onClick={(e) => e.stopPropagation()} className="mt-1 w-full rounded border bg-background px-1 py-0.5 text-xs" aria-label={`Área de ${p.nome}`}>
+            <select value={areaOriginal} onChange={(e) => mudar(p, { area: e.target.value as Area })} onClick={(e) => e.stopPropagation()} className="mt-1 w-full rounded border bg-background px-1 py-0.5 text-xs" aria-label={`Área de ${p.nome}`}>
               {AREAS.map((a) => <option key={a}>{a}</option>)}
             </select>
           )}
@@ -174,7 +185,7 @@ function OrganogramaPage() {
   };
 
   const Ramo = ({ p }: { p: PessoaOrganograma }) => {
-    const f = filhos.get(p.id) ?? [];
+    const f = filhos.get(`${p.area}:${p.id}`) ?? [];
     return (
       <div>
         <Cartao p={p} />

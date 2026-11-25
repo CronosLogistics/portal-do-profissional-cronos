@@ -19,7 +19,7 @@ describe("liderImediato", () => {
   });
 });
 
-import { areaDoDepartamento, grupoGestaoOrganograma, ESTRUTURA, ESTRUTURA_VISUAL, AREAS, type NoOrganograma } from "@/lib/organograma.rules";
+import { areaDoDepartamento, areasVisuaisOrganograma, grupoGestaoOrganograma, ESTRUTURA, ESTRUTURA_VISUAL, AREAS, type NoOrganograma } from "@/lib/organograma.rules";
 
 describe("reporte conjunto no organograma visual", () => {
   const ids = (nos: NoOrganograma[]): string[] => nos.flatMap((n) => [n.id, ...ids(n.filhos ?? [])]);
@@ -32,15 +32,15 @@ describe("reporte conjunto no organograma visual", () => {
     expect(areaDoDepartamento(setor, "ANALISTA")).toBe(setor);
   });
 
-  it("preserva os demais ramos e o grupo de gestão administrativa sem duplicar setores", () => {
+  it("remove o grupo conjunto e mantém Administrativo diretamente sob o COO", () => {
     const coo = ESTRUTURA_VISUAL.executivos.find((n) => n.id === "Diretoria COO");
-    const grupo = coo?.filhos?.find((n) => n.id === "Administrativo e Gestão de Pessoas");
-    expect(grupo?.filhos?.map((n) => n.id)).toEqual(["Administrativo"]);
+    expect(coo?.filhos?.find((n) => n.id === "Administrativo")?.tipo).toBe("dep");
+    expect(ramosIndividuais).not.toContain("Administrativo e Gestão de Pessoas");
     expect(coo?.filhos?.map((n) => n.id)).toEqual(expect.arrayContaining(["Financeiro", "Controladoria", "Operação", "Pricing", "TLD", "Comercial Nordeste"]));
     expect(ESTRUTURA_VISUAL.executivos.find((n) => n.id === "Diretoria CEO")).toEqual(ESTRUTURA.find((n) => n.id === "Diretoria CEO"));
     const todos = ids([...ESTRUTURA_VISUAL.compartilhados, ...ESTRUTURA_VISUAL.executivos]);
     expect(todos.length).toBe(new Set(todos).size);
-    expect([...todos].sort()).toEqual(ids(ESTRUTURA).sort());
+    expect([...todos].sort()).toEqual(ids(ESTRUTURA).filter((id) => id !== "Administrativo e Gestão de Pessoas").sort());
   });
 });
 
@@ -99,10 +99,24 @@ describe("estrutura oficial do organograma", () => {
     expect(grupoGestaoOrganograma(vanessa)).toBe("Operação");
     expect(vanessa.area).toBe("Operação");
   });
-  it("Gabrielle indica a gestão administrativa e de pessoas sem mudar sua área", () => {
+  it("repete Gabrielle como coordenadora em Administrativo e Gestão de Pessoas sem mudar o cadastro", () => {
     const gabrielle = { nome: "Gabrielle Rossato - Cronos Logistics", area: areaDoDepartamento("ADMINISTRATIVO E GESTÃO DE PESSOAS", "COORDENADORA ADMINISTRATIVA E GESTÃO DE PESSOAS"), nivel: "Coordenação" as const };
-    expect(grupoGestaoOrganograma(gabrielle)).toBe("Administrativo e Gestão de Pessoas");
+    expect(areasVisuaisOrganograma(gabrielle)).toEqual(["Administrativo", "Gestão de Pessoas"]);
+    expect(grupoGestaoOrganograma(gabrielle)).toBeNull();
     expect(gabrielle.area).toBe("Administrativo e Gestão de Pessoas");
+  });
+  it.each(["Administrativo", "Gestão de Pessoas"])("mantém Gabrielle responsável pelas duas áreas quando cadastrada em %s", (area) => {
+    expect(areasVisuaisOrganograma({ nome: "GABRIELLE ROSSATO", area, nivel: "Coordenação" })).toEqual(["Administrativo", "Gestão de Pessoas"]);
+  });
+  it("não duplica colegas nem move Gabrielle de um setor não relacionado", () => {
+    expect(areasVisuaisOrganograma({ nome: "Bruna Hlatki", area: "Gestão de Pessoas", nivel: "Supervisão" })).toEqual(["Gestão de Pessoas"]);
+    expect(areasVisuaisOrganograma({ nome: "Gabrielle Rossato", area: "Marketing", nivel: "Coordenação" })).toEqual(["Marketing"]);
+    expect(areasVisuaisOrganograma({ nome: "Gabrielle Rossato", area: "Administrativo", nivel: "Analista/consultor" })).toEqual(["Administrativo"]);
+  });
+  it.each(["Administrativo", "Gestão de Pessoas"])("a equipe de %s reconhece a cópia local da coordenadora", (area) => {
+    const gabrielle = { id: "gabrielle", nome: "Gabrielle Rossato", area: "Administrativo e Gestão de Pessoas", nivel: "Coordenação" as const };
+    const lideres = areasVisuaisOrganograma(gabrielle).map((areaVisual) => ({ ...gabrielle, area: areaVisual }));
+    expect(liderImediato({ area, nivel: "Supervisão" }, lideres)).toBe("gabrielle");
   });
   it("integrantes comuns de uma área agrupada não passam a gestores", () => {
     expect(grupoGestaoOrganograma({ nome: "Analista Operacional", area: "Operação", nivel: "Analista/consultor" })).toBeNull();

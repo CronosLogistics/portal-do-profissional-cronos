@@ -39,9 +39,11 @@ export const ESTRUTURA: NoOrganograma[] = [
 export const SETORES_DIRETORIA = ["Gestão de Pessoas", "Tecnologia", "Qualidade"] as const;
 
 function separarReporteConjunto(nos: NoOrganograma[]): NoOrganograma[] {
-  return nos.filter((n) => !SETORES_DIRETORIA.some((id) => id === n.id)).map((n) => (
-    n.filhos ? { ...n, filhos: separarReporteConjunto(n.filhos) } : n
-  ));
+  return nos.filter((n) => !SETORES_DIRETORIA.some((id) => id === n.id)).flatMap((n) => {
+    const filhos = n.filhos ? separarReporteConjunto(n.filhos) : null;
+    if (n.id === "Administrativo e Gestão de Pessoas") return filhos ?? [];
+    return [filhos ? { ...n, filhos } : n];
+  });
 }
 
 export const ESTRUTURA_VISUAL = {
@@ -124,6 +126,7 @@ export function areaFinal(ajuste: string | null | undefined, dep: string | null,
 
 /** Gestão exibida no cabeçalho, sem mover o cartão do departamento da pessoa. */
 export function grupoGestaoOrganograma(pessoa: { nome: string; area: Area; nivel: Nivel }): Area | null {
+  if (pessoa.area === "Administrativo e Gestão de Pessoas") return null;
   if (
     ["Comercial SC", "Comercial ES"].includes(pessoa.area) &&
     /^CAMILA\b.*\bTOPANOTTI\b/.test(norm(pessoa.nome))
@@ -138,6 +141,15 @@ export function grupoGestaoOrganograma(pessoa: { nome: string; area: Area; nivel
 
 function idsGrupos(nos: NoOrganograma[]): string[] {
   return nos.flatMap((n) => [...(n.tipo === "grupo" ? [n.id] : []), ...idsGrupos(n.filhos ?? [])]);
+}
+
+/** Projeção visual somente: mantém uma identidade e os ajustes corporativos originais. */
+export function areasVisuaisOrganograma(pessoa: { nome: string; area: Area; nivel: Nivel }): Area[] {
+  if (
+    ["Administrativo e Gestão de Pessoas", "Administrativo", "Gestão de Pessoas"].includes(pessoa.area) &&
+    pessoa.nivel === "Coordenação" && /^GABRIELLE\b.*\bROSSATO\b/.test(norm(pessoa.nome))
+  ) return ["Administrativo", "Gestão de Pessoas"];
+  return [pessoa.area === "Administrativo e Gestão de Pessoas" ? "Administrativo" : pessoa.area];
 }
 
 /**

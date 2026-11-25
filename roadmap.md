@@ -1,4 +1,7 @@
 # Atualização visual do Portal do Profissional
+## Coordenação de Administrativo e Gestão de Pessoas
+- [x] Remover o grupo conjunto e repetir o cartão da Gabrielle como coordenadora nos dois setores, preservando cadastros, contagem de pessoas e reporte à Diretoria.
+- [x] Validar 23 testes e tela autenticada: 153 cadastros únicos, Gabrielle acima das duas equipes, três setas rosas preservadas, edição compartilhada/cancelamento/recarga e celular sem transbordamento ou erros.
 ## Setores compartilhados pela Diretoria
 - [x] Ligar Gestão de Pessoas, Qualidade e Tecnologia diretamente à Diretoria com setas rosas distintas, preservando os outros vínculos e os 153 profissionais.
 - [x] Validar 18 testes e tela autenticada no computador/celular; setas medidas no setor correto após zoom, busca, edição, arraste e recarga, sem erros ou transbordamento horizontal.
