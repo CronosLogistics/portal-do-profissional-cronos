@@ -264,7 +264,7 @@ function OrganogramaPage() {
   return (
     <main className="flex h-[calc(100vh-4rem)] min-h-[520px] flex-col px-4 py-4 sm:px-6">
       <header className="mb-3 flex flex-wrap items-center gap-3">
-        <h1 className="mr-auto text-2xl font-bold text-foreground">Organograma</h1>
+        <h1 className="mr-auto text-2xl font-bold text-foreground">Organograma <span className="whitespace-nowrap">(DR-02-02)</span></h1>
         <div className="relative">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Buscar profissional" className="w-56 pl-8" />
