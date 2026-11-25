@@ -19,7 +19,30 @@ describe("liderImediato", () => {
   });
 });
 
-import { areaDoDepartamento, grupoGestaoOrganograma, ESTRUTURA } from "@/lib/organograma.rules";
+import { areaDoDepartamento, grupoGestaoOrganograma, ESTRUTURA, ESTRUTURA_VISUAL, AREAS, type NoOrganograma } from "@/lib/organograma.rules";
+
+describe("reporte conjunto no organograma visual", () => {
+  const ids = (nos: NoOrganograma[]): string[] => nos.flatMap((n) => [n.id, ...ids(n.filhos ?? [])]);
+  const ramosIndividuais = ids(ESTRUTURA_VISUAL.executivos);
+
+  it.each(["Gestão de Pessoas", "Qualidade", "Tecnologia"])("%s responde diretamente à Diretoria, não a um diretor individual", (setor) => {
+    expect(ESTRUTURA_VISUAL.compartilhados.map((n) => n.id)).toContain(setor);
+    expect(ramosIndividuais).not.toContain(setor);
+    expect(AREAS).toContain(setor);
+    expect(areaDoDepartamento(setor, "ANALISTA")).toBe(setor);
+  });
+
+  it("preserva os demais ramos e o grupo de gestão administrativa sem duplicar setores", () => {
+    const coo = ESTRUTURA_VISUAL.executivos.find((n) => n.id === "Diretoria COO");
+    const grupo = coo?.filhos?.find((n) => n.id === "Administrativo e Gestão de Pessoas");
+    expect(grupo?.filhos?.map((n) => n.id)).toEqual(["Administrativo"]);
+    expect(coo?.filhos?.map((n) => n.id)).toEqual(expect.arrayContaining(["Financeiro", "Controladoria", "Operação", "Pricing", "TLD", "Comercial Nordeste"]));
+    expect(ESTRUTURA_VISUAL.executivos.find((n) => n.id === "Diretoria CEO")).toEqual(ESTRUTURA.find((n) => n.id === "Diretoria CEO"));
+    const todos = ids([...ESTRUTURA_VISUAL.compartilhados, ...ESTRUTURA_VISUAL.executivos]);
+    expect(todos.length).toBe(new Set(todos).size);
+    expect([...todos].sort()).toEqual(ids(ESTRUTURA).sort());
+  });
+});
 
 describe("estrutura oficial do organograma", () => {
   it("TI e Tecnologia ficam na mesma caixa", () => {

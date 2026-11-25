@@ -7,9 +7,10 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { OrganogramaConexoes } from "@/components/organograma-conexoes";
 import { useFotoProfissional } from "@/hooks/use-minha-foto";
 import { carregarOrganograma, salvarOrganograma, type PessoaOrganograma } from "@/lib/organograma.functions";
-import { AREAS, ESTRUTURA, NIVEIS, grupoGestaoOrganograma, liderImediato, type Area, type NoOrganograma } from "@/lib/organograma.rules";
+import { AREAS, ESTRUTURA_VISUAL, NIVEIS, grupoGestaoOrganograma, liderImediato, type Area, type NoOrganograma } from "@/lib/organograma.rules";
 import { cn } from "@/lib/utils";
 
 const orgQuery = queryOptions({ queryKey: ["organograma"], queryFn: () => carregarOrganograma(), staleTime: 5 * 60_000 });
@@ -178,9 +179,9 @@ function OrganogramaPage() {
       <div>
         <Cartao p={p} />
         {f.length > 0 && (
-          <div className="ml-4 mt-1.5 space-y-1.5 border-l-2 border-primary/60 pl-3">
+          <div className="ml-4 mt-1.5 space-y-1.5 border-l-2 border-foreground/60 pl-3">
             {f.map((c) => (
-              <div key={c.id} className="relative before:absolute before:-left-3 before:top-6 before:h-0.5 before:w-3 before:bg-primary/60"><Ramo p={c} /></div>
+              <div key={c.id} className="relative before:absolute before:-left-3 before:top-6 before:h-0.5 before:w-3 before:bg-foreground/60"><Ramo p={c} /></div>
             ))}
           </div>
         )}
@@ -196,12 +197,12 @@ function OrganogramaPage() {
     if (!vis.length) return null;
     return (
       <>
-        <div className="h-6 w-0.5 bg-primary" />
+        <div className="h-6 w-0.5 bg-foreground" />
         <div className="flex gap-5">
           {vis.map((n, i) => (
             <div key={n.id} className="relative flex flex-col items-center">
-              {vis.length > 1 && <div className={cn("absolute top-0 h-0.5 bg-primary", i === 0 ? "left-1/2 right-0" : i === vis.length - 1 ? "left-0 right-1/2" : "inset-x-0")} />}
-              <div className="h-5 w-0.5 bg-primary" />
+              {vis.length > 1 && <div className={cn("absolute top-0 h-0.5 bg-foreground", i === 0 ? "left-1/2 right-0" : i === vis.length - 1 ? "left-0 right-1/2" : "inset-x-0")} />}
+              <div className="h-5 w-0.5 bg-foreground" />
               <No n={n} />
             </div>
           ))}
@@ -214,7 +215,7 @@ function OrganogramaPage() {
     const gestores = gestoresPorGrupo.get(n.id) ?? [];
     return (
       <div className="flex flex-col items-center">
-        <section className={cn("rounded-xl border bg-card/95 p-3 shadow-sm", n.tipo === "dep" ? "w-72" : "min-w-72")}>
+        <section data-org-node={n.id} className={cn("rounded-xl border bg-card/95 p-3 shadow-sm", n.tipo === "dep" ? "w-72" : "min-w-72")}>
           <h2 className={cn("rounded-md px-3 py-1.5 text-center text-xs font-bold uppercase tracking-wide", n.tipo === "grupo" ? "border-2 border-sidebar text-sidebar" : "bg-sidebar text-sidebar-foreground", ((proprios > 0 && n.tipo !== "grupo") || n.tipo === "dep" || gestores.length > 0) && "mb-2")}>
             {n.titulo} <span className="font-normal opacity-80">({q})</span>
           </h2>
@@ -240,7 +241,12 @@ function OrganogramaPage() {
       </div>
     );
   };
-  const execs = ESTRUTURA.map((e) => ({ e, p: diretoria.find((d) => e.diretor?.test(d.nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase())) }));
+  const execs = ESTRUTURA_VISUAL.executivos.map((e) => ({ e, p: diretoria.find((d) => e.diretor?.test(d.nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase())) }));
+  const compartilhados = ESTRUTURA_VISUAL.compartilhados.filter((n) => total(n) > 0);
+  const destinos = [
+    ...compartilhados.map((n) => ({ id: n.id, compartilhado: true })),
+    ...execs.map(({ e }) => ({ id: e.id, compartilhado: false })),
+  ];
   const outrosDiretores = diretoria.filter((d) => !execs.some((x) => x.p?.id === d.id));
   const outros = porArea.get("Outros") ?? [];
 
@@ -271,18 +277,21 @@ function OrganogramaPage() {
           onPointerUp={() => { arrasto.current = null; }}
         >
           <div ref={conteudo} className="absolute left-0 top-0 w-max" style={{ transform: `translate(${view.x}px, ${view.y}px) scale(${view.z})`, transformOrigin: "0 0" }}>
-            <div className="flex flex-col items-center">
-              <section className="w-[420px] rounded-xl border-2 border-sidebar bg-card p-3">
+            <div className="relative flex flex-col items-center">
+              <OrganogramaConexoes destinos={destinos} />
+              <section data-org-node="Diretoria" className="w-[420px] rounded-xl border-2 border-sidebar bg-card p-3">
                 <h2 className="rounded-md bg-sidebar px-3 py-1.5 text-center text-sm font-bold uppercase tracking-wide text-sidebar-foreground">Diretoria</h2>
                 {outrosDiretores.length > 0 && <div className="mt-2 grid grid-cols-2 gap-2">{outrosDiretores.map((p) => <Cartao key={p.id} p={p} />)}</div>}
               </section>
-              <div className="h-6 w-0.5 bg-primary" />
-              <div className="flex gap-10">
-                {execs.map(({ e, p }, i) => (
+              <div className="mt-20 flex items-start gap-10">
+                {compartilhados.length > 0 && (
+                  <div className="flex items-start gap-5 pt-44">
+                    {compartilhados.map((n) => <No key={n.id} n={n} />)}
+                  </div>
+                )}
+                {execs.map(({ e, p }) => (
                   <div key={e.id} className="relative flex flex-col items-center">
-                    <div className={cn("absolute top-0 h-0.5 bg-primary", i === 0 ? "left-1/2 right-0" : "left-0 right-1/2")} />
-                    <div className="h-5 w-0.5 bg-primary" />
-                    <section className="w-80 rounded-xl border-2 border-sidebar bg-card p-3 shadow-sm">
+                    <section data-org-node={e.id} className="w-80 rounded-xl border-2 border-sidebar bg-card p-3 shadow-sm">
                       <h2 className="mb-2 rounded-md bg-sidebar px-3 py-1.5 text-center text-xs font-bold uppercase tracking-wide text-sidebar-foreground">{e.titulo}</h2>
                       {p ? <Cartao p={p} /> : <p className="text-center text-xs text-muted-foreground">Diretor não encontrado</p>}
                     </section>

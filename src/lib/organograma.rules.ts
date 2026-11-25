@@ -35,6 +35,20 @@ export const ESTRUTURA: NoOrganograma[] = [
   ] },
 ];
 
+/** Reporte conjunto apenas na apresentação: não altera áreas, perfis ou liderança do SharePoint. */
+export const SETORES_DIRETORIA = ["Gestão de Pessoas", "Tecnologia", "Qualidade"] as const;
+
+function separarReporteConjunto(nos: NoOrganograma[]): NoOrganograma[] {
+  return nos.filter((n) => !SETORES_DIRETORIA.some((id) => id === n.id)).map((n) => (
+    n.filhos ? { ...n, filhos: separarReporteConjunto(n.filhos) } : n
+  ));
+}
+
+export const ESTRUTURA_VISUAL = {
+  compartilhados: SETORES_DIRETORIA.map((id) => dep(id)),
+  executivos: separarReporteConjunto(ESTRUTURA),
+};
+
 function ids(nos: NoOrganograma[]): string[] {
   return nos.flatMap((n) => (n.tipo === "exec" ? ids(n.filhos ?? []) : [n.id, ...ids(n.filhos ?? [])]));
 }

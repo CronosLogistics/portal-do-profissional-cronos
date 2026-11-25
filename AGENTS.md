@@ -44,4 +44,4 @@
 - Access reports: login rows in `historico_acessos` via permission-checked RPCs; `acessos.relatorios` is derived by `pode_ver_relatorios_acesso`, never assigned to profiles. Why: survives department sync.
 - Gift inventory access is computed server-side by a pure tested rule from the SharePoint "Responsáveis pelos Escritórios" list (coordinator lookup → email), admin role and synced department; each responsible row is a separate inventory and lists/columns are resolved dynamically from its link. Why: SharePoint stays the source of truth without hardcoded users.
 - Inventory office selection uses a searchable combobox only when multiple authorized inventories are returned. Why: growing office lists must not crowd the table or add controls for single-office viewers.
-- Org chart uses `ESTRUTURA` and `liderImediato`; group managers are header labels, cards stay in their areas; overrides use `salvar_organograma`. Why: preserve the official tree and corporate memberships.
+- Org chart uses a visual tree for shared reporting, measured root arrows and `liderImediato`; manager labels keep cards in their areas. Why: preserve corporate memberships and overrides.

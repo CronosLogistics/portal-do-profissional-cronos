@@ -1,4 +1,7 @@
 # Atualização visual do Portal do Profissional
+## Setores compartilhados pela Diretoria
+- [x] Ligar Gestão de Pessoas, Qualidade e Tecnologia diretamente à Diretoria com setas rosas distintas, preservando os outros vínculos e os 153 profissionais.
+- [x] Validar 18 testes e tela autenticada no computador/celular; setas medidas no setor correto após zoom, busca, edição, arraste e recarga, sem erros ou transbordamento horizontal.
 ## Padronização dos gestores no organograma
 - [x] Mostrar Gestão nos cabeçalhos dos quatro grupos e manter os cartões das gestoras em suas áreas, abaixo dos cabeçalhos.
 - [x] Validar 14 testes, os quatro grupos na tela autenticada, seleção, edição e recarga; computador e celular sem erros ou transbordamento.
