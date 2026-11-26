@@ -80,3 +80,12 @@ export async function cadastroDoEmail(email: string): Promise<DadosCadastro | nu
     nascimento: dataCivil(f.DATADENASC_x002e_),
   };
 }
+
+/** IDs (lista Profissionais Brasil) das linhas ativas cujo e-mail corporativo é o informado. */
+export async function idsProfissionalDoEmail(email: string): Promise<string[]> {
+  const cache = await carregar();
+  const alvo = normalizarEmail(email);
+  return cache.rows
+    .filter((r) => ["ATIVO", "EFETIVADO/ATIVO"].includes(r.fields.field_1?.trim().toUpperCase() ?? "") && cache.usuarios.get(String(r.fields.E_x002d_MAILCORPORATIVOLookupId)) === alvo)
+    .map((r) => String(r.id));
+}

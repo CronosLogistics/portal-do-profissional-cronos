@@ -29,6 +29,7 @@ import { Route as AuthenticatedParceirosRouteImport } from './routes/_authentica
 import { Route as AuthenticatedPendenciasRouteImport } from './routes/_authenticated/pendencias'
 import { Route as AuthenticatedPerfilRouteImport } from './routes/_authenticated/perfil'
 import { Route as AuthenticatedRelatoriosAcessosRouteImport } from './routes/_authenticated/relatorios-acessos'
+import { Route as AuthenticatedSolicitarFeriasRouteImport } from './routes/_authenticated/solicitar-ferias'
 import { Route as AuthenticatedTreinamentosRouteImport } from './routes/_authenticated/treinamentos'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedAdminBeneficiosRouteImport } from './routes/_authenticated/admin.beneficios'
@@ -160,6 +161,12 @@ const AuthenticatedRelatoriosAcessosRoute =
   AuthenticatedRelatoriosAcessosRouteImport.update({
     id: '/relatorios-acessos',
     path: '/relatorios-acessos',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedSolicitarFeriasRoute =
+  AuthenticatedSolicitarFeriasRouteImport.update({
+    id: '/solicitar-ferias',
+    path: '/solicitar-ferias',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedTreinamentosRoute =
@@ -333,6 +340,7 @@ export interface FileRoutesByFullPath {
   '/pendencias': typeof AuthenticatedPendenciasRoute
   '/perfil': typeof AuthenticatedPerfilRoute
   '/relatorios-acessos': typeof AuthenticatedRelatoriosAcessosRoute
+  '/solicitar-ferias': typeof AuthenticatedSolicitarFeriasRoute
   '/treinamentos': typeof AuthenticatedTreinamentosRoute
   '/admin/beneficios': typeof AuthenticatedAdminBeneficiosRoute
   '/admin/historico': typeof AuthenticatedAdminHistoricoRoute
@@ -378,6 +386,7 @@ export interface FileRoutesByTo {
   '/pendencias': typeof AuthenticatedPendenciasRoute
   '/perfil': typeof AuthenticatedPerfilRoute
   '/relatorios-acessos': typeof AuthenticatedRelatoriosAcessosRoute
+  '/solicitar-ferias': typeof AuthenticatedSolicitarFeriasRoute
   '/treinamentos': typeof AuthenticatedTreinamentosRoute
   '/': typeof AuthenticatedIndexRoute
   '/admin/beneficios': typeof AuthenticatedAdminBeneficiosRoute
@@ -427,6 +436,7 @@ export interface FileRoutesById {
   '/_authenticated/pendencias': typeof AuthenticatedPendenciasRoute
   '/_authenticated/perfil': typeof AuthenticatedPerfilRoute
   '/_authenticated/relatorios-acessos': typeof AuthenticatedRelatoriosAcessosRoute
+  '/_authenticated/solicitar-ferias': typeof AuthenticatedSolicitarFeriasRoute
   '/_authenticated/treinamentos': typeof AuthenticatedTreinamentosRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/admin/beneficios': typeof AuthenticatedAdminBeneficiosRoute
@@ -477,6 +487,7 @@ export interface FileRouteTypes {
     | '/pendencias'
     | '/perfil'
     | '/relatorios-acessos'
+    | '/solicitar-ferias'
     | '/treinamentos'
     | '/admin/beneficios'
     | '/admin/historico'
@@ -522,6 +533,7 @@ export interface FileRouteTypes {
     | '/pendencias'
     | '/perfil'
     | '/relatorios-acessos'
+    | '/solicitar-ferias'
     | '/treinamentos'
     | '/'
     | '/admin/beneficios'
@@ -570,6 +582,7 @@ export interface FileRouteTypes {
     | '/_authenticated/pendencias'
     | '/_authenticated/perfil'
     | '/_authenticated/relatorios-acessos'
+    | '/_authenticated/solicitar-ferias'
     | '/_authenticated/treinamentos'
     | '/_authenticated/'
     | '/_authenticated/admin/beneficios'
@@ -751,6 +764,13 @@ declare module '@tanstack/react-router' {
       path: '/relatorios-acessos'
       fullPath: '/relatorios-acessos'
       preLoaderRoute: typeof AuthenticatedRelatoriosAcessosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/solicitar-ferias': {
+      id: '/_authenticated/solicitar-ferias'
+      path: '/solicitar-ferias'
+      fullPath: '/solicitar-ferias'
+      preLoaderRoute: typeof AuthenticatedSolicitarFeriasRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/treinamentos': {
@@ -989,6 +1009,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPendenciasRoute: typeof AuthenticatedPendenciasRoute
   AuthenticatedPerfilRoute: typeof AuthenticatedPerfilRoute
   AuthenticatedRelatoriosAcessosRoute: typeof AuthenticatedRelatoriosAcessosRoute
+  AuthenticatedSolicitarFeriasRoute: typeof AuthenticatedSolicitarFeriasRoute
   AuthenticatedTreinamentosRoute: typeof AuthenticatedTreinamentosRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedBeneficiosSlugRoute: typeof AuthenticatedBeneficiosSlugRoute
@@ -1017,6 +1038,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPendenciasRoute: AuthenticatedPendenciasRoute,
   AuthenticatedPerfilRoute: AuthenticatedPerfilRoute,
   AuthenticatedRelatoriosAcessosRoute: AuthenticatedRelatoriosAcessosRoute,
+  AuthenticatedSolicitarFeriasRoute: AuthenticatedSolicitarFeriasRoute,
   AuthenticatedTreinamentosRoute: AuthenticatedTreinamentosRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedBeneficiosSlugRoute: AuthenticatedBeneficiosSlugRoute,

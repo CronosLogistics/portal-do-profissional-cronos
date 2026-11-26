@@ -48,6 +48,7 @@ const moduleIcons: Record<PortalModule["to"], LucideIcon> = {
   "/inventario-brindes": Package,
   "/organograma": FolderOpen,
   "/acessos-e-sistemas": MonitorUp,
+  "/solicitar-ferias": CalendarDays,
 };
 
 const groupIcons: Record<PortalNavGroup, LucideIcon> = { beneficios: Gift, feedbacks: MessageSquareHeart, avisos: Megaphone, formularios: ClipboardList, documentos: FolderOpen };

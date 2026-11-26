@@ -1,6 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { selecionarGestorPerfil } from "./perfil-gestor.rules";
 import { PRIVACIDADE_PADRAO, privacidadeDaLinha, type PrivacidadePerfil } from "./privacidade.functions";
 import { elegivelRanking } from "./ranking.rules";
 
@@ -60,18 +59,8 @@ async function montarPerfil(userId: string, perfil: { email: string | null; is_a
         const { itens, usuarios } = await dadosElogios();
         return elogiosVisiveis(itens, email, usuarios).filter((e) => e.vinculo === "meu").sort((a, b) => (b.data ?? "").localeCompare(a.data ?? ""));
       })().catch((e) => { console.error(e); erros.push("elogios"); return []; }),
-      (async () => {
-        // Leitura restrita ao próprio vínculo: quem lidera o profissional na hierarquia sincronizada do SharePoint.
-        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        const { data: rel } = await supabaseAdmin.from("departamento_liderados").select("departamento_id,lider_id").eq("liderado_id", userId);
-        if (!rel?.length) return null;
-        const ids = [...new Set(rel.map((r) => r.lider_id))];
-        const [{ data: pessoas }, { data: vinc }] = await Promise.all([
-          supabaseAdmin.from("profiles").select("id,full_name,is_active").in("id", ids),
-          supabaseAdmin.from("usuario_perfis").select("usuario_id,perfis(departamento_sp_id,nivel_departamento)").in("usuario_id", [...ids, userId]),
-        ]);
-        return selecionarGestorPerfil(userId, rel, vinc ?? [], pessoas ?? []);
-      })().catch((e) => { console.error(e); return null; }),
+      // Leitura restrita ao próprio vínculo: quem lidera o profissional na hierarquia sincronizada do SharePoint.
+      import("./gestor-perfil.server").then((m) => m.gestorDoUsuario(userId)).catch((e) => { console.error(e); return null; }),
       import("@/lib/treinamentos-perfil.server").then((m) => m.treinamentosDoEmail(email)).catch((e) => { console.error(e); erros.push("treinamentos"); return []; }),
       // Texto pessoal: leitura server-side para o próprio perfil e para colegas ativos.
       (async () => {
