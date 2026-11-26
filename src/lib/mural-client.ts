@@ -1,5 +1,6 @@
 import { criarIdCliente } from "@/lib/client-id";
 import { supabase } from "@/integrations/supabase/client";
+import { erroTamanhoImagemMural } from "@/lib/mural-imagem";
 
 export const muralKey = ["mural"] as const;
 export const EMOJIS_MURAL = ["👍", "❤️", "👏", "🎉", "😮"] as const;
@@ -61,10 +62,17 @@ export type DadosPost = { titulo: string; texto: string; data_post: string; visi
 export async function salvarPost(id: string | null, d: DadosPost) {
   let imagem_path = d.imagem_path ?? null;
   if (d.arquivo) {
+    const erroTamanho = erroTamanhoImagemMural(d.arquivo);
+    if (erroTamanho) throw new Error(erroTamanho);
     const ext = d.arquivo.name.split(".").pop()?.toLowerCase() || "jpg";
     const path = `${criarIdCliente()}.${ext}`;
     const { error } = await supabase.storage.from("mural").upload(path, d.arquivo, { contentType: d.arquivo.type });
-    if (error) throw new Error("Não foi possível enviar a imagem.");
+    if (error) {
+      const msg = error.message.toLowerCase();
+      throw new Error(msg.includes("size") || msg.includes("too large") || msg.includes("payload")
+        ? "A imagem passa do limite de 18 MB. Reduza o tamanho e tente novamente."
+        : "Não foi possível enviar a imagem. Atualize a página e tente novamente.");
+    }
     imagem_path = path;
   }
   const row = { titulo: d.titulo.trim(), texto: d.texto.trim(), data_post: d.data_post, visivel_ate: d.visivel_ate || null, imagem_path, tipo: d.tipo, anos_casa: d.tipo === "tempo_casa" ? d.anos_casa : null, publicar_em: d.publicar_em ?? null };

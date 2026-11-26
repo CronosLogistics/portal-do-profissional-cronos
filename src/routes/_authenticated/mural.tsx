@@ -1,4 +1,5 @@
 import { AutorComentario } from "@/components/portal/AutorComentario";
+import { erroTamanhoImagemMural, LIMITE_IMAGEM_MURAL_MB } from "@/lib/mural-imagem";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { createFileRoute } from "@tanstack/react-router";
@@ -416,7 +417,12 @@ function PostForm({ post, onClose }: { post: PostMural | null; onClose: () => vo
             if (q === null) { setMencao(false); setConsultaMencao(null); }
             else { setMencao(true); setConsultaMencao(q); }
           }} placeholder="Use @ para mencionar pessoas ou departamentos" /><MencaoPicker open={mencao} onOpenChange={(v) => { setMencao(v); if (!v) setConsultaMencao(null); }} consulta={consultaMencao} onSelect={(m) => { setTexto((t) => inserirMencaoEmTexto(t, campoTexto.current, tokenMencao(m))); setConsultaMencao(null); }} /></div>
-          <div><Label htmlFor="mi">Imagem (ex.: arte de parabéns)</Label><Input id="mi" type="file" accept="image/*" onChange={(e) => setArquivo(e.target.files?.[0] ?? null)} /></div>
+          <div><Label htmlFor="mi">Imagem (ex.: arte de parabéns)</Label><Input id="mi" type="file" accept="image/*" onChange={(e) => {
+            const f = e.target.files?.[0] ?? null;
+            const erro = f ? erroTamanhoImagemMural(f) : null;
+            if (erro) { toast.error(erro); e.target.value = ""; setArquivo(null); return; }
+            setArquivo(f);
+          }} /><p className="mt-1 text-xs text-muted-foreground">Imagens de até {LIMITE_IMAGEM_MURAL_MB} MB.</p></div>
           <div className="space-y-2 rounded-md border p-3">
             <label className="flex items-center gap-2 text-sm font-medium"><input type="checkbox" checked={agendar} onChange={(e) => setAgendar(e.target.checked)} /> Agendar post</label>
             {agendar && <div className="grid grid-cols-2 gap-3">
