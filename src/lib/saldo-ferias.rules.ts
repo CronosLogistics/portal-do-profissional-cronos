@@ -78,8 +78,20 @@ export function dataUmAnoEmpresa(admissao: string | null): string | null {
 
 export type CarenciaFerias = { bloqueado: boolean; admissao: string | null; liberaEm: string | null };
 
-/** CLT: com menos de 1 ano de empresa as férias ainda não podem ser solicitadas. Sem admissão conhecida, não bloqueia. */
-export function carenciaFerias(admissao: string | null, hoje: string): CarenciaFerias {
+/** Regime atual: em transições ("ESTÁGIO/CLT", "CLT/PJ") vale o último. */
+export function regimeAtual(regime: string | null | undefined): string {
+  const partes = (regime ?? "").split("/").map((p) => p.trim().toLocaleUpperCase("pt-BR")).filter(Boolean);
+  return partes[partes.length - 1] ?? "";
+}
+
+/** Regime do cadastro (Profissionais Brasil); sem ele, o do período aquisitivo mais recente. */
+export function regimeDoProfissional(regimeCadastro: string | null | undefined, periodos: Pick<PeriodoFerias, "regime">[]): string {
+  return regimeAtual(regimeCadastro) || regimeAtual(periodos.find((p) => p.regime)?.regime);
+}
+
+/** Só CLT: com menos de 1 ano de empresa as férias ainda não podem ser solicitadas. Outros regimes ou sem admissão conhecida, não bloqueia. */
+export function carenciaFerias(admissao: string | null, hoje: string, regime: string): CarenciaFerias {
+  if (regimeAtual(regime) !== "CLT") return { bloqueado: false, admissao: null, liberaEm: null };
   const liberaEm = dataUmAnoEmpresa(admissao);
   return { bloqueado: !!liberaEm && hoje < liberaEm, admissao: liberaEm ? admissao : null, liberaEm };
 }

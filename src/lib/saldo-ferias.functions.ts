@@ -18,7 +18,7 @@ export const minhasFerias = createServerFn({ method: "GET" })
     if (!perfil.email) return vazio;
     const email = perfil.email;
     try {
-      const [{ idsProfissionalDoEmail, cadastroDoEmail }, { itensSaldoFerias }, { periodosDoProfissional, carenciaFerias }] = await Promise.all([
+      const [{ idsProfissionalDoEmail, cadastroDoEmail }, { itensSaldoFerias }, { periodosDoProfissional, carenciaFerias, regimeDoProfissional }] = await Promise.all([
         import("./perfil.server"), import("./saldo-ferias.server"), import("./saldo-ferias.rules"),
       ]);
       const [ids, itens, cadastro, gestor] = await Promise.all([
@@ -28,8 +28,9 @@ export const minhasFerias = createServerFn({ method: "GET" })
         import("./gestor-perfil.server").then((m) => m.gestorDoUsuario(context.userId)).catch((e) => { console.error(e); return null; }),
       ]);
       const hoje = new Date().toLocaleDateString("sv-SE", { timeZone: "America/Sao_Paulo" });
-      const carencia = carenciaFerias(cadastro?.admissao ?? null, hoje);
-      return { nome, departamento: cadastro?.departamento ?? null, gestor, periodos: periodosDoProfissional(itens, ids), carencia, erro: null };
+      const periodos = periodosDoProfissional(itens, ids);
+      const carencia = carenciaFerias(cadastro?.admissao ?? null, hoje, regimeDoProfissional(cadastro?.regime, periodos));
+      return { nome, departamento: cadastro?.departamento ?? null, gestor, periodos, carencia, erro: null };
     } catch (e) {
       console.error("Saldo de férias:", e);
       return { ...vazio, erro: "Não foi possível consultar seus saldos de férias no SharePoint. Tente novamente." };

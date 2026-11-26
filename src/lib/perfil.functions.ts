@@ -89,8 +89,9 @@ async function montarPerfil(userId: string, perfil: { email: string | null; is_a
     const pontos = pontuacao && elegivelRanking(cadastro?.cargo ?? null, pontuacao.niveis) ? pontuacao.pontos : null;
     const elogiosPublicos = proprio || privacidade.mostrarElogios ? elogios : [];
     const nascimento = proprio || privacidade.mostrarAniversario ? (cadastro?.nascimento ?? null) : null;
+    const { regime: _regime, ...cadastroPublico } = cadastro ?? { regime: null };
     return {
-      ...vazio, ...(cadastro ?? {}), nascimento, gestor, treinamentos, sobre, privacidade, pontos,
+      ...vazio, ...cadastroPublico, nascimento, gestor, treinamentos, sobre, privacidade, pontos,
       elogiosTotal: elogiosPublicos.length,
       elogios: elogiosPublicos.slice(0, 3).map((e) => ({ id: e.id, data: e.data, texto: e.detalhamento, autor: e.elogiador })),
       erro: erros.length ? "Alguns dados do SharePoint não puderam ser carregados agora." : null,

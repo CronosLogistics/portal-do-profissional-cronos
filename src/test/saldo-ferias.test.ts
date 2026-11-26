@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { carenciaFerias, dataTermino, emailSolicitacao, opcoesDias, periodosDoProfissional } from "@/lib/saldo-ferias.rules";
+import { carenciaFerias, dataTermino, emailSolicitacao, opcoesDias, periodosDoProfissional, regimeDoProfissional } from "@/lib/saldo-ferias.rules";
 import { principalNav } from "@/lib/portal-modules";
 
 const linha = (id: string, nome: string, f: Record<string, unknown>) => ({ id, fields: { NomeLookupId: nome, Status: "Agendar Férias", Dias_x0020_Restantes: "30", Ano_x0020_Direito: "2.026", ...f } });
@@ -29,17 +29,32 @@ describe("Solicitação de férias", () => {
   });
 
   it("bloqueia a solicitação para quem tem menos de 1 ano de empresa (CLT)", () => {
-    expect(carenciaFerias("2026-03-10", "2026-11-26")).toEqual({ bloqueado: true, admissao: "2026-03-10", liberaEm: "2027-03-10" });
-    expect(carenciaFerias("2025-11-27", "2026-11-26").bloqueado).toBe(true);
+    expect(carenciaFerias("2026-03-10", "2026-11-26", "CLT")).toEqual({ bloqueado: true, admissao: "2026-03-10", liberaEm: "2027-03-10" });
+    expect(carenciaFerias("2025-11-27", "2026-11-26", "CLT").bloqueado).toBe(true);
   });
 
   it("libera a solicitação ao completar 1 ano de empresa", () => {
-    expect(carenciaFerias("2025-11-26", "2026-11-26").bloqueado).toBe(false);
-    expect(carenciaFerias("2020-01-15", "2026-11-26").bloqueado).toBe(false);
+    expect(carenciaFerias("2025-11-26", "2026-11-26", "CLT").bloqueado).toBe(false);
+    expect(carenciaFerias("2020-01-15", "2026-11-26", "CLT").bloqueado).toBe(false);
   });
 
   it("não bloqueia quando a data de admissão não está no cadastro", () => {
-    expect(carenciaFerias(null, "2026-11-26").bloqueado).toBe(false);
+    expect(carenciaFerias(null, "2026-11-26", "CLT").bloqueado).toBe(false);
+  });
+
+  it("não aplica a carência de 1 ano para PJ e estágio", () => {
+    expect(carenciaFerias("2026-03-10", "2026-11-26", "PJ").bloqueado).toBe(false);
+    expect(carenciaFerias("2026-03-10", "2026-11-26", "ESTÁGIO").bloqueado).toBe(false);
+  });
+
+  it("em transições de regime vale o atual", () => {
+    expect(carenciaFerias("2026-03-10", "2026-11-26", "ESTÁGIO/CLT").bloqueado).toBe(true);
+    expect(carenciaFerias("2026-03-10", "2026-11-26", "CLT/PJ").bloqueado).toBe(false);
+  });
+
+  it("usa o regime do cadastro e, sem ele, o do período mais recente", () => {
+    expect(regimeDoProfissional("PJ", [{ regime: "CLT" }])).toBe("PJ");
+    expect(regimeDoProfissional(null, [{ regime: "" }, { regime: "clt" }])).toBe("CLT");
   });
 
   it("limita as quantidades de dias ao saldo disponível", () => {
