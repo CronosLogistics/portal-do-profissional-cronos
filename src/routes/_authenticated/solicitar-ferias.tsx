@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
-import { CalendarDays, CalendarPlus, RefreshCw } from "lucide-react";
+import { CalendarDays, CalendarPlus, Info, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { minhasFerias, type MinhasFerias } from "@/lib/saldo-ferias.functions";
 import { dataTermino, emailSolicitacao, formatarDataBr, opcoesDias, type PeriodoFerias } from "@/lib/saldo-ferias.rules";
@@ -41,7 +41,7 @@ function Metrica({ valor, rotulo, destaque }: { valor: number; rotulo: string; d
   </div>;
 }
 
-function CartaoPeriodo({ p, onSolicitar }: { p: PeriodoFerias; onSolicitar: () => void }) {
+function CartaoPeriodo({ p, liberaEm, onSolicitar }: { p: PeriodoFerias; liberaEm: string | null; onSolicitar: () => void }) {
   return <article className="rounded-lg border border-border bg-card p-5">
     <div className="mb-4 flex flex-wrap items-start justify-between gap-3 border-b border-border pb-4">
       <div className="min-w-0">
@@ -55,7 +55,9 @@ function CartaoPeriodo({ p, onSolicitar }: { p: PeriodoFerias; onSolicitar: () =
       <Metrica valor={p.diasGozados} rotulo="Dias gozados" />
       <Metrica valor={p.diasConcedidos} rotulo="Dias concedidos" />
     </div>
-    <Button className="w-full" onClick={onSolicitar}><CalendarPlus aria-hidden="true" /> Solicitar férias</Button>
+    {liberaEm
+      ? <Button className="w-full" disabled title="Férias disponíveis após 1 ano de empresa (CLT)"><CalendarPlus aria-hidden="true" /> Disponível a partir de {formatarDataBr(liberaEm)}</Button>
+      : <Button className="w-full" onClick={onSolicitar}><CalendarPlus aria-hidden="true" /> Solicitar férias</Button>}
   </article>;
 }
 
@@ -130,6 +132,8 @@ function SolicitarFeriasPage() {
   const [selecionado, setSelecionado] = useState<PeriodoFerias | null>(null);
   const abertos = q.data.periodos.filter((p) => p.podeSolicitar);
   const historico = q.data.periodos.filter((p) => !p.podeSolicitar);
+  const { carencia } = q.data;
+  const bloqueio = carencia.bloqueado ? carencia.liberaEm : null;
 
   return <main className="mx-auto w-full max-w-6xl px-2 py-8 sm:px-4 sm:py-10">
     <header className="mb-8 flex items-start justify-between gap-4">
@@ -148,9 +152,16 @@ function SolicitarFeriasPage() {
     {q.data.erro ? <p role="alert" className="border-l-2 border-destructive p-4 text-sm text-destructive">{q.data.erro}</p> : <>
       <section aria-labelledby="abertos" className="mb-10">
         <h2 id="abertos" className="mb-4 border-l-4 border-primary pl-2 text-lg font-bold text-foreground">Períodos em aberto</h2>
+        {bloqueio && <div role="alert" className="mb-4 flex gap-3 rounded-lg border border-secondary/30 bg-secondary/5 p-4 text-sm text-foreground">
+          <Info className="mt-0.5 size-5 shrink-0 text-secondary" aria-hidden="true" />
+          <div>
+            <p className="font-semibold text-secondary">Você ainda não pode solicitar férias</p>
+            <p className="mt-1 text-muted-foreground">Pela CLT, as férias só podem ser solicitadas depois de 12 meses de empresa (período aquisitivo completo). Sua admissão foi em <strong className="text-foreground">{formatarDataBr(carencia.admissao)}</strong>, então a solicitação fica disponível a partir de <strong className="text-foreground">{formatarDataBr(bloqueio)}</strong>.</p>
+          </div>
+        </div>}
         {abertos.length === 0
-          ? <p role="status" className="text-sm text-muted-foreground">Nenhum período de férias disponível para solicitação no momento.</p>
-          : <div className="grid gap-4 lg:grid-cols-2">{abertos.map((p) => <CartaoPeriodo key={p.id} p={p} onSolicitar={() => setSelecionado(p)} />)}</div>}
+          ? bloqueio ? null : <p role="status" className="text-sm text-muted-foreground">Nenhum período de férias disponível para solicitação no momento.</p>
+          : <div className="grid gap-4 lg:grid-cols-2">{abertos.map((p) => <CartaoPeriodo key={p.id} p={p} liberaEm={bloqueio} onSolicitar={() => setSelecionado(p)} />)}</div>}
       </section>
 
       <section aria-labelledby="historico">
@@ -175,6 +186,6 @@ function SolicitarFeriasPage() {
           </Table></div>}
       </section>
     </>}
-    {selecionado && <ModalSolicitacao periodo={selecionado} dados={q.data} onClose={() => setSelecionado(null)} />}
+    {selecionado && !bloqueio && <ModalSolicitacao periodo={selecionado} dados={q.data} onClose={() => setSelecionado(null)} />}
   </main>;
 }

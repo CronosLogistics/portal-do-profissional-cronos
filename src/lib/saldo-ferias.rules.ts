@@ -69,6 +69,21 @@ export function periodosDoProfissional(itens: ItemSaldo[], idsProfissional: stri
     .sort((a, b) => (b.periodo ?? "").localeCompare(a.periodo ?? ""));
 }
 
+/** Data em que o profissional completa 12 meses de empresa (aniversário de 1 ano da admissão). */
+export function dataUmAnoEmpresa(admissao: string | null): string | null {
+  const m = admissao ? /^(\d{4})-(\d{2})-(\d{2})$/.exec(admissao) : null;
+  if (!m) return null;
+  return new Date(Date.UTC(Number(m[1]) + 1, Number(m[2]) - 1, Number(m[3]))).toISOString().slice(0, 10);
+}
+
+export type CarenciaFerias = { bloqueado: boolean; admissao: string | null; liberaEm: string | null };
+
+/** CLT: com menos de 1 ano de empresa as férias ainda não podem ser solicitadas. Sem admissão conhecida, não bloqueia. */
+export function carenciaFerias(admissao: string | null, hoje: string): CarenciaFerias {
+  const liberaEm = dataUmAnoEmpresa(admissao);
+  return { bloqueado: !!liberaEm && hoje < liberaEm, admissao: liberaEm ? admissao : null, liberaEm };
+}
+
 /** Quantidades oferecidas no modal, limitadas ao saldo e sempre incluindo o saldo integral. */
 export function opcoesDias(saldo: number): number[] {
   if (saldo <= 0) return [];
