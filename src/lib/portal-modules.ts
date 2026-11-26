@@ -37,7 +37,7 @@ export const PORTAL_MODULES: PortalModule[] = [
   { to: "/treinamentos", label: "Treinamentos" },
   { to: "/formularios-internos", label: "Pesquisas", group: "formularios" },
   { to: "/formularios", label: "Central de Formulários Internos", group: "formularios" },
-  { to: "/solicitar-ferias", label: "Solicitação de Férias", group: "formularios" },
+  { to: "/solicitar-ferias", label: "Solicitação de Férias", group: "formularios", roles: ["admin"] },
   { to: "/acessos-e-sistemas", label: "Acessos e Sistemas", group: "documentos" },
   { to: "/documentos", label: "Documentos Cronos", menuLabel: "Documentos", group: "documentos" },
   { to: "/organograma", label: "DR-02-02: Organograma", group: "documentos" },

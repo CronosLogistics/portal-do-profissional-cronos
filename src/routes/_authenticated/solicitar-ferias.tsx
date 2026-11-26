@@ -1,4 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { supabase } from "@/integrations/supabase/client";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { CalendarDays, CalendarPlus, Info, RefreshCw } from "lucide-react";
 import { useState } from "react";
@@ -15,6 +16,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 const feriasQuery = queryOptions({ queryKey: ["minhas-ferias"], queryFn: () => minhasFerias(), staleTime: 60_000 });
 
 export const Route = createFileRoute("/_authenticated/solicitar-ferias")({
+  // Temporariamente restrita a administradores até a liberação geral.
+  beforeLoad: async () => {
+    const { data } = await supabase.rpc("minhas_permissoes");
+    const perms = (data as string[] | null) ?? [];
+    if (!perms.includes("admin.usuarios")) throw redirect({ to: "/" });
+  },
   loader: ({ context }) => context.queryClient.ensureQueryData(feriasQuery),
   pendingComponent: () => <p className="p-8 text-sm text-muted-foreground">Carregando seus saldos de férias…</p>,
   head: () => ({ meta: [

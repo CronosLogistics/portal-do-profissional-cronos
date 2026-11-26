@@ -77,8 +77,13 @@ describe("Solicitação de férias", () => {
     expect(e.mailto.startsWith("mailto:gestaodepessoas@cronoslogistics.com.br?subject=")).toBe(true);
   });
 
-  it("aparece no menu Formulários para todos os profissionais", () => {
-    const grupo = principalNav(["funcionario"]).find((e) => e.type === "group" && e.id === "formularios");
-    expect(grupo?.type === "group" && grupo.children.some((c) => c.to === "/solicitar-ferias")).toBe(true);
+  it("aparece no menu Formulários apenas para administradores", () => {
+    const tem = (roles: Parameters<typeof principalNav>[0]) => {
+      const grupo = principalNav(roles).find((e) => e.type === "group" && e.id === "formularios");
+      return grupo?.type === "group" && grupo.children.some((c) => c.to === "/solicitar-ferias");
+    };
+    expect(tem(["funcionario"])).toBe(false);
+    expect(tem(["funcionario", "rh"])).toBe(false);
+    expect(tem(["funcionario", "admin"])).toBe(true);
   });
 });
