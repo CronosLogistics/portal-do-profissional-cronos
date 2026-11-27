@@ -1,7 +1,7 @@
 import { pulsoDoDia } from './felizometro.rules';
 
 export type DiaHumor = { dia: string; total: number; muito_bem: number; tranquilo: number; desanimado: number; estressado: number; neutro_legado: number };
-export type PainelHumor = { dias: DiaHumor[]; relatos: string[]; ativos: number; hoje: string };
+export type PainelHumor = { dias: DiaHumor[]; relatos: string[]; ativos: number; hoje: string; ultima_atualizacao: string; proxima_atualizacao: string };
 export type MomentoHumor = 'todos' | 'segunda' | 'sexta';
 export const META_HUMOR_POSITIVO = 80;
 export const percentual = (parte: number, total: number): number | null => total ? parte / total * 100 : null;

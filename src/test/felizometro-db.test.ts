@@ -33,6 +33,7 @@ beforeAll(async () => {
   // A controllable test clock exercises the exact migration's Brazil-day guards.
   await db.exec(readFileSync("drizzle/migrations/0065_felizometro_anonimo.sql", "utf8").replaceAll("now()", "public.test_now()"));
   await db.exec(readFileSync("drizzle/migrations/0066_felizometro_painel_quatro_sentimentos.sql", "utf8").replaceAll("now()", "public.test_now()"));
+  await db.exec(readFileSync("drizzle/migrations/0067_felizometro_consolidacao_diaria_sem_quorum.sql", "utf8").replaceAll("now()", "public.test_now()"));
 }, 30000);
 afterAll(async () => { await db?.close(); });
 
@@ -80,7 +81,7 @@ describe("proteções do Felizômetro", () => {
     await expect(db.query("SELECT responder_felizometro(3,$1)", ["a".repeat(1001)])).rejects.toThrow("1000");
     await db.query("SELECT responder_felizometro(3,$1)", ["a".repeat(1000)]);
   });
-  it("oculta grupos com menos de cinco votos e dias ainda abertos", async () => {
+  it("inclui grupos com menos de cinco votos sem revelar o setor e oculta dias abertos", async () => {
     await db.exec("RESET ROLE");
     await db.exec(`INSERT INTO felizometro_respostas(dia,setor,sentimento,relato) SELECT '2026-11-23','Grupo grande',4,'Relato anônimo' FROM generate_series(1,5);
       INSERT INTO felizometro_respostas(dia,setor,sentimento,relato) SELECT '2026-11-23','Grupo pequeno',1,'Não revelar' FROM generate_series(1,4);
@@ -88,8 +89,9 @@ describe("proteções do Felizômetro", () => {
     await entrar(admin);
     const result = (await db.query<{ r: { grupos: { total: number; setor: string; media: number }[]; relatos: string[] } }>("SELECT relatorio_felizometro('2026-11-01','2026-11-30') AS r")).rows[0]?.r;
     expect(result?.grupos).toHaveLength(1);
-    expect(result?.grupos[0]).toMatchObject({ setor: "Grupo grande", total: 5, media: 4 });
-    expect(result?.relatos).toEqual(Array(5).fill("Relato anônimo"));
+    expect(result?.grupos[0]).toMatchObject({ setor: "Empresa", total: 9, media: 2.67 });
+    expect(result?.relatos.filter(r => r === 'Não revelar')).toHaveLength(4);
+    expect(result?.relatos).not.toContain('Não revelar hoje');
   });
 });
 
@@ -109,11 +111,24 @@ describe("painel consolidado protegido", () => {
     await db.exec("RESET ROLE");
     expect((await db.query<{ sentimento_pulso: number; sentimento: number }>("SELECT sentimento_pulso,sentimento FROM felizometro_respostas WHERE dia='2026-12-04'")).rows[0]).toEqual({ sentimento_pulso: 4, sentimento: 5 });
   });
-  it("consolida apenas coortes liberadas sem retornar setor ou autoria", async () => {
+  it("consolida todos os votos de dias encerrados sem retornar setor ou autoria", async () => {
     await entrar(admin);
     const r = (await db.query<{ r: { dias: Record<string,unknown>[]; relatos: string[]; ativos: number } }>("SELECT painel_felizometro('2026-11-01','2026-11-30') AS r")).rows[0]?.r;
-    expect(r?.dias).toEqual([{ dia: '2026-11-23', total: 5, muito_bem: 0, tranquilo: 5, desanimado: 0, estressado: 0, neutro_legado: 0 }]);
-    expect(r?.relatos).toEqual(Array(5).fill('Relato anônimo'));
+    expect(r?.dias).toEqual([{ dia: '2026-11-23', total: 9, muito_bem: 0, tranquilo: 5, desanimado: 0, estressado: 4, neutro_legado: 0 }]);
+    expect(r?.relatos).toHaveLength(9);
     expect(r?.ativos).toBe(4);
+  });
+  it("libera uma única resposta somente à meia-noite de Brasília e informa as próximas consolidações", async () => {
+    await entrar(admin, '2026-12-05T02:59:59Z');
+    const consultar = async () => (await db.query<{ r: { dias: { total: number }[]; ultima_atualizacao: string; proxima_atualizacao: string } }>("SELECT painel_felizometro('2026-12-01','2026-12-31') AS r")).rows[0]?.r;
+    const antes = await consultar();
+    expect(antes?.dias).toEqual([]);
+    expect(new Date(antes?.ultima_atualizacao ?? '').toISOString()).toBe('2026-12-04T03:00:00.000Z');
+    expect(new Date(antes?.proxima_atualizacao ?? '').toISOString()).toBe('2026-12-05T03:00:00.000Z');
+    await entrar(admin, '2026-12-05T03:00:00Z');
+    const depois = await consultar();
+    expect(depois?.dias).toEqual([{ dia: '2026-12-04', total: 1, muito_bem: 1, tranquilo: 0, desanimado: 0, estressado: 0, neutro_legado: 0 }]);
+    expect(new Date(depois?.ultima_atualizacao ?? '').toISOString()).toBe('2026-12-05T03:00:00.000Z');
+    expect(new Date(depois?.proxima_atualizacao ?? '').toISOString()).toBe('2026-12-06T03:00:00.000Z');
   });
 });

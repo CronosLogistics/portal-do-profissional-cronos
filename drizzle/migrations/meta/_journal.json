@@ -470,6 +470,13 @@
       "when": 1795788177969,
       "tag": "0066_felizometro_painel_quatro_sentimentos",
       "breakpoints": true
+    },
+    {
+      "idx": 67,
+      "version": "7",
+      "when": 1795789223910,
+      "tag": "0067_felizometro_consolidacao_diaria_sem_quorum",
+      "breakpoints": true
     }
   ]
 }

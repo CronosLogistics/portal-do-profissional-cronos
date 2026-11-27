@@ -1,9 +1,10 @@
 # Atualização visual do Portal do Profissional
 ## Felizômetro
+- [x] Remover quórum mínimo e preservar fechamento diário com última/próxima consolidação às 00:00 de Brasília; 20 testes aprovados, funções confirmadas no banco e painel autenticado conferido após recarga no computador/celular, sem erros ou transbordamento. Nenhum voto fictício gravado no portal.
 - [x] Manter relatórios na seção Gestão e preservar permissões de Gestão de Pessoas, Qualidade e administradores.
 - [x] Usar quatro sentimentos preservando respostas anteriores e anonimato.
 - [x] Montar painel consolidado conforme referência; 34 testes passam. Sessão real, filtros e menu Gestão conferidos no computador/celular sem erros ou transbordamento. Quatro emojis e painel populado conferidos com projeções temporárias só no navegador; votos não foram gravados na pesquisa real. Participação identificada como estimativa e temas agrupados por palavras-chave.
-- [x] Registrar pulso de segunda/sexta com participação separada e relatório anônimo protegido; grupos mínimos de 5 e dias encerrados.
+- [x] Registrar pulso de segunda/sexta com participação separada e relatório anônimo protegido; todas as respostas de dias encerrados, sem quórum mínimo.
 - [x] Adicionar balão na página inicial, relato opcional e destaque de anonimato.
 - [x] Agrupar relatórios preservando acesso existente; 17 testes aprovados, balão/seleção/relato/pular/reabrir e relatórios conferidos com sessão real no computador/celular sem erros ou transbordamento. Envio/persistência e projeções populadas validados em banco isolado; não foram gravadas respostas fictícias no portal real.
 ## Acessos e Sistemas

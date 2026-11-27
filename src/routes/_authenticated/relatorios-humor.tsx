@@ -20,7 +20,7 @@ const opcoes = (mes: string) => queryOptions({
     const desde = [data.toISOString().slice(0, 10), `${anterior}-01`].sort()[0] ?? inicio;
     const [atual, historico] = await Promise.all([consultarPainelHumor(inicio, fim), consultarPainelHumor(desde, fim)]);
     return { atual, historico };
-  }, staleTime: 60_000,
+  }, staleTime: 60_000, refetchInterval: 60_000,
 });
 export const Route = createFileRoute('/_authenticated/relatorios-humor')({
   beforeLoad: async () => { if (!(await acessoFelizometro())) throw redirect({ to: '/' }); },
@@ -38,6 +38,7 @@ export const Route = createFileRoute('/_authenticated/relatorios-humor')({
 const numero = (n: number | null) => n === null ? '—' : n.toLocaleString('pt-BR', { maximumFractionDigits: 2 });
 const porcento = (n: number | null) => n === null ? '—' : `${n.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`;
 const dataCurta = (d: string) => new Date(`${d}T12:00:00Z`).toLocaleDateString('pt-BR', { timeZone: 'UTC', day: '2-digit', month: '2-digit' });
+const dataAtualizacao = (d: string) => new Date(d).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
 function Distribuicao({ dias }: { dias: DiaHumor[] }) {
   const resumo = resumoHumor(dias);
   return <div className="space-y-4">{SENTIMENTOS.map(item => <div key={item.valor}>
@@ -76,13 +77,21 @@ function RelatoriosHumor() {
         <Button variant="outline" size="icon" title="Exportar CSV" aria-label="Exportar CSV" disabled={!resumo.total} onClick={exportar}><Download className="size-4" /></Button>
       </div>
     </header>
+    <section aria-label="Atualização dos resultados" className="border-l-2 border-primary bg-muted/50 px-4 py-3 text-sm">
+      <p className="font-bold">Consolidação diária às 00:00 — horário de Brasília</p>
+      <p className="mt-1 text-xs text-muted-foreground">As respostas de hoje entram no relatório após o encerramento do dia, independentemente da quantidade de participantes.</p>
+      <dl className="mt-3 flex flex-wrap gap-x-8 gap-y-2 text-xs">
+        <div><dt className="text-muted-foreground">Última atualização · consolidação diária</dt><dd className="mt-1 font-bold">{dataAtualizacao(data.atual.ultima_atualizacao)}</dd></div>
+        <div><dt className="text-muted-foreground">Próxima atualização · consolidação diária</dt><dd className="mt-1 font-bold">{dataAtualizacao(data.atual.proxima_atualizacao)}</dd></div>
+      </dl>
+    </section>
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <div className="humor-kpi"><h2 className="text-xs font-bold text-muted-foreground">Índice de Humor Positivo</h2><p className="mt-3 text-3xl font-bold tabular-nums">{porcento(resumo.positivo)}</p><p className="mt-2 text-xs text-muted-foreground">Meta RH: ≥ {META_HUMOR_POSITIVO}% · 🤩 + 😊</p>{variacao !== null && <p className="mt-2 text-xs font-bold text-secondary">{variacao > 0 ? '+' : ''}{numero(variacao)} p.p. vs. mês anterior</p>}</div>
-      <div className="humor-kpi" data-kpi="participacao"><h2 className="text-xs font-bold text-muted-foreground">Taxa de Participação</h2><p className="mt-3 text-3xl font-bold tabular-nums">{resumo.total ? porcento(participacao.taxa) : '—'}</p><p className="mt-2 text-xs text-muted-foreground">{resumo.total} respostas disponíveis · {participacao.pulsos} pulsos encerrados</p><p className="mt-2 text-xs text-muted-foreground" title="Respostas disponíveis ÷ (quadro ativo atual × pulsos encerrados). Grupos ocultos não entram no numerador.">Estimativa sobre o quadro ativo atual</p></div>
+      <div className="humor-kpi" data-kpi="participacao"><h2 className="text-xs font-bold text-muted-foreground">Taxa de Participação</h2><p className="mt-3 text-3xl font-bold tabular-nums">{resumo.total ? porcento(participacao.taxa) : '—'}</p><p className="mt-2 text-xs text-muted-foreground">{resumo.total} respostas disponíveis · {participacao.pulsos} pulsos encerrados</p><p className="mt-2 text-xs text-muted-foreground" title="Respostas de dias encerrados ÷ (quadro ativo atual × pulsos encerrados).">Estimativa sobre o quadro ativo atual</p></div>
       <div className="humor-kpi" data-kpi="desgaste"><h2 className="text-xs font-bold text-muted-foreground">Desgaste Semanal (Seg → Sex)</h2><p className="mt-3 text-3xl font-bold tabular-nums">{numero(desgaste)}</p><p className="mt-2 text-xs text-muted-foreground">Escala de 1 a 4 · {numero(segunda.media)} → {numero(sexta.media)}</p><p className="mt-2 text-xs text-muted-foreground">Comparativo das médias do período</p></div>
       <div className="humor-kpi" data-kpi="alerta"><h2 className="text-xs font-bold text-muted-foreground">Taxa de Alerta Crítico</h2><p className="mt-3 text-3xl font-bold tabular-nums">{porcento(resumo.alerta)}</p><p className="mt-2 text-xs text-muted-foreground">😟 Desanimado ou 😤 Estressado</p><p className="mt-2 text-xs font-bold text-destructive">{resumo.desanimado + resumo.estressado} respostas</p></div>
     </div>
-    {!resumo.total && <div role="status" className="border-l-2 border-primary bg-muted/50 px-4 py-3 text-sm"><p className="font-bold">Ainda não há resultados disponíveis neste período</p><p className="mt-1 text-xs text-muted-foreground">Resultados são liberados após encerrar o dia, com pelo menos 5 respostas por setor e pulso.</p></div>}
+    {!resumo.total && <div role="status" className="border-l-2 border-primary bg-muted/50 px-4 py-3 text-sm"><p className="font-bold">Ainda não há resultados disponíveis neste período</p><p className="mt-1 text-xs text-muted-foreground">Todas as respostas são liberadas após encerrar o dia. Confira acima o horário da próxima atualização.</p></div>}
     <div className="grid gap-7 lg:grid-cols-[1.2fr_1fr]">
       <section className="humor-panel"><h2 className="text-sm font-bold">Termômetro da Semana: Segunda-feira vs. Sexta-feira</h2><p className="mt-1 text-xs text-muted-foreground">Comparativo consolidado de energia no início e no fechamento da semana</p>
         <div className="mt-5 grid gap-6 sm:grid-cols-2">{[{ nome: 'Segunda-feira (Início)', resumo: segunda, dias: segundaDias }, { nome: 'Sexta-feira (Fechamento)', resumo: sexta, dias: sextaDias }].map(item => <div key={item.nome}><div className="mb-5 flex flex-wrap justify-between gap-2 text-xs font-bold"><h3>{item.nome}</h3><span className="text-secondary">Média {numero(item.resumo.media)}</span></div><Distribuicao dias={item.dias} /></div>)}</div>
@@ -95,6 +104,6 @@ function RelatoriosHumor() {
       <section className="humor-panel"><h2 className="text-sm font-bold">Radar de Atenção — Temas Citados (Anônimo)</h2><p className="mb-5 mt-1 text-xs text-muted-foreground">Relatos opcionais do mês, sem vínculo de área ou sentimento</p>{temas.length ? <div className="overflow-x-auto"><Table><TableHeader><TableRow><TableHead>Tema</TableHead><TableHead>Assuntos citados</TableHead><TableHead className="text-right">Menções</TableHead></TableRow></TableHeader><TableBody>{temas.map(t => <TableRow key={t.nome}><TableCell className="text-xs font-bold text-secondary">{t.nome}</TableCell><TableCell className="text-xs">{t.sintese}</TableCell><TableCell className="text-right text-xs font-bold">{t.mencoes}</TableCell></TableRow>)}</TableBody></Table></div> : <p className="py-8 text-center text-xs text-muted-foreground">Nenhum tema recorrente identificado neste período.</p>}<p className="mt-4 text-xs text-muted-foreground">Agrupamento por palavras-chave. Um relato pode mencionar mais de um tema; não é uma avaliação individual.</p></section>
     </div>
     <section className="humor-panel"><details><summary className="cursor-pointer text-sm font-bold">Relatos anônimos do mês ({data.atual.relatos.length})</summary><p className="mt-2 text-xs text-muted-foreground">Sem vínculo com o filtro de momento, área, autoria ou ordem de envio.</p>{data.atual.relatos.length ? <ul className="mt-3 divide-y">{data.atual.relatos.map((texto, i) => <li key={i} className="whitespace-pre-wrap break-words py-4 text-sm">{texto}</li>)}</ul> : <p className="mt-4 text-xs text-muted-foreground">Nenhum relato disponível.</p>}</details></section>
-    <footer className="flex items-start gap-2 border-t pt-4 text-xs leading-relaxed text-muted-foreground"><ShieldCheck className="size-4 shrink-0" /><p>Pesquisa anônima. Nenhum nome, gestor, setor ou horário individual é exibido. Grupos pequenos e pulsos ainda abertos ficam ocultos; os indicadores consideram apenas resultados liberados.</p></footer>
+    <footer className="flex items-start gap-2 border-t pt-4 text-xs leading-relaxed text-muted-foreground"><ShieldCheck className="size-4 shrink-0" /><p>Pesquisa anônima. Nenhum nome, gestor, setor ou horário individual é exibido. Todas as respostas de dias encerrados compõem os indicadores, sem quantidade mínima de participantes.</p></footer>
   </main>;
 }
