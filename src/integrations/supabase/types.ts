@@ -535,6 +535,48 @@ export type Database = {
         }
         Relationships: []
       }
+      felizometro_participacoes: {
+        Row: {
+          dia: string
+          usuario_id: string
+        }
+        Insert: {
+          dia: string
+          usuario_id: string
+        }
+        Update: {
+          dia?: string
+          usuario_id?: string
+        }
+        Relationships: []
+      }
+      felizometro_respostas: {
+        Row: {
+          departamento_id: string | null
+          dia: string
+          id: string
+          relato: string
+          sentimento: number
+          setor: string
+        }
+        Insert: {
+          departamento_id?: string | null
+          dia: string
+          id?: string
+          relato?: string
+          sentimento: number
+          setor: string
+        }
+        Update: {
+          departamento_id?: string | null
+          dia?: string
+          id?: string
+          relato?: string
+          sentimento?: number
+          setor?: string
+        }
+        Relationships: []
+      }
       formularios: {
         Row: {
           acao: string
@@ -1868,6 +1910,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      felizometro_pendente: { Args: never; Returns: Json }
       finalizar_exclusao_questionario: {
         Args: { _id: string }
         Returns: undefined
@@ -2137,6 +2180,7 @@ export type Database = {
         Returns: boolean
       }
       pode_ler_insider: { Args: { _id: string }; Returns: boolean }
+      pode_ver_felizometro: { Args: never; Returns: boolean }
       pode_ver_relatorios_acesso: { Args: never; Returns: boolean }
       primeiro_util_mes: { Args: { _data: string }; Returns: string }
       publicar_edicao_insider: {
@@ -2184,6 +2228,10 @@ export type Database = {
           usuario_id: string
         }[]
       }
+      relatorio_felizometro: {
+        Args: { _fim: string; _inicio: string }
+        Returns: Json
+      }
       reservar_departamentos: { Args: never; Returns: boolean }
       reservar_insider: {
         Args: { _mes: string; _token: string }
@@ -2194,6 +2242,10 @@ export type Database = {
         Returns: boolean
       }
       reservar_sincronizacao: { Args: never; Returns: boolean }
+      responder_felizometro: {
+        Args: { _relato?: string; _sentimento: number }
+        Returns: undefined
+      }
       responder_questionario: {
         Args: { _id: string; _respostas: Json }
         Returns: string

@@ -456,6 +456,13 @@
       "when": 1795600000002,
       "tag": "0064_restringir_perfil_privacidade",
       "breakpoints": true
+    },
+    {
+      "idx": 65,
+      "version": "7",
+      "when": 1795787252163,
+      "tag": "0065_felizometro_anonimo",
+      "breakpoints": true
     }
   ]
 }

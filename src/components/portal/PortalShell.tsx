@@ -5,6 +5,8 @@ import { Award, BarChart3, CalendarDays, ChevronDown, ListChecks, MessageSquareH
 import { TourBoasVindas } from "@/components/portal/TourBoasVindas";
 import { AvisosBell } from "@/components/avisos/AvisosBell";
 import { BuscaColegas } from "@/components/portal/BuscaColegas";
+import { Felizometro } from "@/components/portal/Felizometro";
+import { acessoFelizometro } from "@/lib/felizometro-client";
 import { useAvisosAoVivo, useNaoLidos } from "@/hooks/useAvisos";
 import { useAlertaPendenciasLogin, useTotalPendencias } from "@/hooks/usePendencias";
 import { useQuestionariosPendentes } from "@/hooks/useQuestionarios";
@@ -49,9 +51,11 @@ const moduleIcons: Record<PortalModule["to"], LucideIcon> = {
   "/organograma": FolderOpen,
   "/acessos-e-sistemas": MonitorUp,
   "/solicitar-ferias": CalendarDays,
+  "/relatorios-acessos": BarChart3,
+  "/relatorios-humor": MessageSquareHeart,
 };
 
-const groupIcons: Record<PortalNavGroup, LucideIcon> = { beneficios: Gift, feedbacks: MessageSquareHeart, avisos: Megaphone, formularios: ClipboardList, documentos: FolderOpen };
+const groupIcons: Record<PortalNavGroup, LucideIcon> = { beneficios: Gift, feedbacks: MessageSquareHeart, avisos: Megaphone, formularios: ClipboardList, documentos: FolderOpen, relatorios: BarChart3 };
 
 type NavTarget = "/" | PortalModule["to"] | "/admin" | "/admin/usuarios";
 
@@ -121,7 +125,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
   const foto = useMinhaFoto();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [openMenus, setOpenMenus] = useState({ beneficios: false, feedbacks: false, avisos: false, formularios: false, documentos: false, admin: false });
+  const [openMenus, setOpenMenus] = useState({ beneficios: false, feedbacks: false, avisos: false, formularios: false, documentos: false, relatorios: false, admin: false });
   const me = useCurrentUser();
   const navigate = useNavigate();
   const signOut = useSignOut();
@@ -134,7 +138,10 @@ export function PortalShell({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
   const roles = me.data?.roles ?? [];
   const inventario = useQuery({ queryKey: ["inventario-acesso", me.data?.id], queryFn: () => acessoInventario(), enabled: !!me.data?.id, staleTime: 5 * 60_000 });
+  const humor = useQuery({ queryKey: ["felizometro-acesso", me.data?.id], queryFn: acessoFelizometro, enabled: !!me.data?.id, staleTime: 5 * 60_000 });
   const ocultar: PortalModule["to"][] = inventario.data?.permitido ? [] : ["/inventario-brindes"];
+  if (!me.data?.can("acessos.relatorios")) ocultar.push("/relatorios-acessos");
+  if (!humor.data) ocultar.push("/relatorios-humor");
   const modules = visibleModules(roles, ocultar);
   const entries = principalNav(roles, ocultar);
   const iconOnly = collapsed && !mobileOpen;
@@ -212,7 +219,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
             );
           })}
         </nav>
-        {(me.data?.isAdmin || me.data?.can("acessos.relatorios")) && <div className="portal-admin-nav">
+        {me.data?.isAdmin && <div className="portal-admin-nav">
           <div className="portal-nav-heading sidebar-label">GESTÃO</div>
           {me.data.isAdmin && (
             <SidebarBranch
@@ -250,11 +257,6 @@ export function PortalShell({ children }: { children: ReactNode }) {
               </Link>}
             </SidebarBranch>
           )}
-          {me.data.can("acessos.relatorios") && (
-            <Button asChild variant="ghost" className={`portal-nav-item ${matchesPath(pathname, "/relatorios-acessos") ? "is-active" : ""}`}>
-              <Link to="/relatorios-acessos" title="Relatórios de acesso" onClick={closeMobile}><BarChart3 /><span className="sidebar-label">Relatórios de acesso</span></Link>
-            </Button>
-          )}
         </div>}
         <div className="portal-sidebar-bottom">
           <Button variant="ghost" className="portal-collapse" onClick={() => setCollapsed(v => !v)} title={collapsed ? "Expandir menu" : "Recolher menu"} aria-label={collapsed ? "Expandir menu" : "Recolher menu"}>{collapsed ? <ChevronRight /> : <ChevronLeft />}<span className="sidebar-label">Recolher menu</span></Button>
@@ -267,6 +269,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
             <span className="hidden items-center gap-2 text-sm text-muted-foreground sm:flex"><Building2 className="size-4" /><span>{office?.name || "Escritório não identificado"}</span></span>
             <BuscaColegas />
             <AvisosBell naoLidos={naoLidos} />
+            <Felizometro userId={me.data?.id} inicio={pathname === "/"}>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
@@ -301,6 +304,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            </Felizometro>
           </div>
         </header>
         <div className="portal-canvas">

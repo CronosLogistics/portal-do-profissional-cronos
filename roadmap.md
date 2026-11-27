@@ -1,4 +1,8 @@
 # Atualização visual do Portal do Profissional
+## Felizômetro
+- [x] Registrar pulso de segunda/sexta com participação separada e relatório anônimo protegido; grupos mínimos de 5 e dias encerrados.
+- [x] Adicionar balão na página inicial, relato opcional e destaque de anonimato.
+- [x] Agrupar relatórios preservando acesso existente; 17 testes aprovados, balão/seleção/relato/pular/reabrir e relatórios conferidos com sessão real no computador/celular sem erros ou transbordamento. Envio/persistência e projeções populadas validados em banco isolado; não foram gravadas respostas fictícias no portal real.
 ## Acessos e Sistemas
 - [x] Adicionar Reembolso e Cronos Insights, renomear o atalho anterior para Visualização QBr; 12 testes aprovados e oito destinos conferidos na tela autenticada, preservados após recarga sem transbordamento ou erros. Logins externos não exercitados.
 - [x] Adicionar submenu em Documentos Cronos e guia com os seis links, visível a todos os profissionais, com identificação do Logcomex para Comercial e login Sólides sem sessão compartilhada.
