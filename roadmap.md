@@ -1,5 +1,6 @@
 # Atualização visual do Portal do Profissional
 ## Felizômetro
+- [x] Liberar relatório também para administradores de sistema ativos, preservando as três profissionais e bloqueando os demais; regra conferida no banco, 11 testes aprovados e relatório aberto com sessão real de administradora.
 - [x] Restringir relatório às contas ativas de Marcelli Montagnini, Bruna Hlatki e Gabrielle Rossato, sem exceção administrativa; regra aplicada no banco e 11 testes aprovados. Sessão autenticada de outra pessoa redirecionada ao início, sem link no menu; acesso positivo das três contas validado em teste isolado, não nas sessões pessoais.
 - [x] Padronizar fontes, ampliar o filtro de mês e alinhar cabeçalhos/colunas do Termômetro; 10 testes aprovados e tela autenticada/filtros conferidos em 1169px e 390px, calendário inteiro e sem transbordamento ou erros. Sem respostas consolidadas reais nesta sessão.
 - [x] Remover Radar de Atenção e meta ilustrativa, enquadrar gráficos no padrão do portal e mostrar estados vazios claros, preservando relatos e consolidação diária; 10 testes aprovados e painel autenticado/filtro/relatos conferidos no computador e abertura no celular sem transbordamento. Sem resultados consolidados reais para validar gráficos preenchidos nesta sessão.

@@ -38,12 +38,13 @@ beforeAll(async () => {
   await db.exec(readFileSync("drizzle/migrations/0066_felizometro_painel_quatro_sentimentos.sql", "utf8").replaceAll("now()", "public.test_now()"));
   await db.exec(readFileSync("drizzle/migrations/0067_felizometro_consolidacao_diaria_sem_quorum.sql", "utf8").replaceAll("now()", "public.test_now()"));
   await db.exec(readFileSync("drizzle/migrations/0068_felizometro_relatorio_acesso_individual.sql", "utf8"));
+  await db.exec(readFileSync("drizzle/migrations/0069_felizometro_relatorio_administradores.sql", "utf8"));
 }, 30000);
 afterAll(async () => { await db?.close(); });
 
 describe("proteções do Felizômetro", () => {
-  it("permite relatório apenas para Marcelli, Bruna e Gabrielle ativas", async () => {
-    for (const [id, permitido] of [[marcelli,true],[bruna,true],[gabrielle,true],[uid,false],[admin,false],[gp,false],[qualidade,false],[inativo,false]] as const) {
+  it("permite relatório para as três profissionais e administradores ativos", async () => {
+    for (const [id, permitido] of [[marcelli,true],[bruna,true],[gabrielle,true],[uid,false],[admin,true],[gp,false],[qualidade,false],[inativo,false]] as const) {
       await entrar(id);
       expect((await db.query<{ permitido: boolean }>("SELECT pode_ver_felizometro() AS permitido")).rows[0]?.permitido).toBe(permitido);
       if (!permitido) await expect(db.query("SELECT relatorio_felizometro('2026-11-01','2026-11-30')")).rejects.toThrow();
@@ -112,8 +113,8 @@ describe("proteções do Felizômetro", () => {
 });
 
 describe("painel consolidado protegido", () => {
-  it("bloqueia o painel para administradores e Gestão de Pessoas fora das três contas autorizadas", async () => {
-    for (const [id, permitido] of [[marcelli,true],[bruna,true],[gabrielle,true],[admin,false],[gp,false],[qualidade,false],[uid,false],[inativo,false]] as const) {
+  it("libera o painel aos administradores sem liberar demais integrantes de Gestão de Pessoas", async () => {
+    for (const [id, permitido] of [[marcelli,true],[bruna,true],[gabrielle,true],[admin,true],[gp,false],[qualidade,false],[uid,false],[inativo,false]] as const) {
       await entrar(id);
       const consulta = db.query("SELECT painel_felizometro('2026-11-01','2026-11-30')");
       if (permitido) await expect(consulta).resolves.toBeDefined(); else await expect(consulta).rejects.toThrow("permissão");
