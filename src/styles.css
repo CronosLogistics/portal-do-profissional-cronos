@@ -38,6 +38,8 @@
   --color-accent-glow: var(--accent-glow);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-humor-calm: var(--humor-calm);
+  --color-humor-low: var(--humor-low);
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
   --color-border: var(--border);
@@ -88,6 +90,8 @@
   --accent-foreground: oklch(0.961 0 0);
   --accent-glow: oklch(0.601 0.231 0.7);
 
+  --humor-calm: oklch(0.74 0.10 88);
+  --humor-low: oklch(0.65 0.16 60);
   --success: oklch(0.7 0.16 155);
   --success-foreground: oklch(0.15 0 0);
 
@@ -527,3 +531,20 @@
   background-image: radial-gradient(color-mix(in oklab, var(--muted-foreground) 35%, transparent) 1px, transparent 1px);
   background-size: 18px 18px;
 }
+
+.humor-panel { border-top: 1px solid var(--border); padding-top: 20px; min-width: 0; }
+.humor-kpi { border: 1px solid var(--border); border-left: 3px solid var(--primary); border-radius: var(--radius); padding: 18px; background: var(--card); box-shadow: var(--shadow-soft); min-width: 0; }
+.humor-meter::-webkit-meter-bar { background: var(--muted); border: 0; border-radius: 6px; }
+.humor-meter::-webkit-meter-optimum-value { background: var(--meter-color); border-radius: 6px; }
+.humor-meter::-moz-meter-bar { background: var(--meter-color); border-radius: 6px; }
+.humor-meter { appearance: none; width: 100%; height: 10px; background: var(--muted); border-radius: 6px; }
+.humor-meter[data-tone="muito_bem"] { --meter-color: var(--success); }
+.humor-meter[data-tone="tranquilo"] { --meter-color: var(--humor-calm); }
+.humor-meter[data-tone="desanimado"] { --meter-color: var(--humor-low); }
+.humor-meter[data-tone="estressado"] { --meter-color: var(--primary); }
+
+.portal-canvas .humor-dashboard h2 { font-size: 14px; line-height: 1.4; }
+.portal-canvas .humor-dashboard .humor-kpi h2 { font-size: 12px; }
+.humor-kpi[data-kpi="participacao"] { border-left-color: var(--humor-calm); }
+.humor-kpi[data-kpi="desgaste"] { border-left-color: var(--foreground); }
+.humor-kpi[data-kpi="alerta"] { border-left-color: var(--destructive); }

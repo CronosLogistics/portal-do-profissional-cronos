@@ -557,6 +557,7 @@ export type Database = {
           id: string
           relato: string
           sentimento: number
+          sentimento_pulso: number | null
           setor: string
         }
         Insert: {
@@ -565,6 +566,7 @@ export type Database = {
           id?: string
           relato?: string
           sentimento: number
+          sentimento_pulso?: number | null
           setor: string
         }
         Update: {
@@ -573,6 +575,7 @@ export type Database = {
           id?: string
           relato?: string
           sentimento?: number
+          sentimento_pulso?: number | null
           setor?: string
         }
         Relationships: []
@@ -2173,6 +2176,10 @@ export type Database = {
           titulo: string
         }[]
       }
+      painel_felizometro: {
+        Args: { _fim: string; _inicio: string }
+        Returns: Json
+      }
       pode_editar_organograma: { Args: never; Returns: boolean }
       pode_enviar_como: { Args: { _perfil_id: string }; Returns: boolean }
       pode_interagir_compilado: {
@@ -2243,6 +2250,10 @@ export type Database = {
       }
       reservar_sincronizacao: { Args: never; Returns: boolean }
       responder_felizometro: {
+        Args: { _relato?: string; _sentimento: number }
+        Returns: undefined
+      }
+      responder_felizometro_v2: {
         Args: { _relato?: string; _sentimento: number }
         Returns: undefined
       }

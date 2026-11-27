@@ -61,7 +61,7 @@ export function Felizometro({ children, userId, inicio }: { children: ReactNode;
         <h2 className="text-base font-bold leading-snug">{sexta ? "Como foi a sua semana por aqui?" : "Como você está começando a semana?"}</h2>
         <p className="mt-2 text-xs leading-relaxed text-muted-foreground">Leva 1 segundo e nos ajuda a melhorar como time!</p>
         <p className="mt-1 flex items-center gap-1.5 text-xs font-bold text-secondary"><ShieldCheck className="size-3.5" />A pesquisa é anônima.</p>
-        <div className="my-4 grid grid-cols-5 gap-1.5" role="group" aria-label="Como está se sentindo">
+        <div className="my-4 grid grid-cols-4 gap-1.5" role="group" aria-label="Como está se sentindo">
           {SENTIMENTOS.map(item => <Button key={item.valor} type="button" variant="outline" disabled={enviar.isPending} aria-pressed={sentimento === item.valor} aria-label={item.nome} onClick={() => { setSentimento(item.valor); enviar.reset(); }} className={`h-[82px] min-w-0 flex-col gap-2 whitespace-normal px-1 ${sentimento === item.valor ? "border-primary bg-primary/5 text-primary" : "bg-muted/40"}`}>
             <span className="text-2xl" aria-hidden="true">{item.emoji}</span><span className="text-[10px] leading-tight">{item.nome}</span>
           </Button>)}

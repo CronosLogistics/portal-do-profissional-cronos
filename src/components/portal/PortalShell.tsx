@@ -144,6 +144,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
   if (!humor.data) ocultar.push("/relatorios-humor");
   const modules = visibleModules(roles, ocultar);
   const entries = principalNav(roles, ocultar);
+  const relatorios = entries.find(entry => entry.type === "group" && entry.id === "relatorios");
   const iconOnly = collapsed && !mobileOpen;
   const closeMobile = () => setMobileOpen(false);
   const activeModule = modules.find((mod) => matchesPath(pathname, mod.to));
@@ -169,7 +170,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
         <Button className="sidebar-mobile-close" variant="ghost" size="icon" onClick={() => setMobileOpen(false)} aria-label="Fechar menu"><X /></Button>
         <div className="portal-nav-heading sidebar-label">PRINCIPAL</div>
         <nav className="portal-nav">
-          {entries.map((entry) => {
+          {entries.filter(entry => entry.type !== "group" || entry.id !== "relatorios").map((entry) => {
             if (entry.type === "link") {
               const Icon = entry.to === "/" ? Home : moduleIcons[entry.to];
               const active = entry.to === "/" ? pathname === "/" : matchesPath(pathname, entry.to);
@@ -219,9 +220,12 @@ export function PortalShell({ children }: { children: ReactNode }) {
             );
           })}
         </nav>
-        {me.data?.isAdmin && <div className="portal-admin-nav">
+        {(me.data?.isAdmin || relatorios) && <div className="portal-admin-nav">
           <div className="portal-nav-heading sidebar-label">GESTÃO</div>
-          {me.data.isAdmin && (
+          {relatorios?.type === "group" && relatorios.children[0] && <SidebarBranch label="Relatórios" icon={BarChart3} parentTo={relatorios.children[0].to} sectionActive={relatorios.children.some(child => matchesPath(pathname, child.to))} parentActive={false} open={openMenus.relatorios} onOpenChange={open => setOpenMenus(state => ({ ...state, relatorios: open }))} iconOnly={iconOnly} onNavigate={closeMobile}>
+            {relatorios.children.map(child => <Link key={child.to} to={child.to} className={`portal-subnav ${matchesPath(pathname, child.to) ? "is-active" : ""}`} aria-current={matchesPath(pathname, child.to) ? "page" : undefined} onClick={closeMobile}>{child.label}</Link>)}
+          </SidebarBranch>}
+          {me.data?.isAdmin && (
             <SidebarBranch
               label="Administração"
               icon={Settings}

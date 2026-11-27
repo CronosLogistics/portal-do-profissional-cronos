@@ -1,9 +1,8 @@
 export const SENTIMENTOS = [
-  { valor: 5, emoji: "🤩", nome: "Muito bem" },
-  { valor: 4, emoji: "😊", nome: "Tranquilo" },
-  { valor: 3, emoji: "😐", nome: "Neutro" },
-  { valor: 2, emoji: "😟", nome: "Desanimado" },
-  { valor: 1, emoji: "😣", nome: "Muito difícil" },
+  { valor: 4, emoji: "🤩", nome: "Muito bem", chave: "muito_bem" },
+  { valor: 3, emoji: "😊", nome: "Tranquilo", chave: "tranquilo" },
+  { valor: 2, emoji: "😟", nome: "Desanimado", chave: "desanimado" },
+  { valor: 1, emoji: "😤", nome: "Estressado", chave: "estressado" },
 ] as const;
 
 export function pulsoDoDia(dia: string): "segunda" | "sexta" | null {

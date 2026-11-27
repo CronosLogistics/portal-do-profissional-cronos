@@ -32,6 +32,7 @@ beforeAll(async () => {
   `);
   // A controllable test clock exercises the exact migration's Brazil-day guards.
   await db.exec(readFileSync("drizzle/migrations/0065_felizometro_anonimo.sql", "utf8").replaceAll("now()", "public.test_now()"));
+  await db.exec(readFileSync("drizzle/migrations/0066_felizometro_painel_quatro_sentimentos.sql", "utf8").replaceAll("now()", "public.test_now()"));
 }, 30000);
 afterAll(async () => { await db?.close(); });
 
@@ -89,5 +90,30 @@ describe("proteções do Felizômetro", () => {
     expect(result?.grupos).toHaveLength(1);
     expect(result?.grupos[0]).toMatchObject({ setor: "Grupo grande", total: 5, media: 4 });
     expect(result?.relatos).toEqual(Array(5).fill("Relato anônimo"));
+  });
+});
+
+describe("painel consolidado protegido", () => {
+  it("mantém administradores e Gestão de Pessoas autorizados, e Qualidade sem acesso ao humor", async () => {
+    for (const [id, permitido] of [[admin,true],[gp,true],[qualidade,false],[uid,false],[inativo,false]] as const) {
+      await entrar(id);
+      const consulta = db.query("SELECT painel_felizometro('2026-11-01','2026-11-30')");
+      if (permitido) await expect(consulta).resolves.toBeDefined(); else await expect(consulta).rejects.toThrow("permissão");
+    }
+  });
+  it("aceita quatro níveis e rejeita o quinto sem registrar participação", async () => {
+    await entrar(gp,"2026-12-04T12:00:00Z");
+    await expect(db.query("SELECT responder_felizometro_v2(5)")).rejects.toThrow("quatro");
+    await db.query("SELECT responder_felizometro_v2(4,'Conquista')");
+    await expect(db.query("SELECT responder_felizometro_v2(3)")).rejects.toThrow("já respondeu");
+    await db.exec("RESET ROLE");
+    expect((await db.query<{ sentimento_pulso: number; sentimento: number }>("SELECT sentimento_pulso,sentimento FROM felizometro_respostas WHERE dia='2026-12-04'")).rows[0]).toEqual({ sentimento_pulso: 4, sentimento: 5 });
+  });
+  it("consolida apenas coortes liberadas sem retornar setor ou autoria", async () => {
+    await entrar(admin);
+    const r = (await db.query<{ r: { dias: Record<string,unknown>[]; relatos: string[]; ativos: number } }>("SELECT painel_felizometro('2026-11-01','2026-11-30') AS r")).rows[0]?.r;
+    expect(r?.dias).toEqual([{ dia: '2026-11-23', total: 5, muito_bem: 0, tranquilo: 5, desanimado: 0, estressado: 0, neutro_legado: 0 }]);
+    expect(r?.relatos).toEqual(Array(5).fill('Relato anônimo'));
+    expect(r?.ativos).toBe(4);
   });
 });

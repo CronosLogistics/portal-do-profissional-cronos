@@ -463,6 +463,13 @@
       "when": 1795787252163,
       "tag": "0065_felizometro_anonimo",
       "breakpoints": true
+    },
+    {
+      "idx": 66,
+      "version": "7",
+      "when": 1795788177969,
+      "tag": "0066_felizometro_painel_quatro_sentimentos",
+      "breakpoints": true
     }
   ]
 }
