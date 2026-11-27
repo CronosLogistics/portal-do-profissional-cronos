@@ -543,8 +543,9 @@
 .humor-meter[data-tone="desanimado"] { --meter-color: var(--humor-low); }
 .humor-meter[data-tone="estressado"] { --meter-color: var(--primary); }
 
-.portal-canvas .humor-dashboard h2 { font-size: 14px; line-height: 1.4; }
-.portal-canvas .humor-dashboard .humor-kpi h2 { font-size: 12px; }
+.portal-canvas .humor-dashboard h2 { font-size: 18px; line-height: 1.4; }
+.portal-canvas .humor-dashboard .humor-kpi h2 { font-size: 14px; }
+.humor-dashboard input[type="month"]::-webkit-calendar-picker-indicator { flex-shrink: 0; margin-left: 8px; }
 .humor-kpi[data-kpi="participacao"] { border-left-color: var(--humor-calm); }
 .humor-kpi[data-kpi="desgaste"] { border-left-color: var(--foreground); }
 .humor-kpi[data-kpi="alerta"] { border-left-color: var(--destructive); }

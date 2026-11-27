@@ -1,5 +1,6 @@
 # Atualização visual do Portal do Profissional
 ## Felizômetro
+- [x] Padronizar fontes, ampliar o filtro de mês e alinhar cabeçalhos/colunas do Termômetro; 10 testes aprovados e tela autenticada/filtros conferidos em 1169px e 390px, calendário inteiro e sem transbordamento ou erros. Sem respostas consolidadas reais nesta sessão.
 - [x] Remover Radar de Atenção e meta ilustrativa, enquadrar gráficos no padrão do portal e mostrar estados vazios claros, preservando relatos e consolidação diária; 10 testes aprovados e painel autenticado/filtro/relatos conferidos no computador e abertura no celular sem transbordamento. Sem resultados consolidados reais para validar gráficos preenchidos nesta sessão.
 - [x] Remover quórum mínimo e preservar fechamento diário com última/próxima consolidação às 00:00 de Brasília; 20 testes aprovados, funções confirmadas no banco e painel autenticado conferido após recarga no computador/celular, sem erros ou transbordamento. Nenhum voto fictício gravado no portal.
 - [x] Manter relatórios na seção Gestão e preservar permissões de Gestão de Pessoas, Qualidade e administradores.
