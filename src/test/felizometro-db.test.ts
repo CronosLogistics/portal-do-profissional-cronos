@@ -6,6 +6,9 @@ import { beforeAll, afterAll, describe, expect, it } from "vitest";
 const uid = "00000000-0000-4000-8000-000000000001";
 const admin = "00000000-0000-4000-8000-000000000002";
 const gp = "00000000-0000-4000-8000-000000000003";
+const marcelli = "4247f4ae-aa43-49ca-aa41-18d400bfef4f";
+const bruna = "16755e50-279f-42a5-b248-73e25e6d1020";
+const gabrielle = "37894b67-ce27-4d09-a31c-5ac4190a8ae6";
 const qualidade = "00000000-0000-4000-8000-000000000004";
 const inativo = "00000000-0000-4000-8000-000000000005";
 let db: PGlite;
@@ -20,7 +23,7 @@ beforeAll(async () => {
     CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql AS $$ SELECT current_setting('test.uid',true)::uuid $$;
     CREATE FUNCTION public.test_now() RETURNS timestamptz LANGUAGE sql AS $$ SELECT current_setting('test.agora')::timestamptz $$;
     CREATE TABLE public.profiles(id uuid PRIMARY KEY,is_active boolean,administrador boolean,gp boolean);
-    INSERT INTO profiles VALUES ('${uid}',true,false,false),('${admin}',true,true,false),('${gp}',true,false,true),('${qualidade}',true,false,false),('${inativo}',false,true,true);
+    INSERT INTO profiles VALUES ('${uid}',true,false,false),('${admin}',true,true,false),('${gp}',true,false,true),('${qualidade}',true,false,false),('${inativo}',false,true,true),('${marcelli}',true,false,false),('${bruna}',true,false,false),('${gabrielle}',true,false,false);
     CREATE FUNCTION public.is_active_user(u uuid) RETURNS boolean LANGUAGE sql AS $$ SELECT is_active FROM profiles WHERE id=u $$;
     CREATE FUNCTION public.usuario_tem_permissao(u uuid,p text) RETURNS boolean LANGUAGE sql AS $$ SELECT administrador FROM profiles WHERE id=u $$;
     CREATE FUNCTION public.meu_escopo_departamento() RETURNS jsonb LANGUAGE sql AS $$ SELECT jsonb_build_object('gestaoPessoas',gp) FROM profiles WHERE id=auth.uid() $$;
@@ -34,15 +37,28 @@ beforeAll(async () => {
   await db.exec(readFileSync("drizzle/migrations/0065_felizometro_anonimo.sql", "utf8").replaceAll("now()", "public.test_now()"));
   await db.exec(readFileSync("drizzle/migrations/0066_felizometro_painel_quatro_sentimentos.sql", "utf8").replaceAll("now()", "public.test_now()"));
   await db.exec(readFileSync("drizzle/migrations/0067_felizometro_consolidacao_diaria_sem_quorum.sql", "utf8").replaceAll("now()", "public.test_now()"));
+  await db.exec(readFileSync("drizzle/migrations/0068_felizometro_relatorio_acesso_individual.sql", "utf8"));
 }, 30000);
 afterAll(async () => { await db?.close(); });
 
 describe("proteções do Felizômetro", () => {
-  it("permite relatório só para Gestão de Pessoas e administradores ativos", async () => {
-    for (const [id, permitido] of [[uid,false],[admin,true],[gp,true],[qualidade,false],[inativo,false]] as const) {
+  it("permite relatório apenas para Marcelli, Bruna e Gabrielle ativas", async () => {
+    for (const [id, permitido] of [[marcelli,true],[bruna,true],[gabrielle,true],[uid,false],[admin,false],[gp,false],[qualidade,false],[inativo,false]] as const) {
       await entrar(id);
       expect((await db.query<{ permitido: boolean }>("SELECT pode_ver_felizometro() AS permitido")).rows[0]?.permitido).toBe(permitido);
       if (!permitido) await expect(db.query("SELECT relatorio_felizometro('2026-11-01','2026-11-30')")).rejects.toThrow();
+    }
+  });
+  it("revoga o relatório quando uma conta autorizada está inativa", async () => {
+    await db.exec("RESET ROLE");
+    await db.query("UPDATE profiles SET is_active=false WHERE id=$1", [bruna]);
+    try {
+      await entrar(bruna);
+      expect((await db.query<{ permitido: boolean }>("SELECT pode_ver_felizometro() AS permitido")).rows[0]?.permitido).toBe(false);
+      await expect(db.query("SELECT painel_felizometro('2026-11-01','2026-11-30')")).rejects.toThrow("permissão");
+    } finally {
+      await db.exec("RESET ROLE");
+      await db.query("UPDATE profiles SET is_active=true WHERE id=$1", [bruna]);
     }
   });
   it("grava um voto com relato opcional, sem identidade, e bloqueia duplicação", async () => {
@@ -86,7 +102,7 @@ describe("proteções do Felizômetro", () => {
     await db.exec(`INSERT INTO felizometro_respostas(dia,setor,sentimento,relato) SELECT '2026-11-23','Grupo grande',4,'Relato anônimo' FROM generate_series(1,5);
       INSERT INTO felizometro_respostas(dia,setor,sentimento,relato) SELECT '2026-11-23','Grupo pequeno',1,'Não revelar' FROM generate_series(1,4);
       INSERT INTO felizometro_respostas(dia,setor,sentimento,relato) SELECT '2026-11-27','Grupo atual',5,'Não revelar hoje' FROM generate_series(1,5);`);
-    await entrar(admin);
+    await entrar(marcelli);
     const result = (await db.query<{ r: { grupos: { total: number; setor: string; media: number }[]; relatos: string[] } }>("SELECT relatorio_felizometro('2026-11-01','2026-11-30') AS r")).rows[0]?.r;
     expect(result?.grupos).toHaveLength(1);
     expect(result?.grupos[0]).toMatchObject({ setor: "Empresa", total: 9, media: 2.67 });
@@ -96,8 +112,8 @@ describe("proteções do Felizômetro", () => {
 });
 
 describe("painel consolidado protegido", () => {
-  it("mantém administradores e Gestão de Pessoas autorizados, e Qualidade sem acesso ao humor", async () => {
-    for (const [id, permitido] of [[admin,true],[gp,true],[qualidade,false],[uid,false],[inativo,false]] as const) {
+  it("bloqueia o painel para administradores e Gestão de Pessoas fora das três contas autorizadas", async () => {
+    for (const [id, permitido] of [[marcelli,true],[bruna,true],[gabrielle,true],[admin,false],[gp,false],[qualidade,false],[uid,false],[inativo,false]] as const) {
       await entrar(id);
       const consulta = db.query("SELECT painel_felizometro('2026-11-01','2026-11-30')");
       if (permitido) await expect(consulta).resolves.toBeDefined(); else await expect(consulta).rejects.toThrow("permissão");
@@ -112,20 +128,20 @@ describe("painel consolidado protegido", () => {
     expect((await db.query<{ sentimento_pulso: number; sentimento: number }>("SELECT sentimento_pulso,sentimento FROM felizometro_respostas WHERE dia='2026-12-04'")).rows[0]).toEqual({ sentimento_pulso: 4, sentimento: 5 });
   });
   it("consolida todos os votos de dias encerrados sem retornar setor ou autoria", async () => {
-    await entrar(admin);
+    await entrar(marcelli);
     const r = (await db.query<{ r: { dias: Record<string,unknown>[]; relatos: string[]; ativos: number } }>("SELECT painel_felizometro('2026-11-01','2026-11-30') AS r")).rows[0]?.r;
     expect(r?.dias).toEqual([{ dia: '2026-11-23', total: 9, muito_bem: 0, tranquilo: 5, desanimado: 0, estressado: 4, neutro_legado: 0 }]);
     expect(r?.relatos).toHaveLength(9);
-    expect(r?.ativos).toBe(4);
+    expect(r?.ativos).toBe(7);
   });
   it("libera uma única resposta somente à meia-noite de Brasília e informa as próximas consolidações", async () => {
-    await entrar(admin, '2026-12-05T02:59:59Z');
+    await entrar(marcelli, '2026-12-05T02:59:59Z');
     const consultar = async () => (await db.query<{ r: { dias: { total: number }[]; ultima_atualizacao: string; proxima_atualizacao: string } }>("SELECT painel_felizometro('2026-12-01','2026-12-31') AS r")).rows[0]?.r;
     const antes = await consultar();
     expect(antes?.dias).toEqual([]);
     expect(new Date(antes?.ultima_atualizacao ?? '').toISOString()).toBe('2026-12-04T03:00:00.000Z');
     expect(new Date(antes?.proxima_atualizacao ?? '').toISOString()).toBe('2026-12-05T03:00:00.000Z');
-    await entrar(admin, '2026-12-05T03:00:00Z');
+    await entrar(marcelli, '2026-12-05T03:00:00Z');
     const depois = await consultar();
     expect(depois?.dias).toEqual([{ dia: '2026-12-04', total: 1, muito_bem: 1, tranquilo: 0, desanimado: 0, estressado: 0, neutro_legado: 0 }]);
     expect(new Date(depois?.ultima_atualizacao ?? '').toISOString()).toBe('2026-12-05T03:00:00.000Z');

@@ -28,7 +28,7 @@ export const Route = createFileRoute('/_authenticated/relatorios-humor')({
     { title: 'Painel Pulso Cronos — Felizômetro | Portal do Profissional' },
     { name: 'description', content: 'Painel anônimo de bem-estar da Cronos, com participação, distribuição de sentimentos e comparativo semanal.' },
     { property: 'og:title', content: 'Painel Pulso Cronos — Felizômetro' },
-    { property: 'og:description', content: 'Indicadores consolidados do início e fechamento da semana, exclusivos para Gestão de Pessoas e administradores.' },
+    { property: 'og:description', content: 'Indicadores anônimos consolidados do início e fechamento da semana, com acesso restrito às pessoas autorizadas.' },
     { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' }, { name: 'robots', content: 'noindex' },
   ] }),
   errorComponent: ({ error, reset }) => <main className="space-y-4"><h1 className="text-2xl font-bold">Felizômetro</h1><p role="alert" className="text-destructive">{error instanceof Error ? error.message : 'Não foi possível carregar o painel.'}</p><Button onClick={reset} variant="outline">Tentar novamente</Button></main>,
